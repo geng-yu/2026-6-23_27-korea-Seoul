@@ -1,7 +1,6 @@
 # 檔案名稱：app.py
 import streamlit as st
-from datetime import datetime, date
-import pytz  # 用於處理時區
+from datetime import datetime, date, timezone, timedelta
 
 # 匯入每一天的模組
 import day1, day2, day3, day4, day5
@@ -116,8 +115,8 @@ trip_dates = {
 }
 
 # --- 自動判斷日期邏輯 (使用韓國時間) ---
-# 韓國時區 = Asia/Seoul (KST, UTC+9，與日本時間相同)
-korea_tz = pytz.timezone('Asia/Seoul')
+# 韓國時區 = KST (UTC+9，固定 offset，沒有日光節約)
+korea_tz = timezone(timedelta(hours=9))
 today = datetime.now(korea_tz).date()
 
 # --- 測試區 (測試完請註解掉下面這行) ---
