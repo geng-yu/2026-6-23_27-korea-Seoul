@@ -72,10 +72,10 @@ def show():
     # ==============================
     show_stop("19:30", "yukmong",
               override_note="燒烤",
-              show_g=True, show_n=True, show_t=false,
+              show_g=True, show_n=True, show_t=False,
               mode="walking",
               step_num="晚")
-
+    
     # ==============================
     # 7. Olive Young 補貨
     # ==============================
