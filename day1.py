@@ -49,7 +49,7 @@ def show():
     # ==============================
     st.markdown("""
     <div class="stop-card">
-      <div class="step-num">3.</div>
+      <div class="step-num">2</div>
       <div class="body">
         <div class="title-row">
           <h4>🚆 AREX →  弘大 → 🏨 飯店</h4>
