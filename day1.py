@@ -23,9 +23,9 @@ def show():
       <div class="step-num">1.</div>
       <div class="body">
         <div class="title-row">
-          <h4>🛫 Jin Air LJ736 → 🛬 仁川 T2 入境</h4>
+          <h4>🛫 10:40 台中 → 🛬 14:15 仁川 </h4>
         </div>
-        <p class="meta">真航空｜經濟艙｜Boeing 737 MAX 8｜10:40 RMQ 起飛｜14:15 ICN T2 抵達</p>
+        <p class="meta">真航空｜10:40 RMQ 起飛｜14:15 ICN T2 抵達</p>
         <p class="note">入境動線：① Arrival/도착 → ② 入境審查 (準備 K-ETA) → ③ 1F 行李轉盤 → ④ 海關 → ⑤ 1F 入境大廳</p>
       </div>
     </div>
