@@ -21,7 +21,7 @@ def show():
       <div class="body">
         <h4>🛫 Jin Air LJ736</h4>
         <p class="meta">真航空｜經濟艙｜Boeing 737 MAX 8｜2h35m</p>
-        <p class="note">RMQ → ICN T2 抵達 14:15。<b>抵達是 T2 不是 T1</b>，AREX 跟巴士都在 T2。</p>
+        <p class="note">RMQ → ICN T2 抵達 14:15。<b>抵達 T2 </p>
       </div>
     </div>
     """, unsafe_allow_html=True)
@@ -30,7 +30,7 @@ def show():
     # 2. 仁川 T2 入境流程
     # ==============================
     show_stop("14:15", "icn_t2",
-              override_note="入境動線：1) 跟著「Arrival/도착」走 → 2) 入境審查 (準備 K-ETA) → 3) 1F 行李轉盤 → 4) 海關 → 5) 1F 入境大廳 (找 CU 加值 T-money)",
+              override_note="入境動線：1) 「Arrival/도착」 → 2) 入境審查 (準備 K-ETA) → 3) 1F 行李轉盤 → 4) 海關 → 5) 1F 入境大廳",
               show_taxi=False, no_backup=True)
 
     # ==============================
@@ -49,16 +49,15 @@ def show():
     """, unsafe_allow_html=True)
 
     # ==============================
-    # 4. AREX 一般車 T2 → 弘대入口
+    # 4. AREX 一般車 T2 → 弘大入口
     # ==============================
     st.markdown("""
     <div class="stop-card">
       <div class="time">15:30</div>
       <div class="body">
-        <h4>🚆 AREX 一般車 (T2 → 弘대입구)</h4>
+        <h4>🚆 AREX 一般車 (T2 → 弘大입구)</h4>
         <p class="meta">B1 交通中心｜<b>藍色閘門</b> (不要走橘色)｜₩4,750｜55min</p>
-        <p class="note">下到 B1 找「AREX」指標 → <b>藍色 (一般)</b> 閘門進站 → 月台搭往 Seoul Station 方向 → 第 11 站「홍대입구」下車。
-        橘色閘門是直達車 (Express)，不停弘대。</p>
+        <p class="note">下 B1 找「AREX」指標 → <b>藍色 </b> 閘門進站 → 月台搭往 Seoul Station 方向 → 第11站「홍대입구」下車</p>
       </div>
     </div>
     """, unsafe_allow_html=True)
