@@ -20,7 +20,7 @@ def show():
     # ==============================
     st.markdown("""
     <div class="stop-card">
-      <div class="step-num">1.</div>
+      <div class="step-num">1</div>
       <div class="body">
         <div class="title-row">
           <h4>🛫 10:40 台中 → 🛬 14:15 仁川 </h4>
@@ -49,7 +49,7 @@ def show():
     # ==============================
     st.markdown("""
     <div class="stop-card">
-      <div class="step-num">3.</div>
+      <div class="step-num">2</div>
       <div class="body">
         <div class="title-row">
           <h4>🚆 AREX → 🚶 弘대입구 → 🏨 9 Brick Hotel Check-in</h4>
