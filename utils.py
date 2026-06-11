@@ -386,7 +386,7 @@ def hotel_bottom(today_food=None, today_shop=None):
     today_shop = set(today_shop or [])
 
     # 住卡片 (T 按鈕沒意義，因為已經在這裡了)
-    _render_card(tag="住", place_id="hotel", show_taxi=False)
+    _render_card(tag="住", place_id="hotel", show_taxi=True)
 
     # 🏨吃 expander
     food_all = get_by_area(AREA_HONGDAE, exclude=["hotel"], cat="food")
