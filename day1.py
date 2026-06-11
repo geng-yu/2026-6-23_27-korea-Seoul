@@ -71,7 +71,7 @@ def show():
     # 9. 晚餐：肉夢
     # ==============================
     show_stop("19:30", "yukmong",
-              override_note="燒烤 ⭐",
+              override_note="燒烤 ",
               show_g=True, show_n=True, show_t=False,
               mode="walking",
               step_num="晚")
