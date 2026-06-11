@@ -1,5 +1,9 @@
 """
-渲染共用函式
+渲染共用函式：
+- 彩色 G (Google) / N (NAVER) / T (Kakao T) 圓角按鈕
+- 卡片格式：[類別標籤] [名稱 ⭐] + meta + 動作按鈕
+- 同類別多家可以 group 在同一個標籤下
+- 飯店附近：住 + 吃 (expander) + 逛 (expander)，含主行程已排項目放最後
 """
 import streamlit as st
 import urllib.parse
@@ -14,70 +18,67 @@ from places import PLACES, get_by_area, AREA_HONGDAE
 def inject_css():
     st.markdown("""
     <style>
-    /* ---- 主行程卡片 ---- */
+    /* === 主卡片 === */
     .stop-card {
         background: var(--secondary-background-color);
-        border: 1px solid rgba(128,128,128,0.12);
-        border-radius: 16px;
-        padding: 16px 18px;
-        margin: 10px 0;
+        border: 1px solid rgba(128,128,128,0.18);
+        border-radius: 12px;
+        padding: 11px 13px;
+        margin: 5px 0;
         display: flex;
         align-items: flex-start;
-        gap: 14px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        transition: box-shadow 0.2s;
+        gap: 10px;
     }
-    .stop-card:hover {
-        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    }
-    .stop-card .step-num {
+    .stop-card .tag {
         flex-shrink: 0;
-        font-size: 26px;
-        font-weight: 900;
-        color: #ff4b4b;
-        min-width: 32px;
-        line-height: 1;
-        padding-top: 2px;
-        letter-spacing: -1px;
-        font-stretch: expanded;
-    }
-    .stop-card .body { flex-grow: 1; min-width: 0; }
-    .stop-card h4 {
-        margin: 0 0 4px 0;
         font-size: 16px;
+        font-weight: 800;
+        color: #ff4b4b;
+        min-width: 26px;
+        text-align: center;
+        line-height: 1.3;
+        padding-top: 2px;
+    }
+    .stop-card .tag.empty { visibility: hidden; }
+    .stop-card .body { flex-grow: 1; min-width: 0; }
+    .stop-card .top-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    .stop-card h4 {
+        margin: 0;
+        font-size: 15.5px;
         font-weight: 700;
         color: var(--text-color);
         line-height: 1.3;
+        flex: 1;
+        min-width: 0;
     }
     .stop-card .meta {
-        font-size: 12.5px;
+        font-size: 12px;
         color: var(--text-color);
         opacity: 0.65;
-        margin: 0 0 4px 0;
+        margin: 3px 0 0 0;
         line-height: 1.4;
     }
     .stop-card .note {
-        font-size: 13px;
+        font-size: 12.5px;
         color: var(--text-color);
         opacity: 0.85;
-        margin: 4px 0 8px 0;
-        line-height: 1.5;
+        margin: 4px 0 0 0;
+        line-height: 1.45;
     }
-    .stop-card .star { color: #ff4b4b; font-size: 14px; }
+    .stop-card .star { color: #ff4b4b; font-size: 13px; }
 
-    /* ---- 標題列（名稱 + 按鈕同行）---- */
-    .title-row {
+    /* === 三顆按鈕 === */
+    .nav-btns {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-bottom: 4px;
+        gap: 6px;
+        flex-shrink: 0;
     }
-    .title-row h4 { margin: 0; flex: 1; min-width: 0; }
-    .title-row .nav-btns { margin-top: 0; flex-shrink: 0; }
-
-    /* ---- 導航按鈕 ---- */
-    .nav-btns { display: flex; gap: 8px; margin-top: 8px; }
     .nav-btn {
         display: inline-flex;
         align-items: center;
@@ -86,81 +87,107 @@ def inject_css():
         height: 30px;
         border-radius: 50%;
         font-weight: 800;
-        font-size: 14px;
+        font-size: 13.5px;
         text-decoration: none !important;
         transition: transform 0.1s;
         font-family: system-ui, -apple-system, sans-serif;
     }
-    .nav-btn:active { transform: scale(0.95); }
+    .nav-btn:active { transform: scale(0.92); }
     .nav-btn.g { background: #4285F4; color: white !important; }
     .nav-btn.n { background: #03C75A; color: white !important; }
     .nav-btn.t { background: #FAE100; color: #371D1E !important; }
 
-    /* ---- 備案區塊 ---- */
-    .backup-cat-title {
-        font-size: 13px;
+    /* === 純說明卡 (transit) === */
+    .note-card {
+        background: var(--secondary-background-color);
+        border: 1px dashed rgba(128,128,128,0.30);
+        border-radius: 12px;
+        padding: 10px 13px;
+        margin: 5px 0;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    .note-card .tag {
+        flex-shrink: 0;
+        font-size: 15px;
         font-weight: 700;
+        opacity: 0.75;
+        min-width: 26px;
+        text-align: center;
+        padding-top: 2px;
+    }
+    .note-card .body { flex-grow: 1; min-width: 0; }
+    .note-card h5 {
+        margin: 0;
+        font-size: 14.5px;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+    .note-card .meta {
+        font-size: 12px;
         opacity: 0.7;
-        margin: 12px 0 6px 0;
-        padding: 0;
+        margin-top: 2px;
+        line-height: 1.4;
     }
-    .backup-scroll {
-        max-height: 320px;
-        overflow-y: auto;
-        padding-right: 4px;
+    .note-card .note {
+        font-size: 12.5px;
+        opacity: 0.85;
+        margin-top: 4px;
+        line-height: 1.45;
     }
-    .backup-scroll::-webkit-scrollbar { width: 4px; }
-    .backup-scroll::-webkit-scrollbar-track { background: transparent; }
-    .backup-scroll::-webkit-scrollbar-thumb {
-        background: rgba(128,128,128,0.3);
-        border-radius: 2px;
-    }
+
+    /* === 備案區塊 (expander 內部) === */
     .backup-item {
         background: var(--background-color);
         border: 1px solid rgba(128,128,128,0.12);
         border-radius: 10px;
-        padding: 10px 12px;
-        margin: 6px 0;
+        padding: 9px 11px;
+        margin: 5px 0;
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
         gap: 10px;
+        align-items: flex-start;
     }
     .backup-item .info { flex-grow: 1; min-width: 0; }
     .backup-item .name {
-        font-size: 14px;
+        font-size: 13.5px;
         font-weight: 700;
         line-height: 1.3;
-        color: var(--text-color);
     }
     .backup-item .small-meta {
         font-size: 11.5px;
         opacity: 0.65;
         margin-top: 2px;
-        color: var(--text-color);
         line-height: 1.4;
     }
-
-    /* ---- 飯店區塊標題 ---- */
-    .hotel-section-title {
-        font-size: 14px;
-        font-weight: 700;
-        margin: 16px 0 6px 0;
-        padding: 6px 10px;
-        background: var(--secondary-background-color);
-        border-radius: 8px;
-        border-left: 3px solid #ff4b4b;
+    .backup-item .small-note {
+        font-size: 11.5px;
+        opacity: 0.8;
+        margin-top: 3px;
+        line-height: 1.4;
     }
-
-    div[data-testid="stExpander"] details > div {
-        padding-top: 6px !important;
+    .backup-item .already {
+        font-size: 10px;
+        background: rgba(255,75,75,0.12);
+        color: #ff4b4b;
+        padding: 1px 6px;
+        border-radius: 4px;
+        margin-left: 6px;
+        white-space: nowrap;
+        vertical-align: middle;
     }
+    /* expander 內部 padding 修正 */
+    div[data-testid="stExpander"] details > div { padding-top: 4px !important; }
+
+    /* 隱藏 streamlit 預設選單 */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
 
 
 # ================================================================
-# 連結產生
+# 連結
 # ================================================================
 def gmap_url(query, mode="walking"):
     q = urllib.parse.quote(str(query))
@@ -185,170 +212,194 @@ def kakaot_url():
 
 
 # ================================================================
-# 卡片渲染
+# HTML 片段建構器
 # ================================================================
-def _btns_html(place, show_g=True, show_n=True, show_t=True, mode="walking"):
-    name_kr = place.get("name_kr", place["name"])
+def _nav_btns_html(place, show_taxi=True):
+    name = place["name"]
+    name_kr = place.get("name_kr", name)
     lat = place.get("lat")
     lng = place.get("lng")
-
-    btns = []
-    if show_g:
-        g = gmap_url(f"{name_kr} {place.get('address', '')}", mode)
-        btns.append(f'<a class="nav-btn g" href="{g}" target="_blank" title="Google Maps">G</a>')
-    if show_n:
-        n = naver_url(query=name_kr, lat=lat, lng=lng, name=place["name"], mode=mode)
-        btns.append(f'<a class="nav-btn n" href="{n}" title="NAVER Map">N</a>')
-    if show_t:
-        btns.append(f'<a class="nav-btn t" href="{kakaot_url()}" title="Kakao T">T</a>')
-
-    if not btns:
-        return ""
-    return '<div class="nav-btns">' + ''.join(btns) + '</div>'
+    g = gmap_url(f"{name_kr} {place.get('address', '')}", "walking")
+    n = naver_url(query=name_kr, lat=lat, lng=lng, name=name, mode="walking")
+    parts = [
+        f'<a class="nav-btn g" href="{g}" target="_blank" title="Google Maps">G</a>',
+        f'<a class="nav-btn n" href="{n}" title="NAVER">N</a>',
+    ]
+    if show_taxi:
+        parts.append(f'<a class="nav-btn t" href="{kakaot_url()}" title="Kakao T">T</a>')
+    return '<div class="nav-btns">' + ''.join(parts) + '</div>'
 
 
-def show_stop(time, place_id,
-              override_note=None,
-              show_g=True, show_n=True, show_t=True,
-              mode="walking",
-              no_backup=False,
-              step_num=None):
-    """主行程卡片。
+def _build_meta_line(place):
+    """產生 'name_kr｜sub · hours' 這一行。"""
+    name_kr = place.get("name_kr", "")
+    parts = []
+    if place.get("sub"): parts.append(place["sub"])
+    if place.get("hours"): parts.append(place["hours"])
+    meta = " · ".join(parts)
+    if name_kr and meta:
+        return f"{html_lib.escape(name_kr)}｜{html_lib.escape(meta)}"
+    elif name_kr:
+        return html_lib.escape(name_kr)
+    elif meta:
+        return html_lib.escape(meta)
+    return ""
 
-    參數：
-        time          : 時間字串（保留備用，卡片上不顯示）
-        place_id      : places.py 的 key
-        override_note : 覆蓋 places.py 裡的 note（傳 " " 可清空）
-        show_g        : 是否顯示 Google Maps 按鈕（預設 True）
-        show_n        : 是否顯示 NAVER 按鈕（預設 True）
-        show_t        : 是否顯示 Kakao T 按鈕（預設 True）
-        mode          : 導航模式 "walking" / "transit" / "driving"
-        no_backup     : True = 不顯示備案 expander
-        step_num      : 傳數字顯示紅色大編號，e.g. step_num=1 → "1."
-    """
+
+# ================================================================
+# 主行程卡片渲染
+# ================================================================
+def _render_card(tag, place_id, note_override=None, show_taxi=True):
+    """渲染單張主行程卡片。tag 是 '晚'/'逛'/'宵' 等；空字串就隱形(對齊用)。"""
     if place_id not in PLACES:
-        st.error(f"❌ 找不到地點：{place_id}")
+        st.error(f"❌ 找不到地點: {place_id}")
         return
-
     p = PLACES[place_id]
-    name      = html_lib.escape(p["name"])
-    name_kr   = html_lib.escape(p.get("name_kr", ""))
-    star      = '<span class="star"> ⭐</span>' if p.get("priority") else ''
-    area      = html_lib.escape(p.get("area", ""))
-    hours     = html_lib.escape(p.get("hours", ""))
-    sub       = html_lib.escape(p.get("sub", ""))
-    meta_parts = [x for x in [area, sub, hours] if x]
-    meta      = ' · '.join(meta_parts)
-    note      = override_note if override_note is not None else p.get("note", "")
+    name = html_lib.escape(p["name"])
+    star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
+    meta = _build_meta_line(p)
+    meta_html = f'<p class="meta">{meta}</p>' if meta else ''
+    note = note_override if note_override is not None else p.get("note", "")
     note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
-    btns_html = _btns_html(p, show_g=show_g, show_n=show_n, show_t=show_t, mode=mode)
-    num_html  = f'<div class="step-num">{step_num}</div>' if step_num is not None else ''
+    tag_cls = "tag" if tag else "tag empty"
+    tag_text = html_lib.escape(tag) if tag else "·"
+    btns = _nav_btns_html(p, show_taxi=show_taxi)
 
     st.markdown(f"""
     <div class="stop-card">
-      {num_html}
+      <div class="{tag_cls}">{tag_text}</div>
       <div class="body">
-        <div class="title-row">
+        <div class="top-row">
           <h4>{name}{star}</h4>
-          {btns_html}
+          {btns}
         </div>
-        <p class="meta">{name_kr}{('｜' + meta) if meta else ''}</p>
+        {meta_html}
         {note_html}
       </div>
     </div>
     """, unsafe_allow_html=True)
 
-    if not no_backup and p.get("area") not in ("機場", None):
-        _show_backup_expander(place_id, p)
+
+# ================================================================
+# 公開 API
+# ================================================================
+def stop(tag, place_ids, others=None, notes=None, show_taxi=True):
+    """
+    顯示一個或多個主行程地點，共用一個類別標籤。
+
+    Args:
+        tag: '早'/'午'/'晚'/'宵'/'點'/'逛'/'買'/'景'/'住' 等。
+        place_ids: str (單筆) 或 list[str] (group, 例如逛多家)
+        others: None / "food" / "shop" — 加一個「其他」expander，列出同區同類其他選擇。
+        notes: None / str / list — 覆寫卡片上的 note。
+        show_taxi: 是否顯示 Kakao T (T) 按鈕。
+    """
+    if isinstance(place_ids, str):
+        place_ids = [place_ids]
+
+    # notes 標準化
+    if notes is None:
+        notes = [None] * len(place_ids)
+    elif isinstance(notes, str):
+        notes = [notes] + [None] * (len(place_ids) - 1)
+
+    # 渲染所有卡片 (第一張顯示 tag，其餘 tag 留空 = 對齊)
+    for i, pid in enumerate(place_ids):
+        _render_card(
+            tag=tag if i == 0 else "",
+            place_id=pid,
+            note_override=notes[i] if i < len(notes) else None,
+            show_taxi=show_taxi,
+        )
+
+    # 「其他 (附近...)」 expander
+    if others:
+        first_p = PLACES[place_ids[0]]
+        area = first_p.get("area")
+        cat_label = {"food": "其他吃的", "shop": "其他逛的"}.get(others, "其他")
+        with st.expander(f"🔄 {cat_label}（{area}附近）"):
+            items = get_by_area(area, exclude=place_ids, cat=others)
+            if not items:
+                st.caption(f"({area} 沒有其他 {cat_label} 資料)")
+            for pid, p in items:
+                _render_backup_item(p)
 
 
-def _show_backup_expander(this_id, place):
-    area = place["area"]
-
-    with st.expander(f"🔄 {place['name']} 附近備案"):
-        food_all  = get_by_area(area, exclude=this_id, cat="food") + \
-                    get_by_area(area, exclude=this_id, cat="cafe")
-        shop_all  = get_by_area(area, exclude=this_id, cat="shop")
-        sight_all = get_by_area(area, exclude=this_id, cat="sight")
-
-        if not food_all and not shop_all and not sight_all:
-            st.caption(f"({area} 沒有其他備案資料)")
-            return
-
-        inner_html = ""
-        if food_all:
-            inner_html += '<div class="backup-cat-title">🍽️ 吃</div>'
-            for _, p in food_all:
-                inner_html += _backup_item_html(p)
-        if shop_all:
-            inner_html += '<div class="backup-cat-title">🛍️ 逛/買</div>'
-            for _, p in shop_all:
-                inner_html += _backup_item_html(p)
-        if sight_all:
-            inner_html += '<div class="backup-cat-title">🏛️ 景點</div>'
-            for _, p in sight_all:
-                inner_html += _backup_item_html(p)
-
-        st.markdown(f'<div class="backup-scroll">{inner_html}</div>',
-                    unsafe_allow_html=True)
+def note(tag, title, meta=None, note=None):
+    """顯示一個沒有座標、沒有 G/N/T 按鈕的純說明卡 (交通指引、提醒等)。"""
+    title_e = html_lib.escape(title)
+    meta_html = f'<p class="meta">{html_lib.escape(meta)}</p>' if meta else ''
+    note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
+    tag_e = html_lib.escape(tag) if tag else "·"
+    st.markdown(f"""
+    <div class="note-card">
+      <div class="tag">{tag_e}</div>
+      <div class="body">
+        <h5>{title_e}</h5>
+        {meta_html}
+        {note_html}
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
-def _backup_item_html(p):
-    name      = html_lib.escape(p["name"])
-    name_kr   = html_lib.escape(p.get("name_kr", ""))
-    star      = '<span class="star"> ⭐</span>' if p.get("priority") else ''
-    sub       = p.get("sub", "")
-    hours     = p.get("hours", "")
-    note      = p.get("note", "")
-    meta_parts = [x for x in [sub, hours] if x]
-    meta      = ' · '.join(meta_parts)
-    note_line = f'<div class="small-meta">{html_lib.escape(note)}</div>' if note else ''
-    btns      = _btns_html(p)
-
-    return f"""
+def _render_backup_item(p, already=False):
+    """渲染備案/飯店附近清單裡的單一項目。"""
+    name = html_lib.escape(p["name"])
+    star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
+    already_tag = '<span class="already">已排</span>' if already else ''
+    name_kr = html_lib.escape(p.get("name_kr", ""))
+    parts = []
+    if p.get("sub"): parts.append(p["sub"])
+    if p.get("hours"): parts.append(p["hours"])
+    meta = " · ".join(parts)
+    if name_kr and meta:
+        meta_line = f"{name_kr}｜{html_lib.escape(meta)}"
+    elif name_kr:
+        meta_line = name_kr
+    elif meta:
+        meta_line = html_lib.escape(meta)
+    else:
+        meta_line = ""
+    meta_html = f'<div class="small-meta">{meta_line}</div>' if meta_line else ''
+    note_html = f'<div class="small-note">{html_lib.escape(p.get("note", ""))}</div>' if p.get("note") else ''
+    btns = _nav_btns_html(p, show_taxi=True)
+    st.markdown(f"""
     <div class="backup-item">
       <div class="info">
-        <div class="name">{name}{star}</div>
-        <div class="small-meta">{name_kr}{('｜' + html_lib.escape(meta)) if meta else ''}</div>
-        {note_line}
+        <div class="name">{name}{star}{already_tag}</div>
+        {meta_html}
+        {note_html}
       </div>
       {btns}
-    </div>"""
+    </div>
+    """, unsafe_allow_html=True)
 
 
-# ================================================================
-# 飯店附近
-# ================================================================
-def show_hotel_nearby(exclude_ids=None):
-    exclude_ids = exclude_ids or []
-    if isinstance(exclude_ids, str):
-        exclude_ids = [exclude_ids]
+def hotel_bottom(today_food=None, today_shop=None):
+    """
+    每天最下面：住 (卡片) + 🏨吃 (expander) + 🏨逛 (expander)。
+    today_food / today_shop 是當天主行程已經安排的 place_ids，
+    它們仍然會顯示在 expander 裡，但 sorted 到清單最後並加「已排」標籤。
+    """
+    today_food = set(today_food or [])
+    today_shop = set(today_shop or [])
 
-    with st.expander("🏨 飯店附近 — 隨時可以去"):
-        st.caption("9 Brick Hotel 走路 1-15 min 範圍內。")
+    # 住卡片 (T 按鈕沒意義，因為已經在這裡了)
+    _render_card(tag="住", place_id="hotel", show_taxi=False)
 
-        food_all  = get_by_area(AREA_HONGDAE, exclude=exclude_ids + ["hotel"], cat="food") + \
-                    get_by_area(AREA_HONGDAE, exclude=exclude_ids + ["hotel"], cat="cafe")
-        shop_all  = get_by_area(AREA_HONGDAE, exclude=exclude_ids + ["hotel"], cat="shop")
-        sight_all = get_by_area(AREA_HONGDAE, exclude=exclude_ids + ["hotel"], cat="sight")
+    # 🏨吃 expander
+    food_all = get_by_area(AREA_HONGDAE, exclude=["hotel"], cat="food")
+    food_sorted = sorted(food_all, key=lambda x: (x[0] in today_food, x[0]))
+    with st.expander("🍽️ 吃 — 飯店附近"):
+        st.caption("弘대區所有吃的清單。主行程已排的會放最下面標「已排」。")
+        for pid, p in food_sorted:
+            _render_backup_item(p, already=(pid in today_food))
 
-        inner_html = ""
-        if food_all:
-            inner_html += '<div class="backup-cat-title">🍽️ 吃</div>'
-            for _, p in food_all:
-                inner_html += _backup_item_html(p)
-        if shop_all:
-            inner_html += '<div class="backup-cat-title">🛍️ 逛/買</div>'
-            for _, p in shop_all:
-                inner_html += _backup_item_html(p)
-        if sight_all:
-            inner_html += '<div class="backup-cat-title">🏛️ 景點</div>'
-            for _, p in sight_all:
-                inner_html += _backup_item_html(p)
-
-        if not inner_html:
-            st.caption("(暫無資料)")
-            return
-
-        st.markdown(f'<div class="backup-scroll">{inner_html}</div>',
-                    unsafe_allow_html=True)
+    # 🏨逛 expander
+    shop_all = get_by_area(AREA_HONGDAE, exclude=["hotel"], cat="shop")
+    shop_sorted = sorted(shop_all, key=lambda x: (x[0] in today_shop, x[0]))
+    with st.expander("🛍️ 逛 — 飯店附近"):
+        st.caption("弘대區所有逛的清單。主行程已排的會放最下面標「已排」。")
+        for pid, p in shop_sorted:
+            _render_backup_item(p, already=(pid in today_shop))
