@@ -1,9 +1,13 @@
 """Day 2 (6/24 三) — 聖水洞 + 東大門"""
 import streamlit as st
-from utils import stop, note, hotel_bottom
+from utils import stop, note, hotel_bottom, set_scheduled
+
+TODAY_FOOD = ["gamjatang", "maman_gelato", "jin_okhwa", "kyochon"]
+TODAY_SHOP = ["tamburins_seongsu", "point_of_view", "lcdc"]
 
 
 def show_day():
+    set_scheduled(TODAY_FOOD, TODAY_SHOP)
     st.caption("📍 6/24 (三)｜聖水洞 (韓國布魯克林) + 東大門 (一隻雞)")
 
     # 出發
@@ -50,14 +54,12 @@ def show_day():
          notes="醬油蒜味 / 紅辣味，國民炸雞品牌。或跳「其他」換口味。")
 
     # 住 + 飯店附近
-    hotel_bottom(
-        today_food=["gamjatang", "maman_gelato", "jin_okhwa", "kyochon"],
-        today_shop=["tamburins_seongsu", "point_of_view", "lcdc"],
-    )
+    hotel_bottom(today_food=TODAY_FOOD, today_shop=TODAY_SHOP)
 
 
 def show():
     show_day()
 
+
 if __name__ == "__main__":
-    stop()
+    show()
