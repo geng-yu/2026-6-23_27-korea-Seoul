@@ -71,12 +71,11 @@ def show():
     # 9. 晚餐：肉夢
     # ==============================
     show_stop("19:30", "yukmong",
-              override_note="三層樓燒烤 ⭐。Google 4.8 / 3000+ 評論。沒位置跳備案。",
-              show_g=True, show_n=True, show_t=True,
+              override_note="燒烤",
+              show_g=True, show_n=True, show_t=false,
               mode="walking",
               step_num="晚")
 
-    
     # ==============================
     # 7. Olive Young 補貨
     # ==============================
@@ -92,8 +91,6 @@ def show():
               override_note="弘益路主街，街頭表演、潮店、咖啡。慢慢晃。",
               show_g=True, show_n=True, show_t=False,
               mode="walking")
-
-
 
     # ==============================
     # 10. AK Plaza
