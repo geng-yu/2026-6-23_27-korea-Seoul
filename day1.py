@@ -72,7 +72,7 @@ def show():
     # ==============================
     show_stop("19:30", "yukmong",
               override_note="三層樓燒烤 ⭐。Google 4.8 / 3000+ 評論。沒位置跳備案。",
-              show_g=True, show_n=True, show_t=True,
+              show_g=True, show_n=True, show_t=False,
               mode="walking",
               step_num="晚")
     # ==============================
