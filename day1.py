@@ -49,16 +49,17 @@ def show():
     # ==============================
     st.markdown("""
     <div class="stop-card">
-      <div class="step-num">2</div>
+      <div class="step-num">3.</div>
       <div class="body">
         <div class="title-row">
-          <h4>🚆 AREX → 🚶 弘대입구 → 🏨 9 Brick Hotel Check-in</h4>
+          <h4>🚆 AREX → 🚶 弘대입구 → 🏨 飯店</h4>
         </div>
         <p class="meta">B1 藍色閘門｜₩4,750｜55 min → 9 號出口走路 6 min</p>
         <p class="note">① B1 找「AREX」→ 藍色閘門進站 → 第 11 站「홍대입구」下車<br>
         ② 9 號出口 (有手扶梯) → 直走 150m → 左轉 → 小巷右轉 → 直走 2 min<br>
         ③ Check-in 15:00 / Check-out 11:00</p>
-        <div class="nav-btns">
+        <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+          <span style="font-size:13px; opacity:0.75;">🏨 9 Brick Hotel:</span>
           <a class="nav-btn g" href="https://www.google.com/maps/dir/?api=1&destination=나인브릭+호텔+서울+마포구+홍익로5길+32&travelmode=walking" target="_blank" title="Google Maps">G</a>
           <a class="nav-btn n" href="nmap://route/walk?dlat=37.5537661&dlng=126.9205306&dname=9+Brick+Hotel&appname=seoul_trip_2026" title="NAVER Map">N</a>
         </div>
