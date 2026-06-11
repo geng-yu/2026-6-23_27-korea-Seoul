@@ -11,7 +11,7 @@ def show():
     # ==============================
     show_stop("08:00", "rmq",
               
-              show_g=False, show_n=False, show_t=False,
+              show_g=True, show_n=False, show_t=False,
               no_backup=True)
 
     # ==============================
