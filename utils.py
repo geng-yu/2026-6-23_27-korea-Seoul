@@ -493,7 +493,7 @@ def note(tag, title, meta=None, note=None):
 
 def hotel_bottom(today_food=None, today_shop=None):
     """
-    每天最下面：住 (卡片) + 🍽️吃 (expander) + 🛍️逛 (expander)。
+    每天最下面：🏠 (卡片) + 🍽️吃 (expander) + 🛍️逛 (expander)。
     today_food / today_shop 不傳的話，自動用 set_scheduled() 登記的清單。
     已排項目沉到最下面 + 標「已排」。
     """
