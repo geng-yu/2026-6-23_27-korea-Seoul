@@ -183,6 +183,17 @@ div[data-testid="stExpander"] details > div{
   padding-top:4px !important;
 }
 
+
+/* ===== 同一張卡片內的多個分段 ===== */
+.stop-card .section{
+  padding:9px 0 2px 0;
+  border-top:1px dashed rgba(128,128,128,.22);
+  margin-top:7px;
+}
+.stop-card .section:first-of-type{
+  border-top:none; margin-top:0; padding-top:0;
+}
+
 #MainMenu{visibility:hidden;}
 footer{visibility:hidden;}
 </style>
@@ -500,3 +511,77 @@ def hotel_bottom(today_food=None, today_shop=None):
     with st.expander("🛍️ 逛 — 飯店附近"):
         st.caption("弘대區所有逛的清單。主行程已排的會放最下面標「已排」。")
         _render_backup_list(shop_all, shop_sched)
+
+
+# ================================================================
+# 多段合併卡片：多個主要點放在同一張卡片裡，每點標題粗體
+# ================================================================
+def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
+    """
+    把多個「主要點」合併在同一張卡片內，每點標題用粗體 (h4)，
+    各自可以有 meta / note / G·N·T 按鈕，點與點之間用虛線分隔。
+
+    sections: list[dict]，每個 dict 二選一：
+      A. {"place_id": "yukmong", "note": "覆寫備註(選填)"}
+         → 從 PLACES 撈名稱/⭐/meta/座標，自動產生 G/N/T 按鈕
+      B. {"title": "AREX (...)", "meta": "...", "note": "...",
+          "links": [{"label":"G","url":"...","cls":"g"}, ...]}
+         → 自訂內容
+    others: None / "food" / "shop" — 同 stop()，加「其他」expander，
+            已排的沉底標「已排」。
+    """
+    accent = _accent_cls(tag)
+    chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if tag else '<div class="chip ghost">·</div>'
+
+    place_ids = []
+    sec_parts = []
+    for s in sections:
+        if "place_id" in s:
+            pid = s["place_id"]
+            if pid not in PLACES:
+                st.error(f"❌ 找不到地點: {pid}")
+                continue
+            place_ids.append(pid)
+            p = PLACES[pid]
+            title_html = html_lib.escape(p["name"]) + ('<span class="star"> ⭐</span>' if p.get("priority") else '')
+            meta = _build_meta_line(p)
+            note_txt = s.get("note") if s.get("note") is not None else p.get("note", "")
+            btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode)
+        else:
+            title_html = html_lib.escape(s.get("title", ""))
+            meta = html_lib.escape(s["meta"]) if s.get("meta") else ""
+            note_txt = s.get("note", "")
+            btns = ""
+            if s.get("links"):
+                bp = []
+                for item in s["links"]:
+                    label = html_lib.escape(item.get("label", ""))
+                    cls = html_lib.escape(item.get("cls", "g"))
+                    url = _safe_href(item.get("url", "#"))
+                    target = ' target="_blank"' if url.startswith("http") else ""
+                    bp.append(f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>')
+                btns = '<div class="nav-btns">' + ''.join(bp) + '</div>'
+
+        meta_html = f'<p class="meta">{meta}</p>' if meta else ''
+        note_html = f'<p class="note">{html_lib.escape(note_txt)}</p>' if note_txt else ''
+        sec_parts.append(
+            f'<div class="section">'
+            f'<div class="top-row"><h4>{title_html}</h4>{btns}</div>'
+            f'{meta_html}{note_html}'
+            f'</div>'
+        )
+
+    st.markdown(
+        f'<div class="stop-card {accent}">{chip_html}<div class="body">' + ''.join(sec_parts) + '</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    if others and place_ids:
+        area = PLACES[place_ids[0]].get("area")
+        cat_label = {"food": "其他吃的", "shop": "其他逛的"}.get(others, "其他")
+        with st.expander(f"🔄 {cat_label}（{area}附近）"):
+            items = get_by_area(area, exclude=place_ids, cat=others)
+            if not items:
+                st.caption(f"({area} 沒有其他 {cat_label} 資料)")
+            else:
+                _render_backup_list(items, _SCHEDULED.get(others, set()))
