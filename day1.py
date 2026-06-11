@@ -17,7 +17,6 @@ def show_day():
             <a class="nav-btn g" href="https://www.google.com/maps/dir/?api=1&destination=%E4%BD%B3%E5%AE%89%E5%81%9C%E8%BB%8A%E5%A0%B4%20%E6%B8%85%E6%B3%89%E5%B4%97&travelmode=driving" target="_blank" title="Google Maps">G</a>
           </div>
         </div>
-      #  <p class="meta">開車｜停佳安停車場（清泉崗）</p>
       </div>
     </div>
     """, unsafe_allow_html=True)
