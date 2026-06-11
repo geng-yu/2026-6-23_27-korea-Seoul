@@ -1,244 +1,122 @@
+"""Day 1 (6/23 二) — 抵達 ➜ 弘대本區"""
 import streamlit as st
-import pandas as pd
-from utils import get_gmap_link, get_naver_link, show_nav_buttons
-
-# 9 Brick Hotel 座標 (NAVER 路線規劃用)
-HOTEL_LAT = 37.5537661
-HOTEL_LNG = 126.9205306
-HOTEL_NAME = "9 Brick Hotel"
-HOTEL_ADDR_KR = "서울 마포구 홍익로5길 32"  # 韓文地址
-HOTEL_ADDR_EN = "32 Hongik-ro 5-gil, Mapo-gu, Seoul"
+from utils import show_stop, show_hotel_nearby
 
 
 def show():
-    st.caption("6/23 (二)")
+    st.caption("📍 6/23 (二)｜14:15 抵達仁川 T2 → 弘대 9 Brick Hotel")
 
-    # ==========================================
-    # 0. 出發 → 台中機場
-    # ==========================================
-    st.subheader("0️⃣ 自行開車 ➔ 台中機場 (RMQ)")
+    # ==============================
+    # 0. 自行開車 → RMQ
+    # ==============================
+    show_stop("08:00", "rmq",
+              override_note="起飛前 2 小時抵達 RMQ。第二航廈停車場 (室內) 或周邊配合私人停車場",
+              show_taxi=False, no_backup=True)
+
+    # ==============================
+    # 1. 飛行
+    # ==============================
     st.markdown("""
-    * 建議起飛 **2 小時前** 抵達機場 → **8:40 前** 到
-    * 機場停車：第二航廈停車場 (室內) 或 周邊配合的私人停車場
-    """)
-    st.link_button("🅿️ 導航：台中國際機場", get_gmap_link("台中國際機場", "driving"))
+    <div class="stop-card">
+      <div class="time">10:40</div>
+      <div class="body">
+        <h4>🛫 Jin Air LJ736</h4>
+        <p class="meta">真航空｜經濟艙｜Boeing 737 MAX 8｜2h35m</p>
+        <p class="note">RMQ → ICN T2 抵達 14:15。<b>抵達是 T2 不是 T1</b>，AREX 跟巴士都在 T2。</p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # ==========================================
-    # 1. 航班資訊
-    # ==========================================
-    with st.container(border=True):
-        st.markdown("### 🛫 真航空 LJ736 (去程)")
-        st.markdown("""
-        * **10:40** 台中 RMQ ➔ **14:15** 仁川 **T2**
-        * Boeing 737 MAX 8 / 經濟艙 / 2h35m
-        * ⚠️ **抵達航廈是 T2 (不是 T1)**，AREX 跟巴士的搭乘指引都不同
-        """)
+    # ==============================
+    # 2. 仁川 T2 入境流程
+    # ==============================
+    show_stop("14:15", "icn_t2",
+              override_note="入境動線：1) 跟著「Arrival/도착」走 → 2) 入境審查 (準備 K-ETA) → 3) 1F 行李轉盤 → 4) 海關 → 5) 1F 入境大廳 (找 CU 加值 T-money)",
+              show_taxi=False, no_backup=True)
 
-    st.divider()
-
-    # ==========================================
-    # 2. 抵達 T2 的標準動線
-    # ==========================================
-    st.subheader("1️⃣ 仁川 T2 入境流程")
+    # ==============================
+    # 3. T-money 加值
+    # ==============================
     st.markdown("""
-    1. 下機後跟著 **「Arrival / 도착」** 指標走
-    2. **入境審查 (Immigration)**：外國人櫃台，準備護照 + 已填好的 **K-ETA / Q-Code** 或紙本入境卡
-    3. **行李轉盤 (Baggage Claim)**：在 1F
-    4. **海關 (Customs)**：沒申報就走綠色通道
-    5. 出來就是 **1F 入境大廳**
-    """)
+    <div class="stop-card">
+      <div class="time">15:00</div>
+      <div class="body">
+        <h4>💳 加值 T-money</h4>
+        <p class="meta">CU / GS25 / 7-Eleven｜建議 ₩50,000-100,000</p>
+        <p class="note">出發前已用 Apple Wallet 加好卡 (餘額₩0)，這邊用現金或 Mastercard 加值。
+        Visa 不能用 App 加值，現金最穩。跟店員說「티머니 충전 (Tmoney chong-jeon)」+ 金額，手機背面靠讀卡機。</p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.info("💡 出關後請先別急著找車，看下面 **2️⃣ T-money** 再走")
-
-    st.divider()
-
-    # ==========================================
-    # 3. T-money 處理 (iPhone)
-    # ==========================================
-    st.subheader("2️⃣ 設定 T-money 交通卡")
-
-    with st.container(border=True):
-        st.markdown("### 📱 方案 A：iPhone Apple Wallet (推薦，最快)")
-        st.markdown("""
-        **加入卡片 (台灣就可以先做好，免註冊)：**
-        1. 打開 **Apple 錢包 App**
-        2. 點右上角 **「＋」**
-        3. 選 **「交通卡」** → **「T-money」** → 加入 (餘額 ₩0)
-        4. **設定 → 錢包與 Apple Pay → 快速交通卡 → 選 T-money** ✅ 開啟快速模式
-
-        **需求：** iOS 17.2 以上，iPhone XS / XR 以上
-        """)
-
-        st.success("✨ **快速模式神在哪：** 不用 Face ID、不用解鎖、**手機沒電還能再用 5 小時** (XS 之後的機型)")
-
-        st.markdown("---")
-        st.markdown("### 💳 加值 (Top-up) — 這邊有坑")
-        st.warning("""
-        ⚠️ **2026/6 最新狀況：**
-
-        - **Visa 卡 ❌ 不能直接在 App 內加值** (payment gateway 限制)
-        - **Mastercard / Amex / 銀聯 ✅** 可以用 **Mobile T-money App** 內建的 **Apple Pay 加值** (3 月更新後支援，要點 "Foreigner" 按鈕)
-        - **現金加值 ✅** 永遠可用，到便利店 (CU / GS25 / 7-Eleven / emart24) 或地鐵站機台
-        """)
-
-        st.markdown("""
-        **➡️ 建議流程：**
-        1. **台灣時** 先把卡加進 Apple Wallet (餘額 ₩0)
-        2. **落地後** 在 T2 入境大廳找 **CU / GS25** 換點現金 (₩50,000-100,000 夠了)
-        3. 在 CU 跟店員說 **"티머니 충전 (Tmoney chong-jeon) ₩30,000"** → 把手機背面靠近讀卡機
-        4. 之後地鐵 / 公車 / 便利店都嗶 iPhone
-
-        ⚠️ **如果是 Mastercard**：可以下載 **Mobile T-money App** 試試直接信用卡加值，省去找現金
-        """)
-
-    with st.container(border=True):
-        st.markdown("### 💳 方案 B：實體 T-money 卡 (備案)")
-        st.markdown("""
-        - 在 **T2 1F 入境大廳** 任何便利店買，₩2,500-3,000
-        - 加值方式跟 Apple Wallet 一樣
-        - 適合：手機機型太舊、不想搞 App 的人
-        """)
-
-    st.divider()
-
-    # ==========================================
-    # 4. 機場 → 飯店：方案 A (AREX 一般列車)
-    # ==========================================
-    st.subheader("3️⃣ 交通方案 A：AREX 一般列車 (推薦)")
-
+    # ==============================
+    # 4. AREX 一般車 T2 → 弘대入口
+    # ==============================
     st.markdown("""
-    **為什麼推這個：**
-    - **直達** 弘大入口站，**不用轉車**
-    - 便宜 ₩4,750
-    - 不受塞車影響
-    - 行李架空間夠用
+    <div class="stop-card">
+      <div class="time">15:30</div>
+      <div class="body">
+        <h4>🚆 AREX 一般車 (T2 → 弘대입구)</h4>
+        <p class="meta">B1 交通中心｜<b>藍色閘門</b> (不要走橘色)｜₩4,750｜55min</p>
+        <p class="note">下到 B1 找「AREX」指標 → <b>藍色 (一般)</b> 閘門進站 → 月台搭往 Seoul Station 方向 → 第 11 站「홍대입구」下車。
+        橘色閘門是直達車 (Express)，不停弘대。</p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    **不要搭直達列車 (Express, 橘色閘門)：**
-    - 直達車只到首爾車站，**不停弘大入口**，反而要再轉地鐵 2 號線
-    """)
-
-    st.markdown("**Step 1：從 T2 入境大廳走到 AREX 月台 (B1)**")
+    # ==============================
+    # 5. 弘대入口站 → 飯店
+    # ==============================
     st.markdown("""
-    1. 沿著 **「Train / 기차」** 或 **「AREX」** 指標走
-    2. 搭手扶梯下到 **B1 交通中心 (Transportation Center)**
-    3. **重要：找藍色 (BLUE) 閘門 → AREX 一般列車**
-    4. ⚠️ **橘色 (ORANGE) 閘門是直達車 → 不要走錯**
-    5. 進站方式：用剛剛加值好的 T-money 嗶閘門
-    """)
+    <div class="stop-card">
+      <div class="time">16:30</div>
+      <div class="body">
+        <h4>🚶 弘대입구站 9 號出口 → 9 Brick Hotel</h4>
+        <p class="meta">走路 6 min｜450m</p>
+        <p class="note">9 號出口 (有手扶梯) → 直走 150m → 左轉 → 第一條小巷右轉 → 直走 2 min。</p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    show_nav_buttons(
-        "Incheon International Airport Terminal 2 Station",
-        mode="walking",
-        label_prefix="🚶 ",
-    )
+    show_stop("16:40", "hotel", override_note="Check-in 15:00 / Check-out 11:00")
 
-    st.markdown("**Step 2：搭車 (T2 → 弘大入口)**")
-    st.markdown("""
-    * **方向**：往 Seoul Station (首爾站)
-    * **下車站**：**홍대입구 (Hongik University / 弘大入口)**，T2 出發第 11 站
-    * **耗時**：約 55 分鐘
-    * **班距**：白天約 10-15 分鐘一班
-    """)
+    # ==============================
+    # 6. Olive Young 補貨
+    # ==============================
+    show_stop("17:30", "olive_young_hongdae",
+              override_note="美妝藥妝旗艦店，三層樓，飯店走 5 min。建議第一天大買，最後一天還可以補貨。")
 
-    with st.expander("🚇 T2 AREX 一般列車時刻表 (15:00-17:00 區間)"):
-        st.markdown("[🔗 AREX 官方時刻表](https://www.arex.or.kr/jsp/eng/main.jsp)")
-        st.caption("實際出發時間以現場為準，下表為平日大約時間")
-        schedule_data = [
-            {"T2 出發": "15:08", "弘大入口": "16:01", "耗時": "53分"},
-            {"T2 出發": "15:22", "弘大入口": "16:15", "耗時": "53分"},
-            {"T2 出發": "15:38", "弘大入口": "16:31", "耗時": "53分"},
-            {"T2 出發": "15:52", "弘大入口": "16:45", "耗時": "53分"},
-            {"T2 出發": "16:08", "弘大入口": "17:01", "耗時": "53分"},
-            {"T2 出發": "16:22", "弘大入口": "17:15", "耗時": "53分"},
-            {"T2 出發": "16:38", "弘大入口": "17:31", "耗時": "53分"},
-            {"T2 出發": "16:52", "弘大入口": "17:45", "耗時": "53分"},
-        ]
-        df = pd.DataFrame(schedule_data)
-        st.dataframe(df, hide_index=True, use_container_width=True)
+    # ==============================
+    # 7. 弘대主街
+    # ==============================
+    show_stop("18:30", "hongdae_street",
+              override_note="弘益路 (Hongik-ro) 主街，街頭表演、潮店、咖啡。慢慢晃晃。")
 
-    st.divider()
+    # ==============================
+    # 8. 晚餐：肉夢
+    # ==============================
+    show_stop("19:30", "yukmong",
+              override_note="三層樓燒烤，使用者⭐優先。Google 4.8 / 3000+ 評論。沒位置就跳備案的其他燒烤。")
 
-    # ==========================================
-    # 5. 機場 → 飯店：方案 B (機場巴士 6002)
-    # ==========================================
-    st.subheader("4️⃣ 交通方案 B：機場巴士 6002 (備案)")
-    st.markdown("""
-    **適合情境：** 行李特別多、或剛好錯過 AREX、人不想擠地鐵
+    # ==============================
+    # 9. AK Plaza + 弘대商店街
+    # ==============================
+    show_stop("21:30", "ak_plaza",
+              override_note="弘대입구站直結，潮玩百貨。順路逛 ARTBOX (1樓) 買伴手禮。")
 
-    * **路線**：6002 號 (機場 ➔ 弘大方向)
-    * **T2 搭車處**：**B1 樓** 機場巴士月台
-    * **下車站**：**서교동 (Seogyo-dong / 西橋洞)** — 飯店官網指定下車點
-    * **車資**：約 ₩17,000 (T-money 嗶卡或現金)
-    * **耗時**：約 **1 小時 20 分** (尖峰可能拖到 2 小時)
-    * **班距**：約 20-30 分鐘一班
-    """)
+    # ==============================
+    # 10. 宵夜：BHC 起司炸雞
+    # ==============================
+    show_stop("22:30", "bhc",
+              override_note="起司炸雞 (시그니처)、玫瑰辣炒年糕，配啤酒。飯店走 3 min。")
 
-    show_nav_buttons(
-        "Incheon Airport T2 Bus Stop 6002",
-        mode="walking",
-        label_prefix="🚌 ",
-    )
-
-    st.warning("⚠️ 6002 容易塞車，**強烈建議優先用 AREX**。巴士只是行李太多時的備案。")
-
-    st.divider()
-
-    # ==========================================
-    # 6. 弘大入口站 → 9 Brick Hotel (走路)
-    # ==========================================
-    st.subheader("5️⃣ 弘大入口站 ➔ 9 Brick Hotel")
-
-    st.markdown("""
-    **動線 (飯店官網指引)：**
-    1. 從 **2 號線 弘大入口站 9 號出口** 出來
-    2. 直走 **150 公尺**
-    3. **左轉**
-    4. 看到第一條小巷子 **右轉**
-    5. 直走 **2 分鐘** 就到
-
-    * **總時間**：約 6 分鐘
-    * 拿行李建議走 9 號出口 (有手扶梯)
-    """)
-
-    show_nav_buttons(
-        "9 Brick Hotel Seoul",
-        lat=HOTEL_LAT,
-        lng=HOTEL_LNG,
-        mode="walking",
-        name=HOTEL_NAME,
-        label_prefix="🚶 ",
-    )
-
-    st.divider()
-
-    # ==========================================
-    # 7. 飯店資訊
-    # ==========================================
-    st.subheader("🏨 9 Brick Hotel (나인브릭 호텔)")
-
-    show_nav_buttons(
-        "9 Brick Hotel Seoul",
-        lat=HOTEL_LAT,
-        lng=HOTEL_LNG,
-        mode="walking",
-        name=HOTEL_NAME,
-    )
-
-    with st.container(border=True):
-        st.text("9 Brick Hotel / 나인브릭 호텔")
-        st.text(f"📍 韓：{HOTEL_ADDR_KR}")
-        st.text(f"📍 英：{HOTEL_ADDR_EN}, 04038")
-        st.text("☎️ +82-2-3141-8800")
-        st.text("✉️ 9brickhotel@naver.com")
-        st.text("🕒 Check-in 15:00 / Check-out 11:00")
-
-    st.divider()
-
-    # ==========================================
-    # 8. 晚餐 / 行程 (等使用者補)
-    # ==========================================
-    st.subheader("6️⃣ 弘大晚餐 & 逛街")
-    st.info("📝 待補：晚餐安排、想逛的店、夜市等")
+    # ==============================
+    # 飯店附近 (永遠在最下面)
+    # ==============================
+    # 排除今天主行程已經安排的，避免重複
+    show_hotel_nearby(exclude_ids=[
+        "yukmong", "bhc", "olive_young_hongdae", "ak_plaza", "hongdae_street"
+    ])
 
 
 if __name__ == "__main__":
