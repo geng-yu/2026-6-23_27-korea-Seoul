@@ -500,7 +500,7 @@ def hotel_bottom(today_food=None, today_shop=None):
     food_sched = set(today_food) if today_food is not None else _SCHEDULED["food"]
     shop_sched = set(today_shop) if today_shop is not None else _SCHEDULED["shop"]
 
-    _render_card(tag="住", place_id="hotel", show_taxi=True)
+    _render_card(tag="🏠", place_id="hotel", show_taxi=True)
 
     food_all = get_by_area(AREA_HONGDAE, exclude=["hotel"], cat="food")
     with st.expander("🍽️ 吃 — 飯店附近"):
