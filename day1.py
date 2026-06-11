@@ -45,42 +45,26 @@ def show():
     # </div>
     # """, unsafe_allow_html=True)
     # ==============================
-    # 4. AREX T2 → 弘大입구
+    # 3. AREX → 弘대입구 → 飯店 Check-in
     # ==============================
     st.markdown("""
     <div class="stop-card">
-      <div class="time">15:30</div>
+      <div class="step-num">3.</div>
       <div class="body">
-        <h4>🚆 AREX 一般車 (T2 → 弘대입구)</h4>
-        <p class="meta">B1 交通中心｜<b>藍色閘門</b> (勿走橘色)｜₩4,750｜55 min</p>
-        <p class="note">B1 找「AREX」指標 → 藍色閘門進站 → 往 Seoul Station 方向 → 第 11 站「홍대입구」下車</p>
+        <div class="title-row">
+          <h4>🚆 AREX → 🚶 弘대입구 → 🏨 9 Brick Hotel Check-in</h4>
+        </div>
+        <p class="meta">B1 藍色閘門｜₩4,750｜55 min → 9 號出口走路 6 min</p>
+        <p class="note">① B1 找「AREX」→ 藍色閘門進站 → 第 11 站「홍대입구」下車<br>
+        ② 9 號出口 (有手扶梯) → 直走 150m → 左轉 → 小巷右轉 → 直走 2 min<br>
+        ③ Check-in 15:00 / Check-out 11:00</p>
+        <div class="nav-btns">
+          <a class="nav-btn g" href="https://www.google.com/maps/dir/?api=1&destination=나인브릭+호텔+서울+마포구+홍익로5길+32&travelmode=walking" target="_blank" title="Google Maps">G</a>
+          <a class="nav-btn n" href="nmap://route/walk?dlat=37.5537661&dlng=126.9205306&dname=9+Brick+Hotel&appname=seoul_trip_2026" title="NAVER Map">N</a>
+        </div>
       </div>
     </div>
     """, unsafe_allow_html=True)
-
-    # ==============================
-    # 5. 步行到飯店
-    # ==============================
-    st.markdown("""
-    <div class="stop-card">
-      <div class="time">16:30</div>
-      <div class="body">
-        <h4>🚶 弘대입구站 9 號出口 → 9 Brick Hotel</h4>
-        <p class="meta">走路 6 min｜450 m</p>
-        <p class="note">9 號出口 (有手扶梯) → 直走 150m → 左轉 → 第一條小巷右轉 → 直走 2 min</p>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ==============================
-    # 6. 飯店 Check-in
-    # ==============================
-    show_stop("16:40", "hotel",
-              override_note="Check-in 15:00 / Check-out 11:00",
-              show_g=True, show_n=True, show_t=False,
-              mode="walking",
-              no_backup=True)
-
     # ==============================
     # 7. Olive Young 補貨
     # ==============================
