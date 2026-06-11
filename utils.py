@@ -57,6 +57,23 @@ def inject_css():
         line-height: 1.5;
     }
     .stop-card .star { color: #ff4b4b; font-size: 14px; }
+    /* ---- 標題列（名稱 + 按鈕同行）---- */
+    .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+    .title-row h4 {
+        margin: 0;
+        flex: 1;
+        min-width: 0;
+    }
+    .title-row .nav-btns {
+        margin-top: 0;   /* 覆蓋原本的 margin-top: 8px */
+        flex-shrink: 0;
+    }
 
     /* ---- 導航按鈕 ---- */
     .nav-btns { display: flex; gap: 8px; margin-top: 8px; }
@@ -232,10 +249,12 @@ def show_stop(time, place_id,
     <div class="stop-card">
       <div class="time">{html_lib.escape(time)}</div>
       <div class="body">
-        <h4>{name}{star}</h4>
+        <div class="title-row">
+          <h4>{name}{star}</h4>
+          {btns_html}
+        </div>
         <p class="meta">{name_kr}{('｜' + meta) if meta else ''}</p>
         {note_html}
-        {btns_html}
       </div>
     </div>
     """, unsafe_allow_html=True)
