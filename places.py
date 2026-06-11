@@ -596,11 +596,11 @@ PLACES = {
     },
     "rmq": {
         "name": "台中國際機場 RMQ", "name_kr": "",
-        "area": "機場", "cat": "transit",
+        "area": "", "cat": "",
         "address": "台中市沙鹿區中航路一段168號",
         "lat": 24.2664, "lng": 120.6212,
-        "hours": "24h",
-        "note": "起飛前 2 小時抵達",
+        "hours": "",
+        "note": "",
     },
 }
 
