@@ -62,7 +62,7 @@ def show_day():
         "晚",
         "yukmong",
         others="food",
-        notes="燒烤",
+        notes="",
         show_taxi=True,
         mode="walking",
     )
