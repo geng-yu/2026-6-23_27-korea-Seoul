@@ -1,9 +1,13 @@
 """Day 5 (6/27 六) — 早餐 + 回程"""
 import streamlit as st
-from utils import stop, note, hotel_bottom
+from utils import stop, note, hotel_bottom, set_scheduled
+
+TODAY_FOOD = ["baeknyeon"]
+TODAY_SHOP = ["olive_young_hongdae"]
 
 
 def show_day():
+    set_scheduled(TODAY_FOOD, TODAY_SHOP)
     st.caption("📍 6/27 (六)｜弘대 → ICN T2｜LJ737 14:50 起飛")
 
     note("🧳", "退房 (Check-out)",
@@ -16,8 +20,8 @@ def show_day():
 
     note("💳", "T-money 餘額處理",
               "趕在登機前讓餘額 ≤ ₩20,000",
-              "便利店買水/零食用嗶卡用掉。&gt;₩20,000 要去總公司退太麻煩。"
-              "&le;₩20,000 在 CU/GS25 都可退現金 (扣 ₩500 手續費)。")
+              "便利店買水/零食用嗶卡用掉。>₩20,000 要去總公司退太麻煩。"
+              "≤₩20,000 在 CU/GS25 都可退現金 (扣 ₩500 手續費)。")
 
     stop("逛", "olive_young_hongdae",
          notes="最後補貨。3 樓有藥品/保健品，記得拿退稅單。")
@@ -43,14 +47,12 @@ def show_day():
               "14:50 ICN T2 → 16:30 RMQ · 經濟艙 / 737 MAX 8 / 2h40m")
 
     # 最後一天還是放飯店附近 (萬一早上多出時間)
-    hotel_bottom(
-        today_food=["baeknyeon"],
-        today_shop=["olive_young_hongdae"],
-    )
+    hotel_bottom(today_food=TODAY_FOOD, today_shop=TODAY_SHOP)
 
 
 def show():
     show_day()
 
+
 if __name__ == "__main__":
-    stop()
+    show()
