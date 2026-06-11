@@ -8,6 +8,7 @@
 import streamlit as st
 import urllib.parse
 import html as html_lib
+import textwrap
 
 from places import PLACES, get_by_area, AREA_HONGDAE
 
@@ -15,6 +16,10 @@ from places import PLACES, get_by_area, AREA_HONGDAE
 # ================================================================
 # 全域 CSS
 # ================================================================
+def _md(html):
+    """安全的 HTML 輸出。textwrap.dedent 會把每行最前面共同的空白拔掉，
+    避免 markdown 把「縮排 4 空格的 HTML」當成程式碼區塊。"""
+    st.markdown(textwrap.dedent(html), unsafe_allow_html=True)
 def inject_css():
     st.markdown("""
     <style>
@@ -287,7 +292,7 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
     tag_text = html_lib.escape(tag) if tag else "·"
     btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode)
 
-    st.markdown(f"""
+   _md(f"""
     <div class="stop-card">
       <div class="{tag_cls}">{tag_text}</div>
       <div class="body">
@@ -299,8 +304,7 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
         {note_html}
       </div>
     </div>
-    """, unsafe_allow_html=True)
-
+    """)
 
 def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
     """
@@ -330,19 +334,19 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
             )
         btns_html = '<div class="nav-btns">' + ''.join(parts) + '</div>'
 
-    st.markdown(f"""
-    <div class="{card_class}">
-      <div class="tag">{tag_e}</div>
-      <div class="body">
-        <div class="top-row">
-          <{title_tag}>{title_e}</{title_tag}>
-          {btns_html}
+    _md(f"""
+        <div class="{card_class}">
+          <div class="tag">{tag_e}</div>
+          <div class="body">
+            <div class="top-row">
+              <{title_tag}>{title_e}</{title_tag}>
+              {btns_html}
+            </div>
+            {meta_html}
+            {note_html}
+          </div>
         </div>
-        {meta_html}
-        {note_html}
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """)
 
 
 # ================================================================
@@ -421,7 +425,7 @@ def _render_backup_item(p, already=False):
     note_html = f'<div class="small-note">{html_lib.escape(p.get("note", ""))}</div>' if p.get("note") else ''
     btns = _nav_btns_html(p, show_taxi=True, mode="walking")
 
-    st.markdown(f"""
+    _md(f"""
     <div class="backup-item">
       <div class="info">
         <div class="name">{name}{star}{already_tag}</div>
@@ -430,7 +434,7 @@ def _render_backup_item(p, already=False):
       </div>
       {btns}
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 
 def hotel_bottom(today_food=None, today_shop=None):
