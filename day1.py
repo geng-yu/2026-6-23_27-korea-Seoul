@@ -73,7 +73,6 @@ def show_day():
         sections=[
             {"place_id": "olive_young_hongdae"},
             {"place_id": "hongdae_street"},
-            {"place_id": "ak_plaza"},
         ],
         others="shop",
         show_taxi=True,
