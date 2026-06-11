@@ -1,9 +1,13 @@
 """Day 4 (6/26 五) — 望遠 + 延南 + 弘대採買日"""
 import streamlit as st
-from utils import stop, note, hotel_bottom
+from utils import stop, note, hotel_bottom, set_scheduled
+
+TODAY_FOOD = ["moment_coffee", "uirak", "matjib", "jo_dawson", "myth_jokbal", "pungcheon", "bhc"]
+TODAY_SHOP = ["musinsa_hongdae", "covernat", "wonderplace", "abc_mart_gs"]
 
 
 def show_day():
+    set_scheduled(TODAY_FOOD, TODAY_SHOP)
     st.caption("📍 6/26 (五)｜望遠市場 + 延南洞咖啡 + 弘대戰利品採買")
 
     stop("早", "moment_coffee", others="food",
@@ -49,14 +53,12 @@ def show_day():
     stop("宵", "bhc", others="food",
          notes="再吃一次 BHC，或跳「其他」橋村/豚百壽。")
 
-    hotel_bottom(
-        today_food=["moment_coffee", "uirak", "matjib", "jo_dawson", "myth_jokbal", "pungcheon", "bhc"],
-        today_shop=["musinsa_hongdae", "covernat", "wonderplace", "abc_mart_gs"],
-    )
+    hotel_bottom(today_food=TODAY_FOOD, today_shop=TODAY_SHOP)
 
 
 def show():
     show_day()
 
+
 if __name__ == "__main__":
-    stop()
+    show()
