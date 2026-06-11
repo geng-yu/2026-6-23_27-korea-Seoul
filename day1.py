@@ -69,7 +69,7 @@ def show_day():
 
     # ============ 第5格：逛（合併同一格） ============
     multi_card(
-        tag="逛",
+        tag="🛒",
         sections=[
             {"place_id": "olive_young_hongdae"},
             {"place_id": "hongdae_street"},
@@ -81,7 +81,7 @@ def show_day():
 
     # ============ 第6格：宵夜 ============
     stop(
-        "宵",
+        "🍗",
         "bhc",
         show_taxi=True,
         mode="walking",
