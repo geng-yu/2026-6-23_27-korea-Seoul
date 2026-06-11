@@ -22,6 +22,7 @@ st.set_page_config(
 inject_css()
 
 # ---- 額外的 Day Tab 橫向滑動 + 其他 UI CSS ----
+# 注意：這段 CSS 必須完全靠左不縮排，否則會被 Markdown 當成程式碼印出來
 st.markdown("""
 <style>
 /* 隱掉預設選單 */
@@ -67,9 +68,11 @@ div[role="radiogroup"] label p {
 div[role="radiogroup"] label:hover {
     border-color: #ff4b4b;
 }
-div[role="radiogroup"] label[data-baseweb="radio"] {
+/* 選中的那個 Day Tab 才上色 (:has 支援 iOS15.4+ / Chrome105+) */
+div[role="radiogroup"] label:has(input:checked) {
     border-color: #ff4b4b !important;
-    background-color: var(--background-color) !important;
+    background-color: rgba(255,75,75,0.08) !important;
+    box-shadow: 0 1px 4px rgba(255,75,75,0.18);
 }
 </style>
 """, unsafe_allow_html=True)
