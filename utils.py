@@ -1,8 +1,5 @@
 """
-渲染共用函式：
-- 彩色 G (Google) / N (NAVER) / T (Kakao T) 圓角按鈕
-- 主行程卡片 + 該卡的「附近備案」expander
-- 飯店附近隨時可去 expander
+渲染共用函式
 """
 import streamlit as st
 import urllib.parse
@@ -12,10 +9,9 @@ from places import PLACES, get_by_area, AREA_HONGDAE
 
 
 # ================================================================
-# 全域 CSS — 注入一次就好，所有 HTML 都共用
+# 全域 CSS
 # ================================================================
 def inject_css():
-    """在 app.py 開頭呼叫，注入全域樣式。"""
     st.markdown("""
     <style>
     /* ---- 主行程卡片 ---- */
@@ -38,10 +34,7 @@ def inject_css():
         min-width: 50px;
         padding-top: 2px;
     }
-    .stop-card .body {
-        flex-grow: 1;
-        min-width: 0;
-    }
+    .stop-card .body { flex-grow: 1; min-width: 0; }
     .stop-card h4 {
         margin: 0 0 4px 0;
         font-size: 16px;
@@ -63,17 +56,10 @@ def inject_css():
         margin: 4px 0 8px 0;
         line-height: 1.5;
     }
-    .stop-card .star {
-        color: #ff4b4b;
-        font-size: 14px;
-    }
+    .stop-card .star { color: #ff4b4b; font-size: 14px; }
 
-    /* ---- 三顆動作按鈕 ---- */
-    .nav-btns {
-        display: flex;
-        gap: 8px;
-        margin-top: 8px;
-    }
+    /* ---- 導航按鈕 ---- */
+    .nav-btns { display: flex; gap: 8px; margin-top: 8px; }
     .nav-btn {
         display: inline-flex;
         align-items: center;
@@ -87,21 +73,10 @@ def inject_css():
         transition: transform 0.1s;
         font-family: system-ui, -apple-system, sans-serif;
     }
-    .nav-btn:active {
-        transform: scale(0.95);
-    }
-    .nav-btn.g {
-        background: #4285F4;
-        color: white !important;
-    }
-    .nav-btn.n {
-        background: #03C75A;
-        color: white !important;
-    }
-    .nav-btn.t {
-        background: #FAE100;
-        color: #371D1E !important;
-    }
+    .nav-btn:active { transform: scale(0.95); }
+    .nav-btn.g { background: #4285F4; color: white !important; }
+    .nav-btn.n { background: #03C75A; color: white !important; }
+    .nav-btn.t { background: #FAE100; color: #371D1E !important; }
 
     /* ---- 備案區塊 ---- */
     .backup-cat-title {
@@ -110,6 +85,18 @@ def inject_css():
         opacity: 0.7;
         margin: 12px 0 6px 0;
         padding: 0;
+    }
+    /* 備案清單限高捲動容器 */
+    .backup-scroll {
+        max-height: 320px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+    .backup-scroll::-webkit-scrollbar { width: 4px; }
+    .backup-scroll::-webkit-scrollbar-track { background: transparent; }
+    .backup-scroll::-webkit-scrollbar-thumb {
+        background: rgba(128,128,128,0.3);
+        border-radius: 2px;
     }
     .backup-item {
         background: var(--background-color);
@@ -122,10 +109,7 @@ def inject_css():
         align-items: flex-start;
         gap: 10px;
     }
-    .backup-item .info {
-        flex-grow: 1;
-        min-width: 0;
-    }
+    .backup-item .info { flex-grow: 1; min-width: 0; }
     .backup-item .name {
         font-size: 14px;
         font-weight: 700;
@@ -151,7 +135,6 @@ def inject_css():
         border-left: 3px solid #ff4b4b;
     }
 
-    /* 隱掉 expander 內 streamlit 預設 padding 太大的問題 */
     div[data-testid="stExpander"] details > div {
         padding-top: 6px !important;
     }
@@ -160,16 +143,14 @@ def inject_css():
 
 
 # ================================================================
-# 連結產生 — Google / NAVER / Kakao T
+# 連結產生
 # ================================================================
 def gmap_url(query, mode="walking"):
-    """Google Maps 導航。mode: driving/walking/transit"""
     q = urllib.parse.quote(str(query))
     return f"https://www.google.com/maps/dir/?api=1&destination={q}&travelmode={mode}"
 
 
 def naver_url(query=None, lat=None, lng=None, name=None, mode="walking"):
-    """NAVER Maps app deep link (nmap://)。手機要裝네이버지도。"""
     appname = "seoul_trip_2026"
     mode_map = {"walking": "walk", "driving": "car", "transit": "public"}
     nm = mode_map.get(mode, "walk")
@@ -183,59 +164,69 @@ def naver_url(query=None, lat=None, lng=None, name=None, mode="walking"):
 
 
 def kakaot_url():
-    """Kakao T 計程車 deep link — 開 App 後手動輸入目的地 (Kakao 沒開放外部設目的地)"""
     return "kakaotaxi://"
 
 
 # ================================================================
 # 卡片渲染
 # ================================================================
-def _btns_html(place, show_taxi=True):
-    """產生 G / N / T 三顆按鈕的 HTML。"""
-    name = place["name"]
-    name_kr = place.get("name_kr", name)
+def _btns_html(place, show_g=True, show_n=True, show_t=True, mode="walking"):
+    """產生導航按鈕 HTML。
+    show_g / show_n / show_t：各自獨立控制顯示
+    mode：walking / transit / driving
+    """
+    name_kr = place.get("name_kr", place["name"])
     lat = place.get("lat")
     lng = place.get("lng")
 
-    g = gmap_url(f"{name_kr} {place.get('address', '')}", "walking")
-    n = naver_url(query=name_kr, lat=lat, lng=lng, name=name, mode="walking")
-    t = kakaot_url()
-
     btns = []
-    btns.append(f'<a class="nav-btn g" href="{g}" target="_blank" title="Google Maps">G</a>')
-    btns.append(f'<a class="nav-btn n" href="{n}" title="NAVER Map">N</a>')
-    if show_taxi:
-        btns.append(f'<a class="nav-btn t" href="{t}" title="Kakao T">T</a>')
+    if show_g:
+        g = gmap_url(f"{name_kr} {place.get('address', '')}", mode)
+        btns.append(f'<a class="nav-btn g" href="{g}" target="_blank" title="Google Maps">G</a>')
+    if show_n:
+        n = naver_url(query=name_kr, lat=lat, lng=lng, name=place["name"], mode=mode)
+        btns.append(f'<a class="nav-btn n" href="{n}" title="NAVER Map">N</a>')
+    if show_t:
+        btns.append(f'<a class="nav-btn t" href="{kakaot_url()}" title="Kakao T">T</a>')
+
+    if not btns:
+        return ""
     return '<div class="nav-btns">' + ''.join(btns) + '</div>'
 
 
-def show_stop(time, place_id, override_note=None, show_taxi=True, no_backup=False):
-    """主行程卡片 + (可選) 該地點同區的備案 expander。
+def show_stop(time, place_id,
+              override_note=None,
+              show_g=True, show_n=True, show_t=True,
+              mode="walking",
+              no_backup=False):
+    """主行程卡片。
 
-    Args:
-        time: "10:30" 之類的時間字串
-        place_id: PLACES 字典裡的 key
-        override_note: 取代 places.py 裡的 note (顯示在卡片上)
-        show_taxi: 是否顯示 Kakao T 按鈕 (機場類就不用)
-        no_backup: True 時不顯示備案 expander (例如交通類)
+    參數：
+        time          : 時間字串，e.g. "10:30"
+        place_id      : places.py 的 key
+        override_note : 覆蓋 places.py 裡的 note（傳 " " 可清空）
+        show_g        : 是否顯示 Google Maps 按鈕（預設 True）
+        show_n        : 是否顯示 NAVER 按鈕（預設 True）
+        show_t        : 是否顯示 Kakao T 按鈕（預設 True）
+        mode          : 導航模式 "walking" / "transit" / "driving"
+        no_backup     : True = 不顯示備案 expander
     """
     if place_id not in PLACES:
         st.error(f"❌ 找不到地點：{place_id}")
         return
 
     p = PLACES[place_id]
-    name = html_lib.escape(p["name"])
-    name_kr = html_lib.escape(p.get("name_kr", ""))
-    star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
-    area = html_lib.escape(p.get("area", ""))
-    hours = html_lib.escape(p.get("hours", ""))
-    sub = html_lib.escape(p.get("sub", ""))
+    name     = html_lib.escape(p["name"])
+    name_kr  = html_lib.escape(p.get("name_kr", ""))
+    star     = '<span class="star"> ⭐</span>' if p.get("priority") else ''
+    area     = html_lib.escape(p.get("area", ""))
+    hours    = html_lib.escape(p.get("hours", ""))
+    sub      = html_lib.escape(p.get("sub", ""))
     meta_parts = [x for x in [area, sub, hours] if x]
-    meta = ' · '.join(meta_parts)
-    note = override_note if override_note is not None else p.get("note", "")
+    meta     = ' · '.join(meta_parts)
+    note     = override_note if override_note is not None else p.get("note", "")
     note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
-
-    btns_html = _btns_html(p, show_taxi=show_taxi)
+    btns_html = _btns_html(p, show_g=show_g, show_n=show_n, show_t=show_t, mode=mode)
 
     st.markdown(f"""
     <div class="stop-card">
@@ -249,112 +240,100 @@ def show_stop(time, place_id, override_note=None, show_taxi=True, no_backup=Fals
     </div>
     """, unsafe_allow_html=True)
 
-    # 同區備案 expander (排除自己)
     if not no_backup and p.get("area") not in ("機場", None):
         _show_backup_expander(place_id, p)
 
 
 def _show_backup_expander(this_id, place):
-    """渲染「附近備案」expander，內部按 吃/逛/景點 分類。"""
+    """備案 expander，內容限高 320px 可捲動。"""
     area = place["area"]
-    backup_label = f"🔄 {place['name']} 附近備案 (吃/逛/景點)"
 
-    with st.expander(backup_label):
-        # 分類
-        food_places = get_by_area(area, exclude=this_id, cat="food")
-        cafe_places = get_by_area(area, exclude=this_id, cat="cafe")
-        food_all = food_places + cafe_places
-        shop_places = get_by_area(area, exclude=this_id, cat="shop")
-        sight_places = get_by_area(area, exclude=this_id, cat="sight")
+    with st.expander(f"🔄 {place['name']} 附近備案"):
+        food_all  = get_by_area(area, exclude=this_id, cat="food") + \
+                    get_by_area(area, exclude=this_id, cat="cafe")
+        shop_all  = get_by_area(area, exclude=this_id, cat="shop")
+        sight_all = get_by_area(area, exclude=this_id, cat="sight")
 
-        if not food_all and not shop_places and not sight_places:
+        if not food_all and not shop_all and not sight_all:
             st.caption(f"({area} 沒有其他備案資料)")
             return
 
+        inner_html = ""
         if food_all:
-            st.markdown('<div class="backup-cat-title">🍽️ 吃</div>', unsafe_allow_html=True)
-            for pid, p in food_all:
-                _render_backup_item(p)
+            inner_html += '<div class="backup-cat-title">🍽️ 吃</div>'
+            for _, p in food_all:
+                inner_html += _backup_item_html(p)
+        if shop_all:
+            inner_html += '<div class="backup-cat-title">🛍️ 逛/買</div>'
+            for _, p in shop_all:
+                inner_html += _backup_item_html(p)
+        if sight_all:
+            inner_html += '<div class="backup-cat-title">🏛️ 景點</div>'
+            for _, p in sight_all:
+                inner_html += _backup_item_html(p)
 
-        if shop_places:
-            st.markdown('<div class="backup-cat-title">🛍️ 逛/買</div>', unsafe_allow_html=True)
-            for pid, p in shop_places:
-                _render_backup_item(p)
-
-        if sight_places:
-            st.markdown('<div class="backup-cat-title">🏛️ 景點</div>', unsafe_allow_html=True)
-            for pid, p in sight_places:
-                _render_backup_item(p)
+        st.markdown(f'<div class="backup-scroll">{inner_html}</div>',
+                    unsafe_allow_html=True)
 
 
-def _render_backup_item(p):
-    """渲染備案 / 飯店附近清單裡的單一項目。"""
-    name = html_lib.escape(p["name"])
-    name_kr = html_lib.escape(p.get("name_kr", ""))
-    star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
-    sub = p.get("sub", "")
-    hours = p.get("hours", "")
-    note = p.get("note", "")
+def _backup_item_html(p):
+    """產生單一備案項目的 HTML 字串。"""
+    name      = html_lib.escape(p["name"])
+    name_kr   = html_lib.escape(p.get("name_kr", ""))
+    star      = '<span class="star"> ⭐</span>' if p.get("priority") else ''
+    sub       = p.get("sub", "")
+    hours     = p.get("hours", "")
+    note      = p.get("note", "")
     meta_parts = [x for x in [sub, hours] if x]
-    meta = ' · '.join(meta_parts)
+    meta      = ' · '.join(meta_parts)
     note_line = f'<div class="small-meta">{html_lib.escape(note)}</div>' if note else ''
+    btns      = _btns_html(p)  # 備案預設 G+N+T 全開，walking
 
-    btns_html = _btns_html(p)
-
-    st.markdown(f"""
+    return f"""
     <div class="backup-item">
       <div class="info">
         <div class="name">{name}{star}</div>
         <div class="small-meta">{name_kr}{('｜' + html_lib.escape(meta)) if meta else ''}</div>
         {note_line}
       </div>
-      {btns_html}
-    </div>
-    """, unsafe_allow_html=True)
+      {btns}
+    </div>"""
 
 
 # ================================================================
-# 飯店附近 — 永遠是弘대區 (每天的下面都會放一個)
+# 飯店附近
 # ================================================================
 def show_hotel_nearby(exclude_ids=None):
-    """飯店 (弘대) 附近永遠可去的清單，每天底下都會放。
-    exclude_ids 用來排除當天主行程已經安排的，避免重複。"""
+    """飯店 (弘대) 附近永遠可去的清單，限高捲動。"""
     exclude_ids = exclude_ids or []
     if isinstance(exclude_ids, str):
         exclude_ids = [exclude_ids]
 
-    with st.expander("🏨 飯店附近 — 隨時可以去 (吃/逛/買/景點)"):
-        st.caption("9 Brick Hotel 附近走路 1-15 min 範圍內的清單。當天行程提早結束就過來。")
+    with st.expander("🏨 飯店附近 — 隨時可以去"):
+        st.caption("9 Brick Hotel 走路 1-15 min 範圍內。")
 
-        food_all = get_by_area(AREA_HONGDAE, exclude=exclude_ids + ["hotel"], cat="food")
-        shop_all = get_by_area(AREA_HONGDAE, exclude=exclude_ids + ["hotel"], cat="shop")
+        food_all  = get_by_area(AREA_HONGDAE, exclude=exclude_ids + ["hotel"], cat="food") + \
+                    get_by_area(AREA_HONGDAE, exclude=exclude_ids + ["hotel"], cat="cafe")
+        shop_all  = get_by_area(AREA_HONGDAE, exclude=exclude_ids + ["hotel"], cat="shop")
         sight_all = get_by_area(AREA_HONGDAE, exclude=exclude_ids + ["hotel"], cat="sight")
 
-        # 把吃再依照 sub 分組 (使用者要求「分類」)
+        inner_html = ""
         if food_all:
-            st.markdown('<div class="hotel-section-title">🍽️ 吃</div>', unsafe_allow_html=True)
-            # 依 sub 分組
-            food_by_sub = {}
-            for pid, p in food_all:
-                sub = p.get("sub", "其他")
-                food_by_sub.setdefault(sub, []).append((pid, p))
-            for sub, items in food_by_sub.items():
-                st.markdown(f'<div class="backup-cat-title">— {sub} —</div>', unsafe_allow_html=True)
-                for pid, p in items:
-                    _render_backup_item(p)
-
+            inner_html += '<div class="backup-cat-title">🍽️ 吃</div>'
+            for _, p in food_all:
+                inner_html += _backup_item_html(p)
         if shop_all:
-            st.markdown('<div class="hotel-section-title">🛍️ 逛/買</div>', unsafe_allow_html=True)
-            shop_by_sub = {}
-            for pid, p in shop_all:
-                sub = p.get("sub", "其他")
-                shop_by_sub.setdefault(sub, []).append((pid, p))
-            for sub, items in shop_by_sub.items():
-                st.markdown(f'<div class="backup-cat-title">— {sub} —</div>', unsafe_allow_html=True)
-                for pid, p in items:
-                    _render_backup_item(p)
-
+            inner_html += '<div class="backup-cat-title">🛍️ 逛/買</div>'
+            for _, p in shop_all:
+                inner_html += _backup_item_html(p)
         if sight_all:
-            st.markdown('<div class="hotel-section-title">🏛️ 景點</div>', unsafe_allow_html=True)
-            for pid, p in sight_all:
-                _render_backup_item(p)
+            inner_html += '<div class="backup-cat-title">🏛️ 景點</div>'
+            for _, p in sight_all:
+                inner_html += _backup_item_html(p)
+
+        if not inner_html:
+            st.caption("(暫無資料)")
+            return
+
+        st.markdown(f'<div class="backup-scroll">{inner_html}</div>',
+                    unsafe_allow_html=True)
