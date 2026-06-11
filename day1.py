@@ -32,10 +32,18 @@ def show():
     # ==============================
     # 2. 仁川 T2 入境
     # ==============================
-    show_stop("14:15", "icn_t2",
-              override_note="入境動線：① 「Arrival/도착」→ ② 入境審查 (準備 K-ETA) → ③ 1F 行李轉盤 → ④ 海關 → ⑤ 1F 入境大廳",
-              show_g=False, show_n=False, show_t=False,
-              no_backup=True)
+    st.markdown("""
+    <div class="stop-card">
+      <div class="time">14:15</div>
+      <div class="body">
+        <div class="title-row">
+          <h4>🛬 仁川 T2 入境</h4>
+        </div>
+        <p class="meta">인천공항 제2터미널｜機場 · 24h</p>
+        <p class="note">入境動線：① Arrival/도착 → ② 入境審查 (準備 K-ETA) → ③ 1F 行李轉盤 → ④ 海關 → ⑤ 1F 入境大廳</p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ==============================
     # 3. T-money 加值
