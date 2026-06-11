@@ -10,7 +10,7 @@ def show():
     # 0. 自行開車 → RMQ
     # ==============================
     show_stop("08:00", "rmq",
-              override_note="",show_taxi=False, no_backup=True)
+              override_note=" ",show_taxi=False, no_backup=True)
 
     # ==============================
     # 1. 飛行
