@@ -242,7 +242,7 @@ def show_stop(time, place_id,
     note      = override_note if override_note is not None else p.get("note", "")
     note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
     btns_html = _btns_html(p, show_g=show_g, show_n=show_n, show_t=show_t, mode=mode)
-    num_html  = f'<div class="step-num">{step_num}.</div>' if step_num is not None else ''
+    num_html  = f'<div class="step-num">{step_num}</div>' if step_num is not None else ''
 
     st.markdown(f"""
     <div class="stop-card">
