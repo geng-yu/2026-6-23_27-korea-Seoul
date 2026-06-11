@@ -52,7 +52,7 @@ def show():
       <div class="step-num">3.</div>
       <div class="body">
         <div class="title-row">
-          <h4>🚆 AREX → 🚶 弘대입구 → 🏨 飯店</h4>
+          <h4>🚆 AREX →  弘大 → 🏨 飯店</h4>
         </div>
         <p class="meta">B1 藍色閘門｜₩4,750｜55 min → 9 號出口走路 6 min</p>
         <p class="note">① B1 找「AREX」→ 藍色閘門進站 → 第 11 站「홍대입구」下車<br>
