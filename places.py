@@ -383,22 +383,6 @@ PLACES = {
         "hours": "11:00-22:00",
         "note": "GS 限定特別款，使用者清單",
     },
-    "shoopen": {
-        "name": "Shoopen 弘대", "name_kr": "슈펜 홍대",
-        "area": AREA_HONGDAE, "cat": "shop", "sub": "球鞋",
-        "address": "홍대",
-        "lat": 37.5560, "lng": 126.9225,
-        "hours": "11:00-22:00",
-        "note": "平價韓國鞋品牌",
-    },
-    "wonderplace": {
-        "name": "WONDERPLACE 弘대旗艦", "name_kr": "원더플레이스 홍대",
-        "area": AREA_HONGDAE, "cat": "shop", "sub": "選物",
-        "address": "홍대",
-        "lat": 37.5560, "lng": 126.9225,
-        "hours": "11:00-22:00",
-        "note": "thisisneverthat / COVERNAT / Lee / Matin Kim",
-    },
     "musinsa_hongdae": {
         "name": "MUSINSA 弘대", "name_kr": "무신사 스토어 홍대",
         "area": AREA_HONGDAE, "cat": "shop", "sub": "潮服",
@@ -414,14 +398,6 @@ PLACES = {
         "lat": 37.5520, "lng": 126.9215,
         "hours": "11:00-22:00",
         "note": "韓國街頭潮牌",
-    },
-    "ak_plaza": {
-        "name": "AK& 弘대購物中心", "name_kr": "AK& 홍대",
-        "area": AREA_HONGDAE, "cat": "shop", "sub": "百貨",
-        "address": "서울 마포구 양화로 188",
-        "lat": 37.5580711, "lng": 126.9260261,
-        "hours": "10:30-22:00",
-        "note": "潮玩百貨，弘대입구站直結",
     },
     "hongdae_street": {
         "name": "弘대商店街", "name_kr": "홍대 쇼핑거리",
