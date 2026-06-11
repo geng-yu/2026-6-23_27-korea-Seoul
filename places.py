@@ -595,9 +595,12 @@ PLACES = {
         "note": "Jin Air LJ736/LJ737 都在 T2",
     },
     "rmq": {
-        "name": "台中國際機場 RMQ",
+        "name": "台中國際機場 RMQ", "name_kr": "타이중공항",
+        "area": "機場", "cat": "transit",
         "address": "台中市沙鹿區中航路一段168號",
         "lat": 24.2664, "lng": 120.6212,
+        "hours": "24h",
+        "note": "起飛前 2 小時抵達",
     },
 }
 
