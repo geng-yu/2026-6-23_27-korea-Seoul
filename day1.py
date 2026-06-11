@@ -10,7 +10,7 @@ def show():
     # 0. 出發 RMQ
     # ==============================
     show_stop("08:00", "rmq",
-              
+              override_note="",
               show_g=True, show_n=False, show_t=False,
               no_backup=True)
 
