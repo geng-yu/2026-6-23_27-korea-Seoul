@@ -1,8 +1,5 @@
 """
 2026 首爾 5 日遊行程網頁。
-- 自動偵測韓國時間 → 預設停在「今天」是哪一天
-- 頂部 Day Tab 橫向滑動
-- 每天 = 主行程卡片 + 附近備案 expander + 飯店附近 expander
 """
 import streamlit as st
 from datetime import datetime, date, timezone, timedelta
@@ -10,7 +7,6 @@ from datetime import datetime, date, timezone, timedelta
 import day1, day2, day3, day4, day5
 from utils import inject_css
 
-# 頁面基本
 st.set_page_config(
     page_title="2026 首爾",
     page_icon="🇰🇷",
@@ -18,17 +14,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# 注入全域 CSS (主行程卡片 + 按鈕 + 備案區塊樣式)
 inject_css()
 
-# ---- 額外的 Day Tab 橫向滑動 + 其他 UI CSS ----
 st.markdown("""
 <style>
-/* 隱掉預設選單 */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 
-/* === Day Tab 橫向滑動 === */
 div[role="radiogroup"] {
     flex-direction: row !important;
     overflow-x: auto !important;
@@ -64,9 +56,7 @@ div[role="radiogroup"] label p {
     white-space: pre-wrap;
     text-align: center;
 }
-div[role="radiogroup"] label:hover {
-    border-color: #ff4b4b;
-}
+div[role="radiogroup"] label:hover { border-color: #ff4b4b; }
 div[role="radiogroup"] label[data-baseweb="radio"] {
     border-color: #ff4b4b !important;
     background-color: var(--background-color) !important;
@@ -74,10 +64,6 @@ div[role="radiogroup"] label[data-baseweb="radio"] {
 </style>
 """, unsafe_allow_html=True)
 
-
-# ==============================
-# 行程資料 (顯示文字, 日期, module, 完整標題)
-# ==============================
 trip_dates = {
     "Day1\n6/23 二": (date(2026, 6, 23), day1, "Day 1（週二）抵達 ➜ 弘대"),
     "Day2\n6/24 三": (date(2026, 6, 24), day2, "Day 2（週三）聖水 ➜ 東大門"),
@@ -86,15 +72,9 @@ trip_dates = {
     "Day5\n6/27 六": (date(2026, 6, 27), day5, "Day 5（週六）早餐 ➜ 回程"),
 }
 
-# ==============================
-# 自動判斷今天是哪一 Day → 預設選那個
-# 韓國時區 UTC+9 寫死 (沒日光節約)
-# ==============================
 KST = timezone(timedelta(hours=9))
 today = datetime.now(KST).date()
-
-# 測試用：取消下行註解可手動指定今天
-# today = date(2026, 6, 25)
+# today = date(2026, 6, 25)  # 測試用，解除註解可手動指定
 
 default_index = 0
 keys = list(trip_dates.keys())
@@ -103,30 +83,22 @@ for i, k in enumerate(keys):
         default_index = i
         break
 
-# ==============================
-# 介面
-# ==============================
 st.title("🇰🇷 2026 首爾")
 st.caption("6/23 (二) – 6/27 (六)｜9 Brick Hotel｜真航空 LJ736/LJ737")
 
 selected_key = st.radio(
-    "Day",
-    keys,
+    "Day", keys,
     index=default_index,
     horizontal=True,
     label_visibility="collapsed",
 )
 
-# 快捷工具列
+# 工具列：只留 T-money
 st.markdown("""
-🗺️ **地圖：** [NAVER](https://apps.apple.com/tw/app/naver-map-navigation/id311867728)｜
-[KakaoMap](https://apps.apple.com/tw/app/kakaomap/id304608425)｜
-🚕 [Kakao T](https://apps.apple.com/tw/app/kakao-t/id981110422)｜
 💳 [Mobile T-money](https://apps.apple.com/tw/app/id1100428659)
 """)
 st.divider()
 
-# 顯示當日標題 + 內容
 data = trip_dates[selected_key]
 _date, module, full_title = data
 st.markdown(f"### {full_title}")
