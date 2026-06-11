@@ -440,14 +440,7 @@ PLACES = {
         "phone": "02-3144-0864",
         "note": "韓國潮牌墨鏡，店面像藝廊",
     },
-    "artbox_hongdae": {
-        "name": "ARTBOX 弘대 (AK 內)", "name_kr": "아트박스 홍대 AK점",
-        "area": AREA_HONGDAE, "cat": "shop", "sub": "文具雜貨",
-        "address": "서울 마포구 양화로 188 AK& 1층",
-        "lat": 37.5580711, "lng": 126.9260261,
-        "hours": "11:00-22:00",
-        "note": "PTT 必買伴手禮，文具/小物",
-    },
+
 
     # ==============================
     # 備案 — 聖水 (PTT/Dcard 加碼)
