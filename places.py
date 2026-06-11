@@ -385,7 +385,6 @@ PLACES = {
         "hours": "10:00-23:00",
         "phone": None,
         "note": "人氣排骨湯，適合早午餐或晚餐",
-        "priority": True,
     },
     "solsot_hongdae": {
         "name": "Solsot 釜飯 弘大延南", "name_kr": "솔솥 홍대연남점",
@@ -395,7 +394,6 @@ PLACES = {
         "hours": "11:30-21:00",
         "phone": "070-8822-5846",
         "note": "延南洞人氣釜飯，適合午餐或早點晚餐",
-        "priority": True,
     },
 
     # ==============================
