@@ -12,6 +12,7 @@ def show():
     show_stop("08:00", "rmq",
               override_note=" ",
               show_g=True, show_n=False, show_t=False,
+              mode="driving",
               no_backup=True)
 
     # ==============================
