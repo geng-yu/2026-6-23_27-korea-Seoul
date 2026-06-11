@@ -1,9 +1,14 @@
 """Day 1 (6/23 二) — 抵達 ➜ 弘大"""
 import streamlit as st
-from utils import stop, hotel_bottom, custom_card, gmap_url, naver_url
+from utils import stop, hotel_bottom, custom_card, gmap_url, naver_url, set_scheduled
+
+# 當天主行程已排清單（「其他」expander 會把這些沉到最下面標「已排」）
+TODAY_FOOD = ["yukmong", "bhc"]
+TODAY_SHOP = ["olive_young_hongdae", "hongdae_street", "ak_plaza"]
 
 
 def show_day():
+    set_scheduled(TODAY_FOOD, TODAY_SHOP)
     st.caption("📍 6/23 (二)｜台中 → 仁川 T2 → 弘大 9 Brick Hotel")
 
     # ============ 第1格：自駕到 RMQ ============
@@ -86,10 +91,7 @@ def show_day():
     )
 
     # ============ 第7格：住 + 飯店附近 ============
-    hotel_bottom(
-        today_food=["yukmong", "bhc"],
-        today_shop=["olive_young_hongdae", "hongdae_street", "ak_plaza"],
-    )
+    hotel_bottom(today_food=TODAY_FOOD, today_shop=TODAY_SHOP)
 
 
 def show():
