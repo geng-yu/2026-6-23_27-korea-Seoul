@@ -292,7 +292,7 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
     tag_text = html_lib.escape(tag) if tag else "·"
     btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode)
 
-   _md(f"""
+    _md(f"""
     <div class="stop-card">
       <div class="{tag_cls}">{tag_text}</div>
       <div class="body">
