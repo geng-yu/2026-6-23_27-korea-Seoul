@@ -45,7 +45,7 @@ def inject_css():
         display: flex;
         align-items: center;
         gap: 8px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         justify-content: space-between;
     }
     .stop-card h4 {
@@ -78,6 +78,7 @@ def inject_css():
         display: flex;
         gap: 6px;
         flex-shrink: 0;
+        align-items: center;
     }
     .nav-btn {
         display: inline-flex;
@@ -97,7 +98,7 @@ def inject_css():
     .nav-btn.n { background: #03C75A; color: white !important; }
     .nav-btn.t { background: #FAE100; color: #371D1E !important; }
 
-    /* === 純說明卡 (transit) === */
+    /* === 純說明卡 (transit / custom) === */
     .note-card {
         background: var(--secondary-background-color);
         border: 1px dashed rgba(128,128,128,0.30);
@@ -118,11 +119,20 @@ def inject_css():
         padding-top: 2px;
     }
     .note-card .body { flex-grow: 1; min-width: 0; }
+    .note-card .top-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+    }
     .note-card h5 {
         margin: 0;
         font-size: 14.5px;
         font-weight: 700;
         line-height: 1.3;
+        flex: 1;
+        min-width: 0;
     }
     .note-card .meta {
         font-size: 12px;
@@ -176,10 +186,11 @@ def inject_css():
         white-space: nowrap;
         vertical-align: middle;
     }
-    /* expander 內部 padding 修正 */
-    div[data-testid="stExpander"] details > div { padding-top: 4px !important; }
 
-    /* 隱藏 streamlit 預設選單 */
+    div[data-testid="stExpander"] details > div {
+        padding-top: 4px !important;
+    }
+
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     </style>
@@ -211,22 +222,29 @@ def kakaot_url():
     return "kakaotaxi://"
 
 
+def _safe_href(url: str) -> str:
+    return html_lib.escape(url, quote=True)
+
+
 # ================================================================
 # HTML 片段建構器
 # ================================================================
-def _nav_btns_html(place, show_taxi=True):
+def _nav_btns_html(place, show_taxi=True, mode="walking"):
     name = place["name"]
     name_kr = place.get("name_kr", name)
     lat = place.get("lat")
     lng = place.get("lng")
-    g = gmap_url(f"{name_kr} {place.get('address', '')}", "walking")
-    n = naver_url(query=name_kr, lat=lat, lng=lng, name=name, mode="walking")
+
+    g = _safe_href(gmap_url(f"{name_kr} {place.get('address', '')}", mode))
+    n = _safe_href(naver_url(query=name_kr, lat=lat, lng=lng, name=name, mode=mode))
+
     parts = [
         f'<a class="nav-btn g" href="{g}" target="_blank" title="Google Maps">G</a>',
         f'<a class="nav-btn n" href="{n}" title="NAVER">N</a>',
     ]
     if show_taxi:
-        parts.append(f'<a class="nav-btn t" href="{kakaot_url()}" title="Kakao T">T</a>')
+        t = _safe_href(kakaot_url())
+        parts.append(f'<a class="nav-btn t" href="{t}" title="Kakao T">T</a>')
     return '<div class="nav-btns">' + ''.join(parts) + '</div>'
 
 
@@ -234,9 +252,12 @@ def _build_meta_line(place):
     """產生 'name_kr｜sub · hours' 這一行。"""
     name_kr = place.get("name_kr", "")
     parts = []
-    if place.get("sub"): parts.append(place["sub"])
-    if place.get("hours"): parts.append(place["hours"])
+    if place.get("sub"):
+        parts.append(place["sub"])
+    if place.get("hours"):
+        parts.append(place["hours"])
     meta = " · ".join(parts)
+
     if name_kr and meta:
         return f"{html_lib.escape(name_kr)}｜{html_lib.escape(meta)}"
     elif name_kr:
@@ -249,11 +270,12 @@ def _build_meta_line(place):
 # ================================================================
 # 主行程卡片渲染
 # ================================================================
-def _render_card(tag, place_id, note_override=None, show_taxi=True):
+def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walking"):
     """渲染單張主行程卡片。tag 是 '晚'/'逛'/'宵' 等；空字串就隱形(對齊用)。"""
     if place_id not in PLACES:
         st.error(f"❌ 找不到地點: {place_id}")
         return
+
     p = PLACES[place_id]
     name = html_lib.escape(p["name"])
     star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
@@ -263,7 +285,7 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True):
     note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
     tag_cls = "tag" if tag else "tag empty"
     tag_text = html_lib.escape(tag) if tag else "·"
-    btns = _nav_btns_html(p, show_taxi=show_taxi)
+    btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode)
 
     st.markdown(f"""
     <div class="stop-card">
@@ -280,10 +302,53 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True):
     """, unsafe_allow_html=True)
 
 
+def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
+    """
+    自訂卡片：給 Day1 第1~3格這種特殊內容用，比自己手寫 st.markdown 安全。
+    links: list[dict]
+      範例：
+      [{"label": "G", "url": "...", "cls": "g"},
+       {"label": "N", "url": "...", "cls": "n"}]
+    """
+    card_class = "note-card" if dashed else "stop-card"
+    title_tag = "h5" if dashed else "h4"
+    tag_e = html_lib.escape(tag) if tag else "·"
+    title_e = html_lib.escape(title)
+    meta_html = f'<p class="meta">{html_lib.escape(meta)}</p>' if meta else ''
+    note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
+
+    btns_html = ""
+    if links:
+        parts = []
+        for item in links:
+            label = html_lib.escape(item.get("label", ""))
+            cls = html_lib.escape(item.get("cls", "g"))
+            url = _safe_href(item.get("url", "#"))
+            target = ' target="_blank"' if url.startswith("http") else ""
+            parts.append(
+                f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>'
+            )
+        btns_html = '<div class="nav-btns">' + ''.join(parts) + '</div>'
+
+    st.markdown(f"""
+    <div class="{card_class}">
+      <div class="tag">{tag_e}</div>
+      <div class="body">
+        <div class="top-row">
+          <{title_tag}>{title_e}</{title_tag}>
+          {btns_html}
+        </div>
+        {meta_html}
+        {note_html}
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 # ================================================================
 # 公開 API
 # ================================================================
-def stop(tag, place_ids, others=None, notes=None, show_taxi=True):
+def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"):
     """
     顯示一個或多個主行程地點，共用一個類別標籤。
 
@@ -293,26 +358,25 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True):
         others: None / "food" / "shop" — 加一個「其他」expander，列出同區同類其他選擇。
         notes: None / str / list — 覆寫卡片上的 note。
         show_taxi: 是否顯示 Kakao T (T) 按鈕。
+        mode: walking / driving / transit
     """
     if isinstance(place_ids, str):
         place_ids = [place_ids]
 
-    # notes 標準化
     if notes is None:
         notes = [None] * len(place_ids)
     elif isinstance(notes, str):
         notes = [notes] + [None] * (len(place_ids) - 1)
 
-    # 渲染所有卡片 (第一張顯示 tag，其餘 tag 留空 = 對齊)
     for i, pid in enumerate(place_ids):
         _render_card(
             tag=tag if i == 0 else "",
             place_id=pid,
             note_override=notes[i] if i < len(notes) else None,
             show_taxi=show_taxi,
+            mode=mode,
         )
 
-    # 「其他 (附近...)」 expander
     if others:
         first_p = PLACES[place_ids[0]]
         area = first_p.get("area")
@@ -326,21 +390,8 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True):
 
 
 def note(tag, title, meta=None, note=None):
-    """顯示一個沒有座標、沒有 G/N/T 按鈕的純說明卡 (交通指引、提醒等)。"""
-    title_e = html_lib.escape(title)
-    meta_html = f'<p class="meta">{html_lib.escape(meta)}</p>' if meta else ''
-    note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
-    tag_e = html_lib.escape(tag) if tag else "·"
-    st.markdown(f"""
-    <div class="note-card">
-      <div class="tag">{tag_e}</div>
-      <div class="body">
-        <h5>{title_e}</h5>
-        {meta_html}
-        {note_html}
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+    """顯示一個沒有座標、沒有 G/N/T 按鈕的純說明卡。"""
+    custom_card(tag=tag, title=title, meta=meta, note=note, links=None, dashed=True)
 
 
 def _render_backup_item(p, already=False):
@@ -349,10 +400,14 @@ def _render_backup_item(p, already=False):
     star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
     already_tag = '<span class="already">已排</span>' if already else ''
     name_kr = html_lib.escape(p.get("name_kr", ""))
+
     parts = []
-    if p.get("sub"): parts.append(p["sub"])
-    if p.get("hours"): parts.append(p["hours"])
+    if p.get("sub"):
+        parts.append(p["sub"])
+    if p.get("hours"):
+        parts.append(p["hours"])
     meta = " · ".join(parts)
+
     if name_kr and meta:
         meta_line = f"{name_kr}｜{html_lib.escape(meta)}"
     elif name_kr:
@@ -361,9 +416,11 @@ def _render_backup_item(p, already=False):
         meta_line = html_lib.escape(meta)
     else:
         meta_line = ""
+
     meta_html = f'<div class="small-meta">{meta_line}</div>' if meta_line else ''
     note_html = f'<div class="small-note">{html_lib.escape(p.get("note", ""))}</div>' if p.get("note") else ''
-    btns = _nav_btns_html(p, show_taxi=True)
+    btns = _nav_btns_html(p, show_taxi=True, mode="walking")
+
     st.markdown(f"""
     <div class="backup-item">
       <div class="info">
@@ -385,10 +442,8 @@ def hotel_bottom(today_food=None, today_shop=None):
     today_food = set(today_food or [])
     today_shop = set(today_shop or [])
 
-    # 住卡片 (T 按鈕沒意義，因為已經在這裡了)
     _render_card(tag="住", place_id="hotel", show_taxi=True)
 
-    # 🏨吃 expander
     food_all = get_by_area(AREA_HONGDAE, exclude=["hotel"], cat="food")
     food_sorted = sorted(food_all, key=lambda x: (x[0] in today_food, x[0]))
     with st.expander("🍽️ 吃 — 飯店附近"):
@@ -396,7 +451,6 @@ def hotel_bottom(today_food=None, today_shop=None):
         for pid, p in food_sorted:
             _render_backup_item(p, already=(pid in today_food))
 
-    # 🏨逛 expander
     shop_all = get_by_area(AREA_HONGDAE, exclude=["hotel"], cat="shop")
     shop_sorted = sorted(shop_all, key=lambda x: (x[0] in today_shop, x[0]))
     with st.expander("🛍️ 逛 — 飯店附近"):
