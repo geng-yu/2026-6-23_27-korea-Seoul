@@ -13,7 +13,7 @@ def show_day():
 
     # ============ 第1格：自駕到 RMQ ============
     custom_card(
-        tag="車",
+        tag="🚗",
         title="台中機場 RMQ",
         meta="開車｜停佳安停車場（清泉崗）",
         links=[
