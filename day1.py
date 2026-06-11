@@ -30,64 +30,64 @@ def show_day():
         dashed=False,
     )
 
-    # # ============ 第3格：機場 → 弘大 → 飯店 ============
-    # custom_card(
-    #     tag="🚆",
-    #     title="機場 → 弘大 → 飯店",
-    #     dashed=False,
-    # )
-
-    # custom_card(
-    #     tag="",
-    #     title="AREX (T2 → 弘大 · 홍대입구)",
-    #     meta="一般車 · B1 月台 · 藍色閘門 · ₩4,750/人 · 55 min",
-    #     note="⚠️ 不要走橘色閘門 (Express 直達車不停弘대)。方向：往 Seoul Station，第 11 站「홍대입구」下車。",
-    #     links=[
-    #         {"label": "G", "url": gmap_url("홍대입구역 9번 출구", mode="transit"), "cls": "g"},
-    #         {"label": "N", "url": naver_url(query="홍대입구역 9번 출구"), "cls": "n"},
-    #     ],
-    #     dashed=False,
-    # )
-
-    # custom_card(
-    #     tag="",
-    #     title="9 號出口 → 9 Brick Hotel",
-    #     note="9 號出口有手扶梯 → 直走 150m → 左轉 → 第一條巷子右轉 → 直走 2 min",
-    #     links=[
-    #         {"label": "G", "url": gmap_url("나인브릭 호텔 서울 마포구 홍익로5길 32", mode="walking"), "cls": "g"},
-    #         {"label": "N", "url": naver_url(lat=37.5537661, lng=126.9205306, name="9 Brick Hotel", mode="walking"), "cls": "n"},
-    #     ],
-    #     dashed=False,
-    # )
-
-    # st.divider()
-
-    # ============ 第3格：機場 → 弘大 → 飯店（合併同一格） ============
-    multi_card(
+    # ============ 第3格：機場 → 弘大 → 飯店 ============
+    custom_card(
         tag="🚆",
-        sections=[
-            {"title": "機場 → 弘大 → 飯店"},
-            {
-                "title": "AREX (T2 → 弘大 · 홍대입구)",
-                "meta": "一般車 · B1 月台 · 藍色閘門 · ₩4,750/人 · 55 min",
-                "note": "⚠️ 不要走橘色閘門 (Express 直達車不停弘대)。方向：往 Seoul Station，第 11 站「홍대입구」下車。",
-                "links": [
-                    {"label": "G", "url": gmap_url("홍대입구역 9번 출구", mode="transit"), "cls": "g"},
-                    {"label": "N", "url": naver_url(query="홍대입구역 9번 출구"), "cls": "n"},
-                ],
-            },
-            {
-                "title": "9 號出口 → 9 Brick Hotel",
-                "note": "9 號出口有手扶梯 → 直走 150m → 左轉 → 第一條巷子右轉 → 直走 2 min",
-                "links": [
-                    {"label": "G", "url": gmap_url("나인브릭 호텔 서울 마포구 홍익로5길 32", mode="walking"), "cls": "g"},
-                    {"label": "N", "url": naver_url(lat=37.5537661, lng=126.9205306, name="9 Brick Hotel", mode="walking"), "cls": "n"},
-                ],
-            },
+        title="機場 → 弘大 → 飯店",
+        dashed=False,
+    )
+
+    custom_card(
+        tag="",
+        title="AREX (T2 → 弘大 · 홍대입구)",
+        meta="一般車 · B1 月台 · 藍色閘門 · ₩4,750/人 · 55 min",
+        note="⚠️ 不要走橘色閘門 (Express 直達車不停弘대)。方向：往 Seoul Station，第 11 站「홍대입구」下車。",
+        links=[
+            {"label": "G", "url": gmap_url("홍대입구역 9번 출구", mode="transit"), "cls": "g"},
+            {"label": "N", "url": naver_url(query="홍대입구역 9번 출구"), "cls": "n"},
         ],
+        dashed=False,
+    )
+
+    custom_card(
+        tag="",
+        title="9 號出口 → 9 Brick Hotel",
+        note="9 號出口有手扶梯 → 直走 150m → 左轉 → 第一條巷子右轉 → 直走 2 min",
+        links=[
+            {"label": "G", "url": gmap_url("나인브릭 호텔 서울 마포구 홍익로5길 32", mode="walking"), "cls": "g"},
+            {"label": "N", "url": naver_url(lat=37.5537661, lng=126.9205306, name="9 Brick Hotel", mode="walking"), "cls": "n"},
+        ],
+        dashed=False,
     )
 
     st.divider()
+
+    # # ============ 第3格：機場 → 弘大 → 飯店（合併同一格） ============
+    # multi_card(
+    #     tag="🚆",
+    #     sections=[
+    #         {"title": "機場 → 弘大 → 飯店"},
+    #         {
+    #             "title": "AREX (T2 → 弘大 · 홍대입구)",
+    #             "meta": "一般車 · B1 月台 · 藍色閘門 · ₩4,750/人 · 55 min",
+    #             "note": "⚠️ 不要走橘色閘門 (Express 直達車不停弘대)。方向：往 Seoul Station，第 11 站「홍대입구」下車。",
+    #             "links": [
+    #                 {"label": "G", "url": gmap_url("홍대입구역 9번 출구", mode="transit"), "cls": "g"},
+    #                 {"label": "N", "url": naver_url(query="홍대입구역 9번 출구"), "cls": "n"},
+    #             ],
+    #         },
+    #         {
+    #             "title": "9 號出口 → 9 Brick Hotel",
+    #             "note": "9 號出口有手扶梯 → 直走 150m → 左轉 → 第一條巷子右轉 → 直走 2 min",
+    #             "links": [
+    #                 {"label": "G", "url": gmap_url("나인브릭 호텔 서울 마포구 홍익로5길 32", mode="walking"), "cls": "g"},
+    #                 {"label": "N", "url": naver_url(lat=37.5537661, lng=126.9205306, name="9 Brick Hotel", mode="walking"), "cls": "n"},
+    #             ],
+    #         },
+    #     ],
+    # )
+
+    # st.divider()
     
     # ============ 第4格：晚餐 ============
     stop(
