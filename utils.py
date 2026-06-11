@@ -17,22 +17,29 @@ def inject_css():
     /* ---- 主行程卡片 ---- */
     .stop-card {
         background: var(--secondary-background-color);
-        border: 1px solid rgba(128,128,128,0.18);
-        border-radius: 14px;
-        padding: 14px 16px;
-        margin: 8px 0;
+        border: 1px solid rgba(128,128,128,0.12);
+        border-radius: 16px;
+        padding: 16px 18px;
+        margin: 10px 0;
         display: flex;
         align-items: flex-start;
         gap: 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        transition: box-shadow 0.2s;
     }
-    .stop-card .time {
+    .stop-card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .stop-card .step-num {
         flex-shrink: 0;
-        font-size: 15px;
-        font-weight: 700;
-        color: var(--text-color);
-        opacity: 0.85;
-        min-width: 50px;
+        font-size: 26px;
+        font-weight: 900;
+        color: #ff4b4b;
+        min-width: 32px;
+        line-height: 1;
         padding-top: 2px;
+        letter-spacing: -1px;
+        font-stretch: expanded;
     }
     .stop-card .body { flex-grow: 1; min-width: 0; }
     .stop-card h4 {
@@ -57,6 +64,7 @@ def inject_css():
         line-height: 1.5;
     }
     .stop-card .star { color: #ff4b4b; font-size: 14px; }
+
     /* ---- 標題列（名稱 + 按鈕同行）---- */
     .title-row {
         display: flex;
@@ -65,15 +73,8 @@ def inject_css():
         gap: 8px;
         margin-bottom: 4px;
     }
-    .title-row h4 {
-        margin: 0;
-        flex: 1;
-        min-width: 0;
-    }
-    .title-row .nav-btns {
-        margin-top: 0;   /* 覆蓋原本的 margin-top: 8px */
-        flex-shrink: 0;
-    }
+    .title-row h4 { margin: 0; flex: 1; min-width: 0; }
+    .title-row .nav-btns { margin-top: 0; flex-shrink: 0; }
 
     /* ---- 導航按鈕 ---- */
     .nav-btns { display: flex; gap: 8px; margin-top: 8px; }
@@ -103,7 +104,6 @@ def inject_css():
         margin: 12px 0 6px 0;
         padding: 0;
     }
-    /* 備案清單限高捲動容器 */
     .backup-scroll {
         max-height: 320px;
         overflow-y: auto;
@@ -188,10 +188,6 @@ def kakaot_url():
 # 卡片渲染
 # ================================================================
 def _btns_html(place, show_g=True, show_n=True, show_t=True, mode="walking"):
-    """產生導航按鈕 HTML。
-    show_g / show_n / show_t：各自獨立控制顯示
-    mode：walking / transit / driving
-    """
     name_kr = place.get("name_kr", place["name"])
     lat = place.get("lat")
     lng = place.get("lng")
@@ -215,11 +211,12 @@ def show_stop(time, place_id,
               override_note=None,
               show_g=True, show_n=True, show_t=True,
               mode="walking",
-              no_backup=False):
+              no_backup=False,
+              step_num=None):
     """主行程卡片。
 
     參數：
-        time          : 時間字串，e.g. "10:30"
+        time          : 時間字串（保留備用，卡片上不顯示）
         place_id      : places.py 的 key
         override_note : 覆蓋 places.py 裡的 note（傳 " " 可清空）
         show_g        : 是否顯示 Google Maps 按鈕（預設 True）
@@ -227,27 +224,29 @@ def show_stop(time, place_id,
         show_t        : 是否顯示 Kakao T 按鈕（預設 True）
         mode          : 導航模式 "walking" / "transit" / "driving"
         no_backup     : True = 不顯示備案 expander
+        step_num      : 傳數字顯示紅色大編號，e.g. step_num=1 → "1."
     """
     if place_id not in PLACES:
         st.error(f"❌ 找不到地點：{place_id}")
         return
 
     p = PLACES[place_id]
-    name     = html_lib.escape(p["name"])
-    name_kr  = html_lib.escape(p.get("name_kr", ""))
-    star     = '<span class="star"> ⭐</span>' if p.get("priority") else ''
-    area     = html_lib.escape(p.get("area", ""))
-    hours    = html_lib.escape(p.get("hours", ""))
-    sub      = html_lib.escape(p.get("sub", ""))
+    name      = html_lib.escape(p["name"])
+    name_kr   = html_lib.escape(p.get("name_kr", ""))
+    star      = '<span class="star"> ⭐</span>' if p.get("priority") else ''
+    area      = html_lib.escape(p.get("area", ""))
+    hours     = html_lib.escape(p.get("hours", ""))
+    sub       = html_lib.escape(p.get("sub", ""))
     meta_parts = [x for x in [area, sub, hours] if x]
-    meta     = ' · '.join(meta_parts)
-    note     = override_note if override_note is not None else p.get("note", "")
+    meta      = ' · '.join(meta_parts)
+    note      = override_note if override_note is not None else p.get("note", "")
     note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
     btns_html = _btns_html(p, show_g=show_g, show_n=show_n, show_t=show_t, mode=mode)
+    num_html  = f'<div class="step-num">{step_num}.</div>' if step_num is not None else ''
 
     st.markdown(f"""
     <div class="stop-card">
-      <div class="time">{html_lib.escape(time)}</div>
+      {num_html}
       <div class="body">
         <div class="title-row">
           <h4>{name}{star}</h4>
@@ -264,7 +263,6 @@ def show_stop(time, place_id,
 
 
 def _show_backup_expander(this_id, place):
-    """備案 expander，內容限高 320px 可捲動。"""
     area = place["area"]
 
     with st.expander(f"🔄 {place['name']} 附近備案"):
@@ -296,7 +294,6 @@ def _show_backup_expander(this_id, place):
 
 
 def _backup_item_html(p):
-    """產生單一備案項目的 HTML 字串。"""
     name      = html_lib.escape(p["name"])
     name_kr   = html_lib.escape(p.get("name_kr", ""))
     star      = '<span class="star"> ⭐</span>' if p.get("priority") else ''
@@ -306,7 +303,7 @@ def _backup_item_html(p):
     meta_parts = [x for x in [sub, hours] if x]
     meta      = ' · '.join(meta_parts)
     note_line = f'<div class="small-meta">{html_lib.escape(note)}</div>' if note else ''
-    btns      = _btns_html(p)  # 備案預設 G+N+T 全開，walking
+    btns      = _btns_html(p)
 
     return f"""
     <div class="backup-item">
@@ -323,7 +320,6 @@ def _backup_item_html(p):
 # 飯店附近
 # ================================================================
 def show_hotel_nearby(exclude_ids=None):
-    """飯店 (弘대) 附近永遠可去的清單，限高捲動。"""
     exclude_ids = exclude_ids or []
     if isinstance(exclude_ids, str):
         exclude_ids = [exclude_ids]
