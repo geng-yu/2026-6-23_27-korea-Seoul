@@ -48,18 +48,16 @@ def show():
     # ==============================
     # 3. T-money 加值
     # ==============================
-"""
-    st.markdown("""
-    <div class="stop-card">
-      <div class="time">15:00</div>
-      <div class="body">
-        <h4>💳 加值 T-money</h4>
-        <p class="meta">CU / GS25 / 7-Eleven｜建議 ₩50,000–100,000</p>
-        <p class="note">跟店員說「티머니 충전 (Tmoney chong-jeon)」+ 金額，手機背面靠讀卡機。Visa 不能用 App 加值，現金最穩。</p>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-"""
+    # st.markdown("""
+    # <div class="stop-card">
+    #   <div class="time">15:00</div>
+    #   <div class="body">
+    #     <h4>💳 加值 T-money</h4>
+    #     <p class="meta">CU / GS25 / 7-Eleven｜建議 ₩50,000–100,000</p>
+    #     <p class="note">跟店員說「티머니 충전 (Tmoney chong-jeon)」+ 金額，手機背面靠讀卡機。Visa 不能用 App 加值，現金最穩。</p>
+    #   </div>
+    # </div>
+    # """, unsafe_allow_html=True)
     # ==============================
     # 4. AREX T2 → 弘大입구
     # ==============================
