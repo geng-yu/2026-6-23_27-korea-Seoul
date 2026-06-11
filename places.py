@@ -375,7 +375,27 @@ PLACES = {
         "lat": 37.5567023, "lng": 126.9262810,
         "hours": "11:00-01:00",
         "phone": "02-337-3545",
-        "note": "炭烤不辣，紫蘇葉+蒜柚子醬包著吃，員工幫烤。",
+        "note": "紫蘇葉+蒜柚子醬包著吃，員工幫烤",
+    },
+        "myeongryun_jinsa": {
+        "name": "二代祖馬鈴薯排骨湯", "name_kr": "이대조뼈다귀 홍대점",
+        "area": AREA_HONGDAE, "cat": "food", "sub": "馬鈴薯排骨湯",
+        "address": "서울 마포구 동교로 196",
+        "lat": 37.5570, "lng": 126.9250,
+        "hours": "10:00-23:00",
+        "phone": None,
+        "note": "人氣排骨湯，適合早午餐或晚餐",
+        "priority": True,
+    },
+    "solsot_hongdae": {
+        "name": "Solsot 釜飯 弘大延南", "name_kr": "솔솥 홍대연남점",
+        "area": AREA_HONGDAE, "cat": "food", "sub": "釜飯",
+        "address": "서울 마포구 동교로38길 35",
+        "lat": 37.5620, "lng": 126.9250,
+        "hours": "11:30-21:00",
+        "phone": "070-8822-5846",
+        "note": "延南洞人氣釜飯，適合午餐或早點晚餐",
+        "priority": True,
     },
 
     # ==============================
@@ -441,7 +461,7 @@ PLACES = {
         "lat": 37.5511, "lng": 126.9246,
         "hours": "11:00-22:00",
         "phone": "02-336-7338",
-        "note": "Oversized 剪裁＋標語設計，帽子、包包也很棒",
+        "note": "Oversized 剪裁＋標語設計，帽子、包包",
     },
     "wacky_willy": {
         "name": "Wacky WiLLy 弘大", "name_kr": "와키윌리 홍대",
@@ -450,7 +470,7 @@ PLACES = {
         "lat": 37.5512, "lng": 126.9245,
         "hours": "11:00-22:00",
         "phone": "070-8848-3316",
-        "note": "前身 what it isn't，塗鴉插畫印花，回頭率超高",
+        "note": "前身 what it isn't，塗鴉插畫印花",
         "priority": True,
     },
     "thisisneverthat": {
@@ -469,7 +489,7 @@ PLACES = {
         "lat": 37.5509, "lng": 126.9250,
         "hours": "11:00-22:00",
         "phone": "0507-1378-4140",
-        "note": "黑白灰基礎色調，寬版剪裁，穿起來會變帥",
+        "note": "黑白灰基礎色調，寬版剪裁",
     },
     "yeseyesee": {
         "name": "YESEYESEE 弘大", "name_kr": "예스아이씨 홍대",
@@ -487,7 +507,7 @@ PLACES = {
         "lat": 37.5513, "lng": 126.9249,
         "hours": "11:00-22:00",
         "phone": "0507-1431-8560",
-        "note": "復古工裝感，版型適合亞洲人，牛仔褲款式多",
+        "note": "Lee",
     },
     "worksout": {
         "name": "WORKSOUT 弘大", "name_kr": "웍스아웃 홍대",
@@ -496,7 +516,7 @@ PLACES = {
         "lat": 37.5557, "lng": 126.9222,
         "hours": "12:00-21:00",
         "phone": "02-337-8334",
-        "note": "世界各地品牌集合，服裝鞋子配件生活用品都有",
+        "note": "品牌集合，服裝鞋子配件生活用品都有",
     },
     "turtle_glass": {
         "name": "TURTLE GLASS 弘大", "name_kr": "터틀글래스 홍대",
@@ -505,7 +525,7 @@ PLACES = {
         "lat": 37.5540, "lng": 126.9186,
         "hours": "12:00-22:00",
         "phone": "0507-1465-0626",
-        "note": "成熟簡約男裝，提供 1 對 1 試穿指導服務",
+        "note": "成熟簡約男裝",
     },
     "mark_gonzales": {
         "name": "MARK GONZALES 弘大", "name_kr": "마크 곤잘레스 홍대",
@@ -514,7 +534,7 @@ PLACES = {
         "lat": 37.5531, "lng": 126.9238,
         "hours": "11:00-22:00",
         "phone": None,
-        "note": "塗鴉插畫風滑板系潮牌，T恤外套都很有特色",
+        "note": "塗鴉插畫風滑板系潮牌",
     },
     "nerdy": {
         "name": "NERDY 弘大旗艦店", "name_kr": "너디 홍대 플래그십",
@@ -523,7 +543,7 @@ PLACES = {
         "lat": 37.5525, "lng": 126.9234,
         "hours": "11:00-22:00",
         "phone": None,
-        "note": "韓系插畫風 LOGO 潮牌，帽子短T超受歡迎",
+        "note": "韓系插畫風 LOGO 潮牌，帽子短T",
     },
     "wonder_place": {
         "name": "Wonder Place 弘大", "name_kr": "원더플레이스 홍대",
@@ -532,7 +552,7 @@ PLACES = {
         "lat": 37.5562, "lng": 126.9237,
         "hours": "11:00-22:00",
         "phone": None,
-        "note": "韓國本土潮牌多品牌集合，帽子包包都有",
+        "note": "韓國本土潮牌多品牌集合，帽子包包",
     },
 
     # ==============================
