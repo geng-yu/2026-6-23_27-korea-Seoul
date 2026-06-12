@@ -1,14 +1,12 @@
 """
-渲染共用函式（v9 空白修正版）：
-- 保留 v8 整卡 iframe 版的所有功能
-- 修正：卡片間 / 卡片與 expander 間 / expander 內卡片間的大空白
-  根本原因：
-    1. Streamlit stVerticalBlock 有 gap，每個 components.html iframe 都是一個 block
-    2. iframe 高度估算偏大，底部留白
-  解法：
-    1. 用更完整的 CSS selector 壓掉 Streamlit 所有 gap 和 iframe margin（涵蓋新舊版本）
-    2. 改用 ResizeObserver 精確回報 iframe 高度
-    3. 初始高度估算調小，讓 ResizeObserver 校正收縮
+渲染共用函式（v10 間距與多段卡片穩定版）：
+
+這版重點：
+- 保留整卡 iframe 方案，確保 G / N / T 永遠在卡片內同排
+- T：先複製韓文店名，再開 Kakao T
+- 修正卡片與卡片、卡片與 expander、expander 內卡片的間距不一致
+- 修正 multi_card（多段卡片）上下留白偏大
+- 不做 fallback 網頁，避免 iPhone 多開頁
 """
 import streamlit as st
 import streamlit.components.v1 as components
@@ -51,7 +49,7 @@ def _accent_hex(tag):
 
 
 # ================================================================
-# 全域 CSS — 只處理 Streamlit 框架層的間距
+# 全域 CSS
 # ================================================================
 _CSS = """
 <style>
@@ -72,7 +70,7 @@ iframe{
   border:none !important;
 }
 
-/* ── 3) 每個元素容器自己給底部間距，主畫面統一用這個控制 ── */
+/* ── 3) 一般元件容器：主畫面卡片距離由這裡控制 ── */
 div.element-container,
 div[data-testid="element-container"],
 [data-testid="stElementContainer"]{
@@ -80,7 +78,12 @@ div[data-testid="element-container"],
   padding:0 !important;
 }
 
-/* ── 4) expander 內容區域 ── */
+/* ── 4) expander 本體前後保留一點空間，避免貼住上下卡片 ── */
+div[data-testid="stExpander"]{
+  margin:0.18rem 0 0.34rem 0 !important;
+}
+
+/* ── 5) expander 內容區域 ── */
 div[data-testid="stExpander"] [data-testid="stExpanderDetails"],
 div[data-testid="stExpander"] details > div{
   max-height:320px;
@@ -89,13 +92,13 @@ div[data-testid="stExpander"] details > div{
   padding:4px 6px 4px 0 !important;
 }
 
-/* ── 5) expander 裡面的 block 一樣不要 gap ── */
+/* ── 6) expander 裡面的 block 一樣不要 gap ── */
 div[data-testid="stExpander"] [data-testid="stVerticalBlock"],
 div[data-testid="stExpander"] [data-testid="stVerticalBlockBorderWrapper"]{
   gap:0 !important;
 }
 
-/* ── 6) expander 裡每個卡片的距離再小一點 ── */
+/* ── 7) expander 裡每個卡片距離再小一點 ── */
 div[data-testid="stExpander"] div.element-container,
 div[data-testid="stExpander"] div[data-testid="element-container"],
 div[data-testid="stExpander"] [data-testid="stElementContainer"]{
@@ -103,12 +106,15 @@ div[data-testid="stExpander"] [data-testid="stElementContainer"]{
   padding:0 !important;
 }
 
-/* ── 7) 最後一個元素不要多留白 ── */
-div.element-container:last-child,
-div[data-testid="element-container"]:last-child,
-[data-testid="stElementContainer"]:last-child{
+/* ── 8) 只有 expander 裡最後一張卡片不留白 ── */
+div[data-testid="stExpander"] div.element-container:last-child,
+div[data-testid="stExpander"] div[data-testid="element-container"]:last-child,
+div[data-testid="stExpander"] [data-testid="stElementContainer"]:last-child{
   margin-bottom:0 !important;
 }
+
+/* 不要再用全域 last-child 把所有元素 margin-bottom 清掉，
+   否則主卡片後面如果剛好接 expander，就會貼在一起 */
 
 #MainMenu{visibility:hidden;}
 footer{visibility:hidden;}
@@ -157,6 +163,7 @@ def _build_meta_line(place):
     if place.get("hours"):
         parts.append(place["hours"])
     meta = " · ".join(parts)
+
     if name_kr and meta:
         return f"{name_kr}｜{meta}"
     elif name_kr:
@@ -167,7 +174,7 @@ def _build_meta_line(place):
 
 
 # ================================================================
-# iframe 卡片內部 CSS（深淺色自適應）
+# iframe 卡片內部 CSS
 # ================================================================
 _IFRAME_STYLE = """
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -188,38 +195,107 @@ body{font-family:-apple-system,BlinkMacSystemFont,system-ui,"Noto Sans TC","Noto
   }
 }
 .card{
-  position:relative;background:var(--bg);
-  border:1px solid var(--border);border-radius:14px;
+  position:relative;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:14px;
   padding:12px 14px 12px 12px;
-  display:flex;align-items:flex-start;gap:11px;
-  box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:hidden;
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  box-shadow:0 1px 4px rgba(0,0,0,.05);
+  overflow:hidden;
 }
-.card.dashed{background:transparent;border:1.5px dashed var(--border-dash);box-shadow:none;}
-.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,#94a3b8);}
+.card.dashed{
+  background:transparent;
+  border:1.5px dashed var(--border-dash);
+  box-shadow:none;
+}
+.card::before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:4px;
+  background:var(--accent,#94a3b8);
+}
 .card.dashed::before{display:none;}
 .chip{
-  flex-shrink:0;width:34px;height:34px;border-radius:10px;
+  flex-shrink:0;
+  width:34px;height:34px;border-radius:10px;
   display:flex;align-items:center;justify-content:center;
-  font-size:15px;font-weight:800;color:#fff;background:var(--accent,#94a3b8);margin-top:1px;
+  font-size:15px;font-weight:800;color:#fff;
+  background:var(--accent,#94a3b8);
+  margin-top:1px;
 }
 .chip.dashed{background:rgba(128,128,128,.14);color:var(--text);}
 .chip.ghost{background:transparent;color:transparent;}
 .body{flex-grow:1;min-width:0;}
-.section{padding:9px 0 2px 0;border-top:1px dashed var(--section-line);margin-top:7px;}
-.section:first-child{border-top:none;margin-top:0;padding-top:0;}
-.title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
-h4{font-size:15.5px;font-weight:700;color:var(--text);line-height:1.35;word-break:break-word;flex:1;min-width:0;margin:0;}
-h5{font-size:14.5px;font-weight:700;color:var(--text);line-height:1.35;word-break:break-word;flex:1;min-width:0;margin:0;}
-.meta{font-size:12px;color:var(--text);opacity:.62;margin-top:4px;line-height:1.45;}
-.note{font-size:12.5px;color:var(--text);opacity:.88;margin-top:5px;line-height:1.5;}
+.section{
+  padding:9px 0 2px 0;
+  border-top:1px dashed var(--section-line);
+  margin-top:7px;
+}
+.section:first-child{
+  border-top:none;
+  margin-top:0;
+  padding-top:0;
+}
+.title-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+}
+h4{
+  font-size:15.5px;
+  font-weight:700;
+  color:var(--text);
+  line-height:1.35;
+  word-break:break-word;
+  flex:1;
+  min-width:0;
+  margin:0;
+}
+h5{
+  font-size:14.5px;
+  font-weight:700;
+  color:var(--text);
+  line-height:1.35;
+  word-break:break-word;
+  flex:1;
+  min-width:0;
+  margin:0;
+}
+.meta{
+  font-size:12px;
+  color:var(--text);
+  opacity:.62;
+  margin-top:4px;
+  line-height:1.45;
+}
+.note{
+  font-size:12.5px;
+  color:var(--text);
+  opacity:.88;
+  margin-top:5px;
+  line-height:1.5;
+}
 .star{color:#ff4b4b;font-size:13px;}
-.btns{display:flex;gap:6px;flex-shrink:0;align-items:center;padding-top:1px;}
+.btns{
+  display:flex;
+  gap:6px;
+  flex-shrink:0;
+  align-items:center;
+  padding-top:1px;
+}
 .b{
   width:30px;height:30px;border-radius:50%;
   display:inline-flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:13.5px;text-decoration:none;border:none;cursor:pointer;
+  font-weight:800;font-size:13.5px;
+  text-decoration:none;border:none;cursor:pointer;
   box-shadow:0 1px 2px rgba(0,0,0,.15);
-  -webkit-tap-highlight-color:transparent;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
   font-family:-apple-system,system-ui,sans-serif;
 }
 .b:active{transform:scale(.92);}
@@ -228,19 +304,50 @@ h5{font-size:14.5px;font-weight:700;color:var(--text);line-height:1.35;word-brea
 .b.t{background:#FAE100;color:#371D1E;}
 """
 
-# ResizeObserver 高度自動回報腳本（比 getBoundingClientRect 精準）
+# 更穩定的高度回報：同時看 body / html，多次校正
 _HEIGHT_REPORTER = """
 (function(){
+  function getHeight(){
+    const body = document.body;
+    const html = document.documentElement;
+    return Math.ceil(Math.max(
+      body.scrollHeight,
+      body.offsetHeight,
+      html.clientHeight,
+      html.scrollHeight,
+      html.offsetHeight
+    ));
+  }
+
   function report(){
-    var h=Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight);
-    window.parent.postMessage({isStreamlitMessage:true,type:"streamlit:setFrameHeight",height:h},"*");
+    const h = getHeight();
+    window.parent.postMessage(
+      {isStreamlitMessage:true, type:"streamlit:setFrameHeight", height:h},
+      "*"
+    );
   }
-  if(window.ResizeObserver){
-    new ResizeObserver(report).observe(document.body);
+
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(function(){ report(); });
+    ro.observe(document.body);
+    ro.observe(document.documentElement);
   }
-  report();
-  setTimeout(report,50);
-  setTimeout(report,250);
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(report).catch(function(){});
+  }
+
+  window.addEventListener("load", report);
+  window.addEventListener("resize", report);
+
+  requestAnimationFrame(function(){
+    report();
+    requestAnimationFrame(report);
+  });
+
+  setTimeout(report, 50);
+  setTimeout(report, 150);
+  setTimeout(report, 300);
 })();
 """
 
@@ -248,23 +355,35 @@ _HEIGHT_REPORTER = """
 def _btns_html_for_place(p, mode, show_taxi, uid):
     name = p["name"]
     name_kr = p.get("name_kr", name)
+
     g = _safe_href(gmap_url(f"{name_kr} {p.get('address', '')}", mode))
-    n = _safe_href(naver_url(query=name_kr, lat=p.get("lat"), lng=p.get("lng"),
-                             name=name_kr or name, mode=mode))
+    n = _safe_href(
+        naver_url(
+            query=name_kr,
+            lat=p.get("lat"),
+            lng=p.get("lng"),
+            name=name_kr or name,
+            mode=mode
+        )
+    )
+
     parts = [
         f'<a class="b g" href="{g}" target="_blank" rel="noopener" title="Google Maps">G</a>',
         f'<a class="b n" href="{n}" title="NAVER">N</a>',
     ]
+
     if show_taxi:
         parts.append(
             f'<button class="b t" id="t_{uid}" type="button" title="複製韓文店名並開啟 Kakao T">T</button>'
         )
+
     return '<div class="btns">' + ''.join(parts) + '</div>'
 
 
 def _btns_html_for_links(links):
     if not links:
         return ""
+
     parts = []
     for item in links:
         label = html_lib.escape(item.get("label", ""))
@@ -273,12 +392,14 @@ def _btns_html_for_links(links):
         url = _safe_href(raw_url)
         target = ' target="_blank" rel="noopener"' if str(raw_url).startswith("http") else ""
         parts.append(f'<a class="b {cls}" href="{url}"{target} title="{label}">{label}</a>')
+
     return '<div class="btns">' + ''.join(parts) + '</div>'
 
 
 def _t_script(uid, copy_text):
     ct = json.dumps(str(copy_text))
     k = json.dumps(kakaot_url())
+
     return (
         f'(function(){{'
         f'var el=document.getElementById("t_{uid}");'
@@ -286,10 +407,16 @@ def _t_script(uid, copy_text):
         f'el.addEventListener("click",async function(){{'
         f'try{{'
         f'if(navigator.clipboard&&window.isSecureContext){{await navigator.clipboard.writeText({ct});}}'
-        f'else{{var ta=document.createElement("textarea");ta.value={ct};'
+        f'else{{'
+        f'var ta=document.createElement("textarea");'
+        f'ta.value={ct};'
         f'ta.style.cssText="position:fixed;left:-9999px;top:0";'
-        f'document.body.appendChild(ta);ta.focus();ta.select();'
-        f'try{{document.execCommand("copy");}}catch(e){{}}document.body.removeChild(ta);}}'
+        f'document.body.appendChild(ta);'
+        f'ta.focus();'
+        f'ta.select();'
+        f'try{{document.execCommand("copy");}}catch(e){{}}'
+        f'document.body.removeChild(ta);'
+        f'}}'
         f'}}catch(e){{}}'
         f'el.innerText="\\u2713";'
         f'setTimeout(function(){{el.innerText="T";}},1000);'
@@ -302,7 +429,7 @@ def _t_script(uid, copy_text):
 def _emit_card(accent_hex, inner_html, t_scripts, est_height):
     """
     把卡片 HTML + JS 包成 iframe 輸出。
-    est_height 調小 → ResizeObserver 向上校正，不留下白。
+    est_height 只作初始值；真正高度由 iframe 內的 JS 回報修正。
     """
     all_scripts = ''.join(t_scripts) + _HEIGHT_REPORTER
     doc = (
@@ -328,11 +455,13 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
 
     p = PLACES[place_id]
     accent = accent_override_hex or _accent_hex(tag)
+
     chip = f'<div class="chip">{html_lib.escape(tag)}</div>' if tag else '<div class="chip ghost">·</div>'
     name = html_lib.escape(p["name"])
     star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
     meta = _build_meta_line(p)
     meta_html = f'<p class="meta">{html_lib.escape(meta)}</p>' if meta else ''
+
     note = note_override if note_override is not None else p.get("note", "")
     note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
 
@@ -345,8 +474,9 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
         f'{meta_html}{note_html}'
         f'</div></div>'
     )
+
     t_scripts = [_t_script(uid, p.get("name_kr") or p["name"])] if show_taxi else []
-    # 估算高度：故意偏小，讓 ResizeObserver 向上收縮而不往下撐留白
+
     est = 62 + (18 if meta else 0) + (38 if note else 0)
     _emit_card(accent, inner, t_scripts, est)
 
@@ -354,6 +484,7 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
 def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
     accent = _accent_hex(tag)
     tag_e = html_lib.escape(tag) if tag else "·"
+
     if dashed:
         chip = f'<div class="chip dashed">{tag_e}</div>'
         card_cls = "card dashed"
@@ -378,6 +509,7 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
         f'{meta_html}{note_html}'
         f'</div></div>'
     )
+
     est = 58 + (18 if meta else 0) + (38 if note else 0)
     _emit_card(accent, inner, [], est)
 
@@ -394,14 +526,15 @@ def _render_backup_item(pid, p, already=False):
         'background:rgba(255,75,75,.13);color:#ff4b4b;'
         'padding:2px 7px;border-radius:99px;white-space:nowrap;">已排</span>'
     ) if already else ''
-    name_kr = p.get("name_kr", "")
 
+    name_kr = p.get("name_kr", "")
     parts = []
     if p.get("sub"):
         parts.append(p["sub"])
     if p.get("hours"):
         parts.append(p["hours"])
     meta = " · ".join(parts)
+
     if name_kr and meta:
         meta_line = f"{name_kr}｜{meta}"
     elif name_kr:
@@ -424,6 +557,7 @@ def _render_backup_item(pid, p, already=False):
         f'{meta_html}{note_html}'
         f'</div></div>'
     )
+
     t_scripts = [_t_script(uid, p.get("name_kr") or p["name"])]
     est = 56 + (16 if meta_line else 0) + (36 if p.get("note") else 0)
     _emit_card(accent, inner, t_scripts, est)
@@ -448,6 +582,7 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
         notes = [notes] + [None] * (len(place_ids) - 1)
 
     accent = _accent_hex(tag)
+
     for i, pid in enumerate(place_ids):
         _render_card(
             tag=tag if i == 0 else "",
@@ -462,6 +597,7 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
         first_p = PLACES[place_ids[0]]
         area = first_p.get("area")
         cat_label = {"food": "其他吃的", "shop": "其他逛的"}.get(others, "其他")
+
         with st.expander(f"🔄 {cat_label}（{area}附近）"):
             items = get_by_area(area, exclude=place_ids, cat=others)
             if not items:
@@ -537,16 +673,15 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
     chip = f'<div class="chip">{html_lib.escape(tag)}</div>' if tag else '<div class="chip ghost">·</div>'
     inner = f'<div class="card">{chip}<div class="body">' + ''.join(sec_parts) + '</div></div>'
 
-    # 關鍵修正：
-    # 不再手動累加每段的估算高度，避免多 section 卡片被估太高，
-    # 導致上下多出空白。只給一個保守初始值，交給 ResizeObserver 校正。
-    est = 72 + len(sections) * 56
+    # 多段卡片不要估太高，交給 ResizeObserver 後續精準修正
+    est = 56 + len(sections) * 44
 
     _emit_card(accent, inner, t_scripts, est)
 
     if others and place_ids:
         area = PLACES[place_ids[0]].get("area")
         cat_label = {"food": "其他吃的", "shop": "其他逛的"}.get(others, "其他")
+
         with st.expander(f"🔄 {cat_label}（{area}附近）"):
             items = get_by_area(area, exclude=place_ids, cat=others)
             if not items:
