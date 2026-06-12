@@ -22,6 +22,7 @@ T 功能說明
 import streamlit as st
 import streamlit.components.v1 as components
 import urllib.parse
+import html as html_lib
 import json
 
 from places import PLACES, get_by_area, AREA_HONGDAE
@@ -77,7 +78,7 @@ div[data-testid="stExpander"] details > div{
   -webkit-overflow-scrolling:touch;
 }
 
-/* ===== 大區塊標題 (有底色的圓形數字 + 類別/店名) ===== */
+/* ===== 大區塊標題 (方形編號 + tag + 店名) ===== */
 .section-anchor{
   display:flex;
   align-items:center;
@@ -87,11 +88,12 @@ div[data-testid="stExpander"] details > div{
 }
 .section-anchor .num{
   flex-shrink:0;
-  width:38px; height:38px;
-  border-radius:50%;
+  width:36px; height:36px;
+  border-radius:8px;             /* 方底（圓角矩形）跟 GNT 的圓形按鈕區分 */
   display:inline-flex; align-items:center; justify-content:center;
   font-weight:800; font-size:1.05rem;
   color:#fff !important;
+  background:#475569 !important;  /* 統一深灰底色，看到就知道是大標題 */
   box-shadow:0 1px 3px rgba(0,0,0,.2);
 }
 .section-anchor .stop-title{
@@ -270,17 +272,15 @@ _NUM_BG = {
 
 
 def _section_anchor(tag, name, star=False):
-    """主行程區塊的大標題：左側彩色圓圈數字，右側 tag + 店名。
+    """主行程區塊的大標題：左側方形編號（統一深灰）+ tag emoji + 店名。
     每呼叫一次計數 +1。"""
     _SECTION_NO[0] += 1
     no = _SECTION_NO[0]
-    # 找一個底色：先看 tag 是否能對應；否則用灰
-    bg = _NUM_BG.get(tag, "#94a3b8")
     star_html = '<span class="star"> ⭐</span>' if star else ''
     tag_html = f'<span class="tag-emoji">{tag}</span>' if tag else ''
     st.markdown(
         f'<div class="section-anchor">'
-        f'<span class="num" style="background:{bg};">{no}</span>'
+        f'<span class="num">{no}</span>'
         f'<div class="stop-title">{tag_html}{name}{star_html}</div>'
         f'</div>',
         unsafe_allow_html=True,
@@ -479,10 +479,11 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
 # ================================================================
 # 下拉框（其他吃的/逛的、飯店附近）—— 一樣用純排版
 # ================================================================
-def _render_backup_item(pid, p, already=False):
+def _render_backup_item(pid, p, already=False, is_last=False):
     name = p["name"]
     star_html = '<span class="star"> ⭐</span>' if p.get("priority") else ''
     already_html = '<span class="already-tag">已排</span>' if already else ''
+
     name_kr = p.get("name_kr", "")
     parts = []
     if p.get("sub"): parts.append(p["sub"])
@@ -493,22 +494,36 @@ def _render_backup_item(pid, p, already=False):
     elif m: meta_line = m
     else: meta_line = ""
 
+    note_text = p.get("note", "")
     sched_cls = "backup-row scheduled" if already else "backup-row"
-    st.markdown(
-        f'<div class="{sched_cls}">'
-        f'<div class="backup-name">{name}{star_html}{already_html}</div>'
-        f'{f"<div class=\"backup-meta\">{meta_line}</div>" if meta_line else ""}'
-        f'{f"<div class=\"backup-note\">{p.get('"'"'note'"'"', '"'"''"'"')}</div>" if p.get("note") else ""}'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
+
+    # 把店名 / meta / note 一次組好
+    html_parts = [f'<div class="{sched_cls}">']
+    html_parts.append(f'<div class="backup-name">{name}{star_html}{already_html}</div>')
+    if meta_line:
+        html_parts.append(f'<div class="backup-meta">{meta_line}</div>')
+    if note_text:
+        html_parts.append(f'<div class="backup-note">{html_lib.escape(note_text)}</div>')
+    html_parts.append('</div>')
+    st.markdown(''.join(html_parts), unsafe_allow_html=True)
+
+    # 按鈕列
     _render_buttons_for_place(p, mode="walking", show_taxi=True)
+
+    # 分隔線：放在按鈕「下方」，這樣排序變成 名稱 → meta → note → GNT → ─── → 下一個
+    if not is_last:
+        st.markdown(
+            '<hr style="border:none;border-top:1px dashed rgba(128,128,128,.25);'
+            'margin:0.4rem 0 0.5rem 0;">',
+            unsafe_allow_html=True,
+        )
 
 
 def _render_backup_list(items, scheduled_ids):
     items_sorted = sorted(items, key=lambda x: (x[0] in scheduled_ids, x[0]))
-    for pid, p in items_sorted:
-        _render_backup_item(pid, p, already=(pid in scheduled_ids))
+    total = len(items_sorted)
+    for i, (pid, p) in enumerate(items_sorted):
+        _render_backup_item(pid, p, already=(pid in scheduled_ids), is_last=(i == total - 1))
 
 
 # ================================================================
