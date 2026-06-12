@@ -1,13 +1,11 @@
 """
-渲染共用函式（v6 卡片內嵌按鈕版）：
-- G / N / T 直接放在卡片內、店名右邊
-- T 在 N 右邊
-- 按 T：先複製韓文店名，再嘗試開啟 Kakao T
-- 不再自動開 fallback 網頁，避免 iPhone 多開一個錯誤頁
-- 其餘 stop / note / multi_card / hotel_bottom API 盡量維持不變
+渲染共用函式（v2 卡片版）：
+- 所有 HTML 一律用「單行串接」組出來，零縮排 → 永遠不會被 Markdown 當成程式碼區塊
+- 卡片式設計：左側彩色類別晶片 + 卡片陰影 + 左側色條
+- expander 內容固定高度 320px，超過用上下滑動
+- set_scheduled()：登記當天主行程已排的店，所有「其他」expander 會把已排的沉到最下面並標「已排」
 """
 import streamlit as st
-import streamlit.components.v1 as components
 import urllib.parse
 import html as html_lib
 
@@ -18,27 +16,20 @@ from places import PLACES, get_by_area, AREA_HONGDAE
 # 當天已排清單（每次 rerun 由 day 檔重新登記）
 # ================================================================
 _SCHEDULED = {"food": set(), "shop": set()}
-_RENDER_SEQ = 0
 
 
 def set_scheduled(today_food=None, today_shop=None):
-    """在每天 show_day() 最開頭呼叫，登記當天主行程已排的 place_ids。"""
+    """在每天 show_day() 最開頭呼叫，登記當天主行程已排的 place_ids。
+    之後所有「其他吃的/逛的」expander 都會自動把這些項目排到最後並標「已排」。"""
     _SCHEDULED["food"] = set(today_food or [])
     _SCHEDULED["shop"] = set(today_shop or [])
-
-
-def _next_key(prefix: str) -> str:
-    """
-    產生同一次 rerun 內唯一 key，避免重複元件衝突。
-    """
-    global _RENDER_SEQ
-    _RENDER_SEQ += 1
-    return f"{prefix}_{_RENDER_SEQ}"
 
 
 # ================================================================
 # 全域 CSS
 # ================================================================
+# 注意：這段字串「故意完全靠左、不縮排」。
+# st.markdown 遇到縮排 4 格以上的行會當成 code block，CSS 就會直接印在畫面上。
 _CSS = """
 <style>
 /* ===== 主卡片 ===== */
@@ -79,68 +70,35 @@ _CSS = """
 }
 
 /* 類別顏色 */
-.acc-morning{ --card-accent:#f59e0b; }
-.acc-lunch  { --card-accent:#f97316; }
-.acc-dinner { --card-accent:#ef4444; }
-.acc-night  { --card-accent:#6366f1; }
-.acc-snack  { --card-accent:#ec4899; }
-.acc-shop   { --card-accent:#a855f7; }
-.acc-sight  { --card-accent:#10b981; }
-.acc-stay   { --card-accent:#3b82f6; }
-.acc-move   { --card-accent:#94a3b8; }
+.acc-morning{ --card-accent:#f59e0b; }   /* 早 */
+.acc-lunch  { --card-accent:#f97316; }   /* 午 */
+.acc-dinner { --card-accent:#ef4444; }   /* 晚 */
+.acc-night  { --card-accent:#6366f1; }   /* 宵 */
+.acc-snack  { --card-accent:#ec4899; }   /* 點 */
+.acc-shop   { --card-accent:#a855f7; }   /* 逛/買 */
+.acc-sight  { --card-accent:#10b981; }   /* 景 */
+.acc-stay   { --card-accent:#3b82f6; }   /* 住 */
+.acc-move   { --card-accent:#94a3b8; }   /* 交通/其他 */
 
-.stop-card .body{
-  flex-grow:1;
-  min-width:0;
+.stop-card .body{ flex-grow:1; min-width:0; }
+.stop-card .top-row{
+  display:flex; align-items:center; gap:8px;
+  flex-wrap:nowrap; justify-content:space-between;
 }
-
-/* 店名列：左邊標題，右邊按鈕 */
-.stop-card .title-row{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:8px;
-  width:100%;
+.stop-card h4{
+  margin:0; font-size:15.5px; font-weight:700;
+  color:var(--text-color); line-height:1.35;
+  flex:1; min-width:0;
 }
-.stop-card .title-wrap{
-  min-width:0;
-  flex:1 1 auto;
-}
-.stop-card .title-wrap h4{
-  margin:0;
-  font-size:15.5px;
-  font-weight:700;
-  color:var(--text-color);
-  line-height:1.35;
-  word-break:break-word;
-}
-.stop-card .actions-wrap{
-  flex:0 0 auto;
-  min-width:132px;
-  display:flex;
-  justify-content:flex-end;
-  align-items:flex-start;
-  padding-top:1px;
-}
-
 .stop-card .meta{
-  font-size:12px;
-  color:var(--text-color);
-  opacity:.62;
-  margin:4px 0 0 0;
-  line-height:1.45;
+  font-size:12px; color:var(--text-color); opacity:.62;
+  margin:4px 0 0 0; line-height:1.45;
 }
 .stop-card .note{
-  font-size:12.5px;
-  color:var(--text-color);
-  opacity:.88;
-  margin:5px 0 0 0;
-  line-height:1.5;
+  font-size:12.5px; color:var(--text-color); opacity:.88;
+  margin:5px 0 0 0; line-height:1.5;
 }
-.stop-card .star{
-  color:#ff4b4b;
-  font-size:13px;
-}
+.stop-card .star{ color:#ff4b4b; font-size:13px; }
 
 /* ===== 純說明卡（交通/提醒，虛線） ===== */
 .note-card{
@@ -150,9 +108,7 @@ _CSS = """
   border-radius:14px;
   padding:10px 14px;
   margin:8px 0;
-  display:flex;
-  gap:11px;
-  align-items:flex-start;
+  display:flex; gap:11px; align-items:flex-start;
 }
 .note-card .chip{
   flex-shrink:0; width:34px; height:34px;
@@ -162,21 +118,19 @@ _CSS = """
   background:rgba(128,128,128,.10);
 }
 .note-card .body{ flex-grow:1; min-width:0; }
+.note-card .top-row{
+  display:flex; align-items:center; gap:8px;
+  flex-wrap:nowrap; justify-content:space-between;
+}
 .note-card h5{
   margin:0; font-size:14.5px; font-weight:700;
-  line-height:1.35;
+  line-height:1.35; flex:1; min-width:0;
 }
 .note-card .meta{ font-size:12px; opacity:.68; margin-top:3px; line-height:1.45; }
 .note-card .note{ font-size:12.5px; opacity:.86; margin-top:4px; line-height:1.5; }
 
-/* ===== G / N HTML 圓鈕 ===== */
-.nav-btns{
-  display:flex;
-  gap:6px;
-  align-items:center;
-  justify-content:flex-end;
-  margin-top:2px;
-}
+/* ===== G / N / T 圓鈕 ===== */
+.nav-btns{ display:flex; gap:6px; flex-shrink:0; align-items:center; }
 .nav-btn{
   display:inline-flex; align-items:center; justify-content:center;
   width:30px; height:30px; border-radius:50%;
@@ -185,11 +139,11 @@ _CSS = """
   transition:transform .1s;
   font-family:system-ui,-apple-system,sans-serif;
   box-shadow:0 1px 2px rgba(0,0,0,.15);
-  border:none;
 }
 .nav-btn:active{ transform:scale(.92); }
 .nav-btn.g{ background:#4285F4; color:#fff !important; }
 .nav-btn.n{ background:#03C75A; color:#fff !important; }
+.nav-btn.t{ background:#FAE100; color:#371D1E !important; }
 
 /* ===== 備案 / 飯店附近清單項目 ===== */
 .backup-item{
@@ -198,48 +152,14 @@ _CSS = """
   border-radius:12px;
   padding:9px 11px;
   margin:6px 2px;
+  display:flex; gap:10px; align-items:flex-start;
   box-shadow:0 1px 2px rgba(0,0,0,.04);
 }
 .backup-item.scheduled{ opacity:.62; }
-
-.backup-item .title-row{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:8px;
-  width:100%;
-}
-.backup-item .title-wrap{
-  min-width:0;
-  flex:1 1 auto;
-}
-.backup-item .actions-wrap{
-  flex:0 0 auto;
-  min-width:132px;
-  display:flex;
-  justify-content:flex-end;
-  align-items:flex-start;
-  padding-top:1px;
-}
-
-.backup-item .name{
-  font-size:13.5px;
-  font-weight:700;
-  line-height:1.35;
-  word-break:break-word;
-}
-.backup-item .small-meta{
-  font-size:11.5px;
-  opacity:.65;
-  margin-top:2px;
-  line-height:1.4;
-}
-.backup-item .small-note{
-  font-size:11.5px;
-  opacity:.82;
-  margin-top:3px;
-  line-height:1.45;
-}
+.backup-item .info{ flex-grow:1; min-width:0; }
+.backup-item .name{ font-size:13.5px; font-weight:700; line-height:1.35; }
+.backup-item .small-meta{ font-size:11.5px; opacity:.65; margin-top:2px; line-height:1.4; }
+.backup-item .small-note{ font-size:11.5px; opacity:.82; margin-top:3px; line-height:1.45; }
 .backup-item .already{
   font-size:10px; font-weight:700;
   background:rgba(255,75,75,.13); color:#ff4b4b;
@@ -255,12 +175,14 @@ div[data-testid="stExpander"] [data-testid="stExpanderDetails"]{
   padding-top:4px !important;
   padding-right:6px;
 }
+/* 舊版 Streamlit 結構 fallback */
 div[data-testid="stExpander"] details > div{
   max-height:320px;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   padding-top:4px !important;
 }
+
 
 /* ===== 同一張卡片內的多個分段 ===== */
 .stop-card .section{
@@ -270,14 +192,6 @@ div[data-testid="stExpander"] details > div{
 }
 .stop-card .section:first-of-type{
   border-top:none; margin-top:0; padding-top:0;
-}
-
-/* ===== 手機微調 ===== */
-@media (max-width: 640px){
-  .stop-card .actions-wrap,
-  .backup-item .actions-wrap{
-    min-width:120px;
-  }
 }
 
 #MainMenu{visibility:hidden;}
@@ -331,15 +245,38 @@ def naver_url(query=None, lat=None, lng=None, name=None, mode="walking"):
     return f"nmap://map?appname={appname}"
 
 
-def kakao_t_scheme_url():
-    return "kakaot://home"
+def kakaot_url():
+    return "kakaotaxi://"
 
 
 def _safe_href(url: str) -> str:
     return html_lib.escape(url, quote=True)
 
 
+# ================================================================
+# HTML 片段建構器（全部單行串接，零縮排）
+# ================================================================
+def _nav_btns_html(place, show_taxi=True, mode="walking"):
+    name = place["name"]
+    name_kr = place.get("name_kr", name)
+    lat = place.get("lat")
+    lng = place.get("lng")
+
+    g = _safe_href(gmap_url(f"{name_kr} {place.get('address', '')}", mode))
+    n = _safe_href(naver_url(query=name_kr, lat=lat, lng=lng, name=name, mode=mode))
+
+    parts = [
+        f'<a class="nav-btn g" href="{g}" target="_blank" title="Google Maps">G</a>',
+        f'<a class="nav-btn n" href="{n}" title="NAVER">N</a>',
+    ]
+    if show_taxi:
+        t = _safe_href(kakaot_url())
+        parts.append(f'<a class="nav-btn t" href="{t}" title="Kakao T">T</a>')
+    return '<div class="nav-btns">' + ''.join(parts) + '</div>'
+
+
 def _build_meta_line(place):
+    """產生 'name_kr｜sub · hours' 這一行。"""
     name_kr = place.get("name_kr", "")
     parts = []
     if place.get("sub"):
@@ -357,151 +294,17 @@ def _build_meta_line(place):
     return ""
 
 
-def _js_escape_text(text: str) -> str:
+def _card_html(accent_cls, chip_html, title_html, btns_html, meta_html, note_html,
+               card_class="stop-card", title_tag="h4"):
+    """組出一張卡片的完整 HTML（單行，零換行零縮排）。"""
     return (
-        str(text)
-        .replace("\\", "\\\\")
-        .replace("'", "\\'")
-        .replace("\n", "\\n")
-        .replace("\r", "")
-    )
-
-
-def _render_action_buttons(place, mode="walking", copy_text=None, key_prefix="btn"):
-    """
-    G | N | T 三顆按鈕固定同排，輸出成一個 HTML 元件。
-    T：先複製韓文店名，再開啟 Kakao T。
-    """
-    unique = _next_key(key_prefix)
-    name_kr = str(copy_text or place.get("name_kr") or place["name"])
-    text_js = _js_escape_text(name_kr)
-
-    g = _safe_href(gmap_url(f"{place.get('name_kr', place['name'])} {place.get('address', '')}", mode))
-    n = _safe_href(
-        naver_url(
-            query=place.get("name_kr", place["name"]),
-            lat=place.get("lat"),
-            lng=place.get("lng"),
-            name=place.get("name", place.get("name_kr", "目的地")),
-            mode=mode
-        )
-    )
-    t = kakao_t_scheme_url()
-
-    button_id = f"btn_t_{unique}"
-
-    html_code = f"""
-    <div style="
-      display:flex;
-      justify-content:flex-end;
-      align-items:center;
-      gap:6px;
-      width:132px;
-      min-width:132px;
-      white-space:nowrap;
-      overflow:hidden;
-      margin:0;
-      padding:0;
-    ">
-      <a href="{g}" target="_blank" rel="noopener noreferrer" title="Google Maps"
-         style="
-           display:inline-flex; align-items:center; justify-content:center;
-           width:30px; min-width:30px; height:30px; border-radius:50%;
-           background:#4285F4; color:#fff; text-decoration:none;
-           font-weight:800; font-size:13.5px;
-           font-family:system-ui,-apple-system,sans-serif;
-           box-shadow:0 1px 2px rgba(0,0,0,.15);
-           flex:0 0 30px;
-         ">G</a>
-
-      <a href="{n}" title="NAVER"
-         style="
-           display:inline-flex; align-items:center; justify-content:center;
-           width:30px; min-width:30px; height:30px; border-radius:50%;
-           background:#03C75A; color:#fff; text-decoration:none;
-           font-weight:800; font-size:13.5px;
-           font-family:system-ui,-apple-system,sans-serif;
-           box-shadow:0 1px 2px rgba(0,0,0,.15);
-           flex:0 0 30px;
-         ">N</a>
-
-      <button id="{button_id}" type="button" title="Copy Korean name and open Kakao T"
-         style="
-           display:inline-flex; align-items:center; justify-content:center;
-           width:30px; min-width:30px; height:30px; border:none; border-radius:50%;
-           background:#FEE500; color:#191919;
-           font-weight:800; font-size:13.5px;
-           font-family:system-ui,-apple-system,sans-serif;
-           box-shadow:0 1px 2px rgba(0,0,0,.15);
-           cursor:pointer;
-           padding:0;
-           flex:0 0 30px;
-         ">T</button>
-    </div>
-
-    <script>
-    (function() {{
-      const btn = document.getElementById('{button_id}');
-      if (!btn) return;
-
-      btn.addEventListener('click', async function() {{
-        const textToCopy = '{text_js}';
-        const original = btn.innerText;
-        let copied = false;
-
-        try {{
-          if (navigator.clipboard && window.isSecureContext) {{
-            await navigator.clipboard.writeText(textToCopy);
-            copied = true;
-          }} else {{
-            const ta = document.createElement('textarea');
-            ta.value = textToCopy;
-            ta.style.position = 'fixed';
-            ta.style.left = '-9999px';
-            ta.style.top = '0';
-            document.body.appendChild(ta);
-            ta.focus();
-            ta.select();
-            copied = document.execCommand('copy');
-            document.body.removeChild(ta);
-          }}
-        }} catch (e) {{
-          copied = false;
-        }}
-
-        btn.innerText = copied ? '✓' : 'T';
-        setTimeout(() => {{
-          btn.innerText = original;
-        }}, 1000);
-
-        window.location.href = '{t}';
-      }});
-    }})();
-    </script>
-    """
-    components.html(html_code, height=34, width=132)
-
-
-def _render_card_inner(tag, title_html, meta_html="", note_html="", actions_html=None, accent_override=None):
-    accent = accent_override or _accent_cls(tag)
-
-    if tag:
-        chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>'
-    else:
-        chip_html = '<div class="chip ghost">·</div>'
-
-    title_row = (
-        '<div class="title-row">'
-        f'<div class="title-wrap"><h4>{title_html}</h4></div>'
-        f'<div class="actions-wrap">{actions_html or ""}</div>'
-        '</div>'
-    )
-
-    return (
-        f'<div class="stop-card {accent}">'
+        f'<div class="{card_class} {accent_cls}">'
         f'{chip_html}'
         f'<div class="body">'
-        f'{title_row}'
+        f'<div class="top-row">'
+        f'<{title_tag}>{title_html}</{title_tag}>'
+        f'{btns_html}'
+        f'</div>'
         f'{meta_html}'
         f'{note_html}'
         f'</div>'
@@ -509,8 +312,12 @@ def _render_card_inner(tag, title_html, meta_html="", note_html="", actions_html
     )
 
 
+# ================================================================
+# 主行程卡片渲染
+# ================================================================
 def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walking",
                  accent_override=None):
+    """渲染單張主行程卡片。tag 是 '晚'/'逛'/'宵' 等；空字串就隱形(對齊用)。"""
     if place_id not in PLACES:
         st.error(f"❌ 找不到地點: {place_id}")
         return
@@ -523,41 +330,25 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
     note = note_override if note_override is not None else p.get("note", "")
     note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
 
-    unique_holder = f"holder_main_{_next_key(place_id)}"
+    accent = accent_override or _accent_cls(tag)
+    if tag:
+        chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>'
+    else:
+        chip_html = '<div class="chip ghost">·</div>'
+
+    btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode)
+
     st.markdown(
-        _render_card_inner(
-            tag=tag,
-            title_html=f"{name}{star}",
-            meta_html=meta_html,
-            note_html=note_html,
-            actions_html=f'<div id="{unique_holder}"></div>',
-            accent_override=accent_override,
-        ),
+        _card_html(accent, chip_html, f'{name}{star}', btns, meta_html, note_html),
         unsafe_allow_html=True,
     )
 
-    if show_taxi:
-        components.html(
-            f"""
-            <script>
-            (function() {{
-              const parentDoc = window.parent.document;
-              const holder = parentDoc.getElementById('{unique_holder}');
-              if (!holder) return;
-            }})();
-            </script>
-            """,
-            height=0,
-        )
-        _render_action_buttons(
-            place=p,
-            mode=mode,
-            copy_text=str(p.get("name_kr") or p["name"]),
-            key_prefix=f"main_{place_id}_{tag}_{mode}"
-        )
-
 
 def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
+    """
+    自訂卡片：給 Day1 第1~3格這種特殊內容用。
+    links: list[dict]，例如 [{"label": "G", "url": "...", "cls": "g"}]
+    """
     card_class = "note-card" if dashed else "stop-card"
     title_tag = "h5" if dashed else "h4"
     accent = _accent_cls(tag)
@@ -580,33 +371,24 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
         for item in links:
             label = html_lib.escape(item.get("label", ""))
             cls = html_lib.escape(item.get("cls", "g"))
-            raw_url = item.get("url", "#")
-            url = _safe_href(raw_url)
-            target = ' target="_blank" rel="noopener noreferrer"' if str(raw_url).startswith("http") else ""
+            url = _safe_href(item.get("url", "#"))
+            target = ' target="_blank"' if url.startswith("http") else ""
             parts.append(
                 f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>'
             )
         btns_html = '<div class="nav-btns">' + ''.join(parts) + '</div>'
 
     st.markdown(
-        (
-            f'<div class="{card_class} {accent}">'
-            f'{chip_html}'
-            f'<div class="body">'
-            f'<{title_tag}>{title_e}</{title_tag}>'
-            f'{meta_html}'
-            f'{note_html}'
-            f'</div>'
-            f'</div>'
-        ),
+        _card_html(accent, chip_html, title_e, btns_html, meta_html, note_html,
+                   card_class=card_class, title_tag=title_tag),
         unsafe_allow_html=True,
     )
 
-    if btns_html:
-        st.markdown(btns_html, unsafe_allow_html=True)
 
-
-def _render_backup_item(pid, p, already=False):
+# ================================================================
+# 備案 / 飯店附近清單項目
+# ================================================================
+def _render_backup_item(p, already=False):
     name = html_lib.escape(p["name"])
     star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
     already_tag = '<span class="already">已排</span>' if already else ''
@@ -630,52 +412,48 @@ def _render_backup_item(pid, p, already=False):
 
     meta_html = f'<div class="small-meta">{meta_line}</div>' if meta_line else ''
     note_html = f'<div class="small-note">{html_lib.escape(p.get("note", ""))}</div>' if p.get("note") else ''
+    btns = _nav_btns_html(p, show_taxi=True, mode="walking")
     item_cls = "backup-item scheduled" if already else "backup-item"
-
-    holder_id = f"holder_backup_{_next_key(pid)}"
 
     st.markdown(
         (
             f'<div class="{item_cls}">'
-            f'<div class="title-row">'
-            f'<div class="title-wrap"><div class="name">{name}{star}{already_tag}</div></div>'
-            f'<div class="actions-wrap"><div id="{holder_id}"></div></div>'
-            f'</div>'
+            f'<div class="info">'
+            f'<div class="name">{name}{star}{already_tag}</div>'
             f'{meta_html}'
             f'{note_html}'
+            f'</div>'
+            f'{btns}'
             f'</div>'
         ),
         unsafe_allow_html=True,
     )
 
-    components.html(
-        f"""
-        <script>
-        (function() {{
-          const parentDoc = window.parent.document;
-          const holder = parentDoc.getElementById('{holder_id}');
-          if (!holder) return;
-        }})();
-        </script>
-        """,
-        height=0,
-    )
-
-    _render_action_buttons(
-        place=p,
-        mode="walking",
-        copy_text=str(p.get("name_kr") or p["name"]),
-        key_prefix=f"backup_{pid}"
-    )
-
 
 def _render_backup_list(items, scheduled_ids):
+    """已排的沉到最下面 + 標「已排」。items: list[(pid, place)]"""
     items_sorted = sorted(items, key=lambda x: (x[0] in scheduled_ids, x[0]))
     for pid, p in items_sorted:
-        _render_backup_item(pid, p, already=(pid in scheduled_ids))
+        _render_backup_item(p, already=(pid in scheduled_ids))
 
 
+# ================================================================
+# 公開 API
+# ================================================================
 def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"):
+    """
+    顯示一個或多個主行程地點，共用一個類別標籤。
+
+    Args:
+        tag: '早'/'午'/'晚'/'宵'/'點'/'逛'/'買'/'景'/'住' 等。
+        place_ids: str (單筆) 或 list[str] (group)
+        others: None / "food" / "shop" — 加一個「其他」expander。
+                清單中若有「當天主行程已排」(set_scheduled 登記過) 的項目，
+                會沉到最下面並標「已排」。
+        notes: None / str / list — 覆寫卡片上的 note。
+        show_taxi: 是否顯示 Kakao T (T) 按鈕。
+        mode: walking / driving / transit
+    """
     if isinstance(place_ids, str):
         place_ids = [place_ids]
 
@@ -700,6 +478,7 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
         area = first_p.get("area")
         cat_label = {"food": "其他吃的", "shop": "其他逛的"}.get(others, "其他")
         with st.expander(f"🔄 {cat_label}（{area}附近）"):
+            # 只排除「這一格自己」的店；當天其他時段已排的會顯示在最下面標「已排」
             items = get_by_area(area, exclude=place_ids, cat=others)
             if not items:
                 st.caption(f"({area} 沒有其他 {cat_label} 資料)")
@@ -708,10 +487,16 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
 
 
 def note(tag, title, meta=None, note=None):
+    """顯示一個沒有座標、沒有 G/N/T 按鈕的純說明卡。"""
     custom_card(tag=tag, title=title, meta=meta, note=note, links=None, dashed=True)
 
 
 def hotel_bottom(today_food=None, today_shop=None):
+    """
+    每天最下面：住 (卡片) + 🍽️吃 (expander) + 🛍️逛 (expander)。
+    today_food / today_shop 不傳的話，自動用 set_scheduled() 登記的清單。
+    已排項目沉到最下面 + 標「已排」。
+    """
     food_sched = set(today_food) if today_food is not None else _SCHEDULED["food"]
     shop_sched = set(today_shop) if today_shop is not None else _SCHEDULED["shop"]
 
@@ -728,92 +513,68 @@ def hotel_bottom(today_food=None, today_shop=None):
         _render_backup_list(shop_all, shop_sched)
 
 
+# ================================================================
+# 多段合併卡片：多個主要點放在同一張卡片裡，每點標題粗體
+# ================================================================
 def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
+    """
+    把多個「主要點」合併在同一張卡片內，每點標題用粗體 (h4)，
+    各自可以有 meta / note / G·N·T 按鈕，點與點之間用虛線分隔。
+
+    sections: list[dict]，每個 dict 二選一：
+      A. {"place_id": "yukmong", "note": "覆寫備註(選填)"}
+         → 從 PLACES 撈名稱/⭐/meta/座標，自動產生 G/N/T 按鈕
+      B. {"title": "AREX (...)", "meta": "...", "note": "...",
+          "links": [{"label":"G","url":"...","cls":"g"}, ...]}
+         → 自訂內容
+    others: None / "food" / "shop" — 同 stop()，加「其他」expander，
+            已排的沉底標「已排」。
+    """
     accent = _accent_cls(tag)
+    chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if tag else '<div class="chip ghost">·</div>'
 
     place_ids = []
-    for idx, s in enumerate(sections):
+    sec_parts = []
+    for s in sections:
         if "place_id" in s:
             pid = s["place_id"]
             if pid not in PLACES:
                 st.error(f"❌ 找不到地點: {pid}")
                 continue
-
             place_ids.append(pid)
             p = PLACES[pid]
             title_html = html_lib.escape(p["name"]) + ('<span class="star"> ⭐</span>' if p.get("priority") else '')
             meta = _build_meta_line(p)
             note_txt = s.get("note") if s.get("note") is not None else p.get("note", "")
-
-            meta_html = f'<p class="meta">{meta}</p>' if meta else ''
-            note_html = f'<p class="note">{html_lib.escape(note_txt)}</p>' if note_txt else ''
-
-            holder_id = f"holder_multi_{_next_key(pid)}"
-
-            chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if idx == 0 and tag else '<div class="chip ghost">·</div>'
-
-            st.markdown(
-                (
-                    f'<div class="stop-card {accent}">'
-                    f'{chip_html}'
-                    f'<div class="body">'
-                    f'<div class="title-row">'
-                    f'<div class="title-wrap"><h4>{title_html}</h4></div>'
-                    f'<div class="actions-wrap"><div id="{holder_id}"></div></div>'
-                    f'</div>'
-                    f'{meta_html}'
-                    f'{note_html}'
-                    f'</div>'
-                    f'</div>'
-                ),
-                unsafe_allow_html=True,
-            )
-
-            components.html(
-                f"""
-                <script>
-                (function() {{
-                  const parentDoc = window.parent.document;
-                  const holder = parentDoc.getElementById('{holder_id}');
-                  if (!holder) return;
-                }})();
-                </script>
-                """,
-                height=0,
-            )
-
-            if show_taxi:
-                _render_action_buttons(
-                    place=p,
-                    mode=mode,
-                    copy_text=str(p.get("name_kr") or p["name"]),
-                    key_prefix=f"multi_{pid}_{idx}"
-                )
-
+            btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode)
         else:
             title_html = html_lib.escape(s.get("title", ""))
             meta = html_lib.escape(s["meta"]) if s.get("meta") else ""
             note_txt = s.get("note", "")
-            meta_html = f'<p class="meta">{meta}</p>' if meta else ''
-            note_html = f'<p class="note">{html_lib.escape(note_txt)}</p>' if note_txt else ''
+            btns = ""
+            if s.get("links"):
+                bp = []
+                for item in s["links"]:
+                    label = html_lib.escape(item.get("label", ""))
+                    cls = html_lib.escape(item.get("cls", "g"))
+                    url = _safe_href(item.get("url", "#"))
+                    target = ' target="_blank"' if url.startswith("http") else ""
+                    bp.append(f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>')
+                btns = '<div class="nav-btns">' + ''.join(bp) + '</div>'
 
-            chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if idx == 0 and tag else '<div class="chip ghost">·</div>'
+        meta_html = f'<p class="meta">{meta}</p>' if meta else ''
+        note_html = f'<p class="note">{html_lib.escape(note_txt)}</p>' if note_txt else ''
+        sec_parts.append(
+            f'<div class="section">'
+            f'<div class="top-row"><h4>{title_html}</h4>{btns}</div>'
+            f'{meta_html}{note_html}'
+            f'</div>'
+        )
 
-            st.markdown(
-                (
-                    f'<div class="stop-card {accent}">'
-                    f'{chip_html}'
-                    f'<div class="body">'
-                    f'<div class="title-row">'
-                    f'<div class="title-wrap"><h4>{title_html}</h4></div>'
-                    f'</div>'
-                    f'{meta_html}'
-                    f'{note_html}'
-                    f'</div>'
-                    f'</div>'
-                ),
-                unsafe_allow_html=True,
-            )
+    st.markdown(
+        f'<div class="stop-card {accent}">{chip_html}<div class="body">' + ''.join(sec_parts) + '</div></div>',
+        unsafe_allow_html=True,
+    )
 
     if others and place_ids:
         area = PLACES[place_ids[0]].get("area")
