@@ -1,14 +1,14 @@
 """
-渲染共用函式（v2 卡片版）：
-- 所有 HTML 一律用「單行串接」組出來，零縮排 → 永遠不會被 Markdown 當成程式碼區塊
-- 卡片式設計：左側彩色類別晶片 + 卡片陰影 + 左側色條
-- expander 內容固定高度 320px，超過用上下滑動
-- set_scheduled()：登記當天主行程已排的店，所有「其他」expander 會把已排的沉到最下面並標「已排」
+渲染共用函式（v3 component copy 版）：
+- G / N 仍用 HTML 小圓鈕
+- T 改用 st-copy-to-clipboard component，避免 Streamlit markdown/onclick 在手機上失效
+- 其餘 stop / note / multi_card / hotel_bottom API 盡量維持不變
 """
 import streamlit as st
 import urllib.parse
 import html as html_lib
 
+from st_copy_to_clipboard import st_copy_to_clipboard
 from places import PLACES, get_by_area, AREA_HONGDAE
 
 
@@ -19,8 +19,7 @@ _SCHEDULED = {"food": set(), "shop": set()}
 
 
 def set_scheduled(today_food=None, today_shop=None):
-    """在每天 show_day() 最開頭呼叫，登記當天主行程已排的 place_ids。
-    之後所有「其他吃的/逛的」expander 都會自動把這些項目排到最後並標「已排」。"""
+    """在每天 show_day() 最開頭呼叫，登記當天主行程已排的 place_ids。"""
     _SCHEDULED["food"] = set(today_food or [])
     _SCHEDULED["shop"] = set(today_shop or [])
 
@@ -79,14 +78,9 @@ _CSS = """
 .acc-move   { --card-accent:#94a3b8; }
 
 .stop-card .body{ flex-grow:1; min-width:0; }
-.stop-card .top-row{
-  display:flex; align-items:center; gap:8px;
-  flex-wrap:nowrap; justify-content:space-between;
-}
 .stop-card h4{
   margin:0; font-size:15.5px; font-weight:700;
   color:var(--text-color); line-height:1.35;
-  flex:1; min-width:0;
 }
 .stop-card .meta{
   font-size:12px; color:var(--text-color); opacity:.62;
@@ -106,7 +100,9 @@ _CSS = """
   border-radius:14px;
   padding:10px 14px;
   margin:8px 0;
-  display:flex; gap:11px; align-items:flex-start;
+  display:flex;
+  gap:11px;
+  align-items:flex-start;
 }
 .note-card .chip{
   flex-shrink:0; width:34px; height:34px;
@@ -116,19 +112,21 @@ _CSS = """
   background:rgba(128,128,128,.10);
 }
 .note-card .body{ flex-grow:1; min-width:0; }
-.note-card .top-row{
-  display:flex; align-items:center; gap:8px;
-  flex-wrap:nowrap; justify-content:space-between;
-}
 .note-card h5{
   margin:0; font-size:14.5px; font-weight:700;
-  line-height:1.35; flex:1; min-width:0;
+  line-height:1.35;
 }
 .note-card .meta{ font-size:12px; opacity:.68; margin-top:3px; line-height:1.45; }
 .note-card .note{ font-size:12.5px; opacity:.86; margin-top:4px; line-height:1.5; }
 
-/* ===== G / N / T 圓鈕 ===== */
-.nav-btns{ display:flex; gap:6px; flex-shrink:0; align-items:center; }
+/* ===== G / N HTML 圓鈕 ===== */
+.nav-btns{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  justify-content:flex-end;
+  margin-top:2px;
+}
 .nav-btn{
   display:inline-flex; align-items:center; justify-content:center;
   width:30px; height:30px; border-radius:50%;
@@ -137,15 +135,10 @@ _CSS = """
   transition:transform .1s;
   font-family:system-ui,-apple-system,sans-serif;
   box-shadow:0 1px 2px rgba(0,0,0,.15);
-  border:none;
-  cursor:pointer;
-  -webkit-appearance:none;
-  appearance:none;
 }
 .nav-btn:active{ transform:scale(.92); }
 .nav-btn.g{ background:#4285F4; color:#fff !important; }
 .nav-btn.n{ background:#03C75A; color:#fff !important; }
-.nav-btn.t{ background:#FAE100; color:#371D1E !important; }
 
 /* ===== 備案 / 飯店附近清單項目 ===== */
 .backup-item{
@@ -154,11 +147,9 @@ _CSS = """
   border-radius:12px;
   padding:9px 11px;
   margin:6px 2px;
-  display:flex; gap:10px; align-items:flex-start;
   box-shadow:0 1px 2px rgba(0,0,0,.04);
 }
 .backup-item.scheduled{ opacity:.62; }
-.backup-item .info{ flex-grow:1; min-width:0; }
 .backup-item .name{ font-size:13.5px; font-weight:700; line-height:1.35; }
 .backup-item .small-meta{ font-size:11.5px; opacity:.65; margin-top:2px; line-height:1.4; }
 .backup-item .small-note{ font-size:11.5px; opacity:.82; margin-top:3px; line-height:1.45; }
@@ -249,50 +240,7 @@ def _safe_href(url: str) -> str:
     return html_lib.escape(url, quote=True)
 
 
-def _copy_btn_html(copy_text: str) -> str:
-    """
-    T 按鈕目前先只做「複製」。
-    iPhone / iOS 優先：使用 textarea + execCommand('copy')，
-    並且全部在同一次 onclick 同步事件中執行。
-    """
-    text = str(copy_text or "")
-    text_js = (
-        text.replace("\\", "\\\\")
-        .replace("'", "\\'")
-        .replace("\n", "\\n")
-        .replace("\r", "")
-    )
-
-    onclick = (
-        "var ta=document.createElement('textarea');"
-        f"ta.value='{text_js}';"
-        "ta.setAttribute('readonly','');"
-        "ta.style.position='fixed';"
-        "ta.style.top='0';"
-        "ta.style.left='0';"
-        "ta.style.opacity='0.01';"
-        "ta.style.fontSize='16px';"
-        "ta.style.zIndex='-1';"
-        "document.body.appendChild(ta);"
-        "ta.focus();"
-        "ta.select();"
-        "ta.setSelectionRange(0, ta.value.length);"
-        "try{document.execCommand('copy');}catch(e){}"
-        "document.body.removeChild(ta);"
-        "return false;"
-    )
-
-    return (
-        f'<a class="nav-btn t" href="#" '
-        f'onclick="{html_lib.escape(onclick, quote=True)}" '
-        f'title="複製韓文店名">T</a>'
-    )
-
-
-# ================================================================
-# HTML 片段建構器（全部單行串接，零縮排）
-# ================================================================
-def _nav_btns_html(place, show_taxi=True, mode="walking"):
+def _nav_btns_html(place, mode="walking"):
     name = place["name"]
     name_kr = place.get("name_kr", name)
     lat = place.get("lat")
@@ -301,19 +249,15 @@ def _nav_btns_html(place, show_taxi=True, mode="walking"):
     g = _safe_href(gmap_url(f"{name_kr} {place.get('address', '')}", mode))
     n = _safe_href(naver_url(query=name_kr, lat=lat, lng=lng, name=name, mode=mode))
 
-    parts = [
-        f'<a class="nav-btn g" href="{g}" target="_blank" title="Google Maps">G</a>',
-        f'<a class="nav-btn n" href="{n}" title="NAVER">N</a>',
-    ]
-
-    if show_taxi:
-        parts.append(_copy_btn_html(str(name_kr or name)))
-
-    return '<div class="nav-btns">' + ''.join(parts) + '</div>'
+    return (
+        '<div class="nav-btns">'
+        f'<a class="nav-btn g" href="{g}" target="_blank" title="Google Maps">G</a>'
+        f'<a class="nav-btn n" href="{n}" title="NAVER">N</a>'
+        '</div>'
+    )
 
 
 def _build_meta_line(place):
-    """產生 'name_kr｜sub · hours' 這一行。"""
     name_kr = place.get("name_kr", "")
     parts = []
     if place.get("sub"):
@@ -331,20 +275,31 @@ def _build_meta_line(place):
     return ""
 
 
-def _card_html(accent_cls, chip_html, title_html, btns_html, meta_html, note_html,
-               card_class="stop-card", title_tag="h4"):
+def _render_title_body(tag, title_html, meta_html="", note_html="", card_class="stop-card", title_tag="h4"):
+    accent = _accent_cls(tag)
+    if tag:
+        chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>'
+    else:
+        chip_html = '<div class="chip ghost">·</div>'
+
     return (
-        f'<div class="{card_class} {accent_cls}">'
+        f'<div class="{card_class} {accent}">'
         f'{chip_html}'
         f'<div class="body">'
-        f'<div class="top-row">'
         f'<{title_tag}>{title_html}</{title_tag}>'
-        f'{btns_html}'
-        f'</div>'
         f'{meta_html}'
         f'{note_html}'
         f'</div>'
         f'</div>'
+    )
+
+
+def _copy_component(text: str, key: str):
+    st_copy_to_clipboard(
+        text=text,
+        before_copy_label="T",
+        after_copy_label="✓",
+        key=key,
     )
 
 
@@ -362,18 +317,34 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
     note = note_override if note_override is not None else p.get("note", "")
     note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
 
-    accent = accent_override or _accent_cls(tag)
-    if tag:
-        chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>'
-    else:
-        chip_html = '<div class="chip ghost">·</div>'
+    # 為了保留你原本視覺布局，改成左右兩欄：左邊卡片文字、右邊按鈕群
+    left, right = st.columns([12, 3], gap="small")
 
-    btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode)
+    with left:
+        accent = accent_override or _accent_cls(tag)
+        if tag:
+            chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>'
+        else:
+            chip_html = '<div class="chip ghost">·</div>'
 
-    st.markdown(
-        _card_html(accent, chip_html, f'{name}{star}', btns, meta_html, note_html),
-        unsafe_allow_html=True,
-    )
+        st.markdown(
+            (
+                f'<div class="stop-card {accent}">'
+                f'{chip_html}'
+                f'<div class="body">'
+                f'<h4>{name}{star}</h4>'
+                f'{meta_html}'
+                f'{note_html}'
+                f'</div>'
+                f'</div>'
+            ),
+            unsafe_allow_html=True,
+        )
+
+    with right:
+        st.markdown(_nav_btns_html(p, mode=mode), unsafe_allow_html=True)
+        if show_taxi:
+            _copy_component(str(p.get("name_kr") or p["name"]), key=f"copy_main_{place_id}_{tag}_{mode}")
 
 
 def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
@@ -407,14 +378,29 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
             )
         btns_html = '<div class="nav-btns">' + ''.join(parts) + '</div>'
 
-    st.markdown(
-        _card_html(accent, chip_html, title_e, btns_html, meta_html, note_html,
-                   card_class=card_class, title_tag=title_tag),
-        unsafe_allow_html=True,
-    )
+    left, right = st.columns([12, 3], gap="small")
+
+    with left:
+        st.markdown(
+            (
+                f'<div class="{card_class} {accent}">'
+                f'{chip_html}'
+                f'<div class="body">'
+                f'<{title_tag}>{title_e}</{title_tag}>'
+                f'{meta_html}'
+                f'{note_html}'
+                f'</div>'
+                f'</div>'
+            ),
+            unsafe_allow_html=True,
+        )
+
+    with right:
+        if btns_html:
+            st.markdown(btns_html, unsafe_allow_html=True)
 
 
-def _render_backup_item(p, already=False):
+def _render_backup_item(pid, p, already=False):
     name = html_lib.escape(p["name"])
     star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
     already_tag = '<span class="already">已排</span>' if already else ''
@@ -438,28 +424,31 @@ def _render_backup_item(p, already=False):
 
     meta_html = f'<div class="small-meta">{meta_line}</div>' if meta_line else ''
     note_html = f'<div class="small-note">{html_lib.escape(p.get("note", ""))}</div>' if p.get("note") else ''
-    btns = _nav_btns_html(p, show_taxi=True, mode="walking")
     item_cls = "backup-item scheduled" if already else "backup-item"
 
-    st.markdown(
-        (
-            f'<div class="{item_cls}">'
-            f'<div class="info">'
-            f'<div class="name">{name}{star}{already_tag}</div>'
-            f'{meta_html}'
-            f'{note_html}'
-            f'</div>'
-            f'{btns}'
-            f'</div>'
-        ),
-        unsafe_allow_html=True,
-    )
+    left, right = st.columns([12, 3], gap="small")
+
+    with left:
+        st.markdown(
+            (
+                f'<div class="{item_cls}">'
+                f'<div class="name">{name}{star}{already_tag}</div>'
+                f'{meta_html}'
+                f'{note_html}'
+                f'</div>'
+            ),
+            unsafe_allow_html=True,
+        )
+
+    with right:
+        st.markdown(_nav_btns_html(p, mode="walking"), unsafe_allow_html=True)
+        _copy_component(str(p.get("name_kr") or p["name"]), key=f"copy_backup_{pid}")
 
 
 def _render_backup_list(items, scheduled_ids):
     items_sorted = sorted(items, key=lambda x: (x[0] in scheduled_ids, x[0]))
     for pid, p in items_sorted:
-        _render_backup_item(p, already=(pid in scheduled_ids))
+        _render_backup_item(pid, p, already=(pid in scheduled_ids))
 
 
 def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"):
@@ -517,27 +506,55 @@ def hotel_bottom(today_food=None, today_shop=None):
 
 def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
     accent = _accent_cls(tag)
-    chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if tag else '<div class="chip ghost">·</div>'
 
     place_ids = []
-    sec_parts = []
-    for s in sections:
+    for idx, s in enumerate(sections):
+        left, right = st.columns([12, 3], gap="small")
+
         if "place_id" in s:
             pid = s["place_id"]
             if pid not in PLACES:
                 st.error(f"❌ 找不到地點: {pid}")
                 continue
+
             place_ids.append(pid)
             p = PLACES[pid]
             title_html = html_lib.escape(p["name"]) + ('<span class="star"> ⭐</span>' if p.get("priority") else '')
             meta = _build_meta_line(p)
             note_txt = s.get("note") if s.get("note") is not None else p.get("note", "")
-            btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode)
+
+            meta_html = f'<p class="meta">{meta}</p>' if meta else ''
+            note_html = f'<p class="note">{html_lib.escape(note_txt)}</p>' if note_txt else ''
+
+            with left:
+                chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if idx == 0 and tag else '<div class="chip ghost">·</div>'
+                st.markdown(
+                    (
+                        f'<div class="stop-card {accent}">'
+                        f'{chip_html}'
+                        f'<div class="body">'
+                        f'<h4>{title_html}</h4>'
+                        f'{meta_html}'
+                        f'{note_html}'
+                        f'</div>'
+                        f'</div>'
+                    ),
+                    unsafe_allow_html=True,
+                )
+
+            with right:
+                st.markdown(_nav_btns_html(p, mode=mode), unsafe_allow_html=True)
+                if show_taxi:
+                    _copy_component(str(p.get("name_kr") or p["name"]), key=f"copy_multi_{pid}_{idx}")
+
         else:
             title_html = html_lib.escape(s.get("title", ""))
             meta = html_lib.escape(s["meta"]) if s.get("meta") else ""
             note_txt = s.get("note", "")
-            btns = ""
+            meta_html = f'<p class="meta">{meta}</p>' if meta else ''
+            note_html = f'<p class="note">{html_lib.escape(note_txt)}</p>' if note_txt else ''
+
+            btns_html = ""
             if s.get("links"):
                 bp = []
                 for item in s["links"]:
@@ -547,21 +564,27 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
                     url = _safe_href(raw_url)
                     target = ' target="_blank"' if str(raw_url).startswith("http") else ""
                     bp.append(f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>')
-                btns = '<div class="nav-btns">' + ''.join(bp) + '</div>'
+                btns_html = '<div class="nav-btns">' + ''.join(bp) + '</div>'
 
-        meta_html = f'<p class="meta">{meta}</p>' if meta else ''
-        note_html = f'<p class="note">{html_lib.escape(note_txt)}</p>' if note_txt else ''
-        sec_parts.append(
-            f'<div class="section">'
-            f'<div class="top-row"><h4>{title_html}</h4>{btns}</div>'
-            f'{meta_html}{note_html}'
-            f'</div>'
-        )
+            with left:
+                chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if idx == 0 and tag else '<div class="chip ghost">·</div>'
+                st.markdown(
+                    (
+                        f'<div class="stop-card {accent}">'
+                        f'{chip_html}'
+                        f'<div class="body">'
+                        f'<h4>{title_html}</h4>'
+                        f'{meta_html}'
+                        f'{note_html}'
+                        f'</div>'
+                        f'</div>'
+                    ),
+                    unsafe_allow_html=True,
+                )
 
-    st.markdown(
-        f'<div class="stop-card {accent}">{chip_html}<div class="body">' + ''.join(sec_parts) + '</div></div>',
-        unsafe_allow_html=True,
-    )
+            with right:
+                if btns_html:
+                    st.markdown(btns_html, unsafe_allow_html=True)
 
     if others and place_ids:
         area = PLACES[place_ids[0]].get("area")
