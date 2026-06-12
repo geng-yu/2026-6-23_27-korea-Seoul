@@ -55,16 +55,14 @@ def _accent_hex(tag):
 # ================================================================
 _CSS = """
 <style>
-/* ── 壓掉 Streamlit flex column 的 gap（涵蓋所有已知版本的 selector）── */
+/* ── 1) 外層 Streamlit block 不用 gap，避免和 iframe / wrapper 間距疊加 ── */
 [data-testid="stVerticalBlock"],
 [data-testid="stVerticalBlockBorderWrapper"],
-[data-testid="stMainBlockContainer"],
-div.element-container,
-div[data-testid="element-container"]{
-  gap:0.1 !important;
+[data-testid="stMainBlockContainer"]{
+  gap:0 !important;
 }
 
-/* ── 壓掉每個 iframe block 自己的 margin / padding ── */
+/* ── 2) iframe 本身不要額外 margin / padding / border ── */
 [data-testid="stIFrame"],
 [data-testid="stCustomComponentV1"],
 iframe{
@@ -74,14 +72,15 @@ iframe{
   border:none !important;
 }
 
-/* ── element-container 層 ── */
+/* ── 3) 每個元素容器自己給底部間距，主畫面統一用這個控制 ── */
 div.element-container,
-div[data-testid="element-container"]{
-  margin:0 !important;
+div[data-testid="element-container"],
+[data-testid="stElementContainer"]{
+  margin:0 0 0.4rem 0 !important;
   padding:0 !important;
 }
 
-/* ── expander 內容區域 ── */
+/* ── 4) expander 內容區域 ── */
 div[data-testid="stExpander"] [data-testid="stExpanderDetails"],
 div[data-testid="stExpander"] details > div{
   max-height:320px;
@@ -90,9 +89,25 @@ div[data-testid="stExpander"] details > div{
   padding:4px 6px 4px 0 !important;
 }
 
-/* expander 內的 verticalBlock 也要壓 */
-div[data-testid="stExpander"] [data-testid="stVerticalBlock"]{
-  gap:0.1 !important;
+/* ── 5) expander 裡面的 block 一樣不要 gap ── */
+div[data-testid="stExpander"] [data-testid="stVerticalBlock"],
+div[data-testid="stExpander"] [data-testid="stVerticalBlockBorderWrapper"]{
+  gap:0 !important;
+}
+
+/* ── 6) expander 裡每個卡片的距離再小一點 ── */
+div[data-testid="stExpander"] div.element-container,
+div[data-testid="stExpander"] div[data-testid="element-container"],
+div[data-testid="stExpander"] [data-testid="stElementContainer"]{
+  margin:0 0 0.28rem 0 !important;
+  padding:0 !important;
+}
+
+/* ── 7) 最後一個元素不要多留白 ── */
+div.element-container:last-child,
+div[data-testid="element-container"]:last-child,
+[data-testid="stElementContainer"]:last-child{
+  margin-bottom:0 !important;
 }
 
 #MainMenu{visibility:hidden;}
