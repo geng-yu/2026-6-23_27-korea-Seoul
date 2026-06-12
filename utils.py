@@ -61,7 +61,7 @@ _CSS = """
 [data-testid="stMainBlockContainer"],
 div.element-container,
 div[data-testid="element-container"]{
-  gap:0 !important;
+  gap:0.5 !important;
 }
 
 /* ── 壓掉每個 iframe block 自己的 margin / padding ── */
@@ -92,7 +92,7 @@ div[data-testid="stExpander"] details > div{
 
 /* expander 內的 verticalBlock 也要壓 */
 div[data-testid="stExpander"] [data-testid="stVerticalBlock"]{
-  gap:0 !important;
+  gap:0.35 !important;
 }
 
 #MainMenu{visibility:hidden;}
