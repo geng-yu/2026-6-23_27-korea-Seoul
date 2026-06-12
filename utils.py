@@ -1,6 +1,6 @@
 """
-渲染共用函式（v5 Kakao T 行動版修正版）：
-- G / N / T 三顆固定同排
+渲染共用函式（v6 卡片內嵌按鈕版）：
+- G / N / T 直接放在卡片內、店名右邊
 - T 在 N 右邊
 - 按 T：先複製韓文店名，再嘗試開啟 Kakao T
 - 不再自動開 fallback 網頁，避免 iPhone 多開一個錯誤頁
@@ -89,20 +89,58 @@ _CSS = """
 .acc-stay   { --card-accent:#3b82f6; }
 .acc-move   { --card-accent:#94a3b8; }
 
-.stop-card .body{ flex-grow:1; min-width:0; }
-.stop-card h4{
-  margin:0; font-size:15.5px; font-weight:700;
-  color:var(--text-color); line-height:1.35;
+.stop-card .body{
+  flex-grow:1;
+  min-width:0;
 }
+
+/* 店名列：左邊標題，右邊按鈕 */
+.stop-card .title-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+  width:100%;
+}
+.stop-card .title-wrap{
+  min-width:0;
+  flex:1 1 auto;
+}
+.stop-card .title-wrap h4{
+  margin:0;
+  font-size:15.5px;
+  font-weight:700;
+  color:var(--text-color);
+  line-height:1.35;
+  word-break:break-word;
+}
+.stop-card .actions-wrap{
+  flex:0 0 auto;
+  min-width:132px;
+  display:flex;
+  justify-content:flex-end;
+  align-items:flex-start;
+  padding-top:1px;
+}
+
 .stop-card .meta{
-  font-size:12px; color:var(--text-color); opacity:.62;
-  margin:4px 0 0 0; line-height:1.45;
+  font-size:12px;
+  color:var(--text-color);
+  opacity:.62;
+  margin:4px 0 0 0;
+  line-height:1.45;
 }
 .stop-card .note{
-  font-size:12.5px; color:var(--text-color); opacity:.88;
-  margin:5px 0 0 0; line-height:1.5;
+  font-size:12.5px;
+  color:var(--text-color);
+  opacity:.88;
+  margin:5px 0 0 0;
+  line-height:1.5;
 }
-.stop-card .star{ color:#ff4b4b; font-size:13px; }
+.stop-card .star{
+  color:#ff4b4b;
+  font-size:13px;
+}
 
 /* ===== 純說明卡（交通/提醒，虛線） ===== */
 .note-card{
@@ -163,9 +201,45 @@ _CSS = """
   box-shadow:0 1px 2px rgba(0,0,0,.04);
 }
 .backup-item.scheduled{ opacity:.62; }
-.backup-item .name{ font-size:13.5px; font-weight:700; line-height:1.35; }
-.backup-item .small-meta{ font-size:11.5px; opacity:.65; margin-top:2px; line-height:1.4; }
-.backup-item .small-note{ font-size:11.5px; opacity:.82; margin-top:3px; line-height:1.45; }
+
+.backup-item .title-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+  width:100%;
+}
+.backup-item .title-wrap{
+  min-width:0;
+  flex:1 1 auto;
+}
+.backup-item .actions-wrap{
+  flex:0 0 auto;
+  min-width:132px;
+  display:flex;
+  justify-content:flex-end;
+  align-items:flex-start;
+  padding-top:1px;
+}
+
+.backup-item .name{
+  font-size:13.5px;
+  font-weight:700;
+  line-height:1.35;
+  word-break:break-word;
+}
+.backup-item .small-meta{
+  font-size:11.5px;
+  opacity:.65;
+  margin-top:2px;
+  line-height:1.4;
+}
+.backup-item .small-note{
+  font-size:11.5px;
+  opacity:.82;
+  margin-top:3px;
+  line-height:1.45;
+}
 .backup-item .already{
   font-size:10px; font-weight:700;
   background:rgba(255,75,75,.13); color:#ff4b4b;
@@ -196,6 +270,14 @@ div[data-testid="stExpander"] details > div{
 }
 .stop-card .section:first-of-type{
   border-top:none; margin-top:0; padding-top:0;
+}
+
+/* ===== 手機微調 ===== */
+@media (max-width: 640px){
+  .stop-card .actions-wrap,
+  .backup-item .actions-wrap{
+    min-width:120px;
+  }
 }
 
 #MainMenu{visibility:hidden;}
@@ -287,12 +369,8 @@ def _js_escape_text(text: str) -> str:
 
 def _render_action_buttons(place, mode="walking", copy_text=None, key_prefix="btn"):
     """
-    右側三顆按鈕固定同排：
-    G | N | T
-
-    - 使用單一 HTML flex row，避免 Streamlit columns 在手機上自動換行
-    - T：先複製韓文店名，再開啟 Kakao T app
-    - 不做自動 fallback，避免 iPhone 另外多開錯誤頁
+    G | N | T 三顆按鈕固定同排，輸出成一個 HTML 元件。
+    T：先複製韓文店名，再開啟 Kakao T。
     """
     unique = _next_key(key_prefix)
     name_kr = str(copy_text or place.get("name_kr") or place["name"])
@@ -318,10 +396,12 @@ def _render_action_buttons(place, mode="walking", copy_text=None, key_prefix="bt
       justify-content:flex-end;
       align-items:center;
       gap:6px;
-      width:100%;
+      width:132px;
+      min-width:132px;
       white-space:nowrap;
       overflow:hidden;
-      padding-top:2px;
+      margin:0;
+      padding:0;
     ">
       <a href="{g}" target="_blank" rel="noopener noreferrer" title="Google Maps"
          style="
@@ -399,7 +479,34 @@ def _render_action_buttons(place, mode="walking", copy_text=None, key_prefix="bt
     }})();
     </script>
     """
-    components.html(html_code, height=42, width=132)
+    components.html(html_code, height=34, width=132)
+
+
+def _render_card_inner(tag, title_html, meta_html="", note_html="", actions_html=None, accent_override=None):
+    accent = accent_override or _accent_cls(tag)
+
+    if tag:
+        chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>'
+    else:
+        chip_html = '<div class="chip ghost">·</div>'
+
+    title_row = (
+        '<div class="title-row">'
+        f'<div class="title-wrap"><h4>{title_html}</h4></div>'
+        f'<div class="actions-wrap">{actions_html or ""}</div>'
+        '</div>'
+    )
+
+    return (
+        f'<div class="stop-card {accent}">'
+        f'{chip_html}'
+        f'<div class="body">'
+        f'{title_row}'
+        f'{meta_html}'
+        f'{note_html}'
+        f'</div>'
+        f'</div>'
+    )
 
 
 def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walking",
@@ -416,30 +523,32 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
     note = note_override if note_override is not None else p.get("note", "")
     note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
 
-    left, right = st.columns([11, 4], gap="small")
+    unique_holder = f"holder_main_{_next_key(place_id)}"
+    st.markdown(
+        _render_card_inner(
+            tag=tag,
+            title_html=f"{name}{star}",
+            meta_html=meta_html,
+            note_html=note_html,
+            actions_html=f'<div id="{unique_holder}"></div>',
+            accent_override=accent_override,
+        ),
+        unsafe_allow_html=True,
+    )
 
-    with left:
-        accent = accent_override or _accent_cls(tag)
-        if tag:
-            chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>'
-        else:
-            chip_html = '<div class="chip ghost">·</div>'
-
-        st.markdown(
-            (
-                f'<div class="stop-card {accent}">'
-                f'{chip_html}'
-                f'<div class="body">'
-                f'<h4>{name}{star}</h4>'
-                f'{meta_html}'
-                f'{note_html}'
-                f'</div>'
-                f'</div>'
-            ),
-            unsafe_allow_html=True,
+    if show_taxi:
+        components.html(
+            f"""
+            <script>
+            (function() {{
+              const parentDoc = window.parent.document;
+              const holder = parentDoc.getElementById('{unique_holder}');
+              if (!holder) return;
+            }})();
+            </script>
+            """,
+            height=0,
         )
-
-    with right:
         _render_action_buttons(
             place=p,
             mode=mode,
@@ -479,26 +588,22 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
             )
         btns_html = '<div class="nav-btns">' + ''.join(parts) + '</div>'
 
-    left, right = st.columns([11, 4], gap="small")
+    st.markdown(
+        (
+            f'<div class="{card_class} {accent}">'
+            f'{chip_html}'
+            f'<div class="body">'
+            f'<{title_tag}>{title_e}</{title_tag}>'
+            f'{meta_html}'
+            f'{note_html}'
+            f'</div>'
+            f'</div>'
+        ),
+        unsafe_allow_html=True,
+    )
 
-    with left:
-        st.markdown(
-            (
-                f'<div class="{card_class} {accent}">'
-                f'{chip_html}'
-                f'<div class="body">'
-                f'<{title_tag}>{title_e}</{title_tag}>'
-                f'{meta_html}'
-                f'{note_html}'
-                f'</div>'
-                f'</div>'
-            ),
-            unsafe_allow_html=True,
-        )
-
-    with right:
-        if btns_html:
-            st.markdown(btns_html, unsafe_allow_html=True)
+    if btns_html:
+        st.markdown(btns_html, unsafe_allow_html=True)
 
 
 def _render_backup_item(pid, p, already=False):
@@ -527,27 +632,41 @@ def _render_backup_item(pid, p, already=False):
     note_html = f'<div class="small-note">{html_lib.escape(p.get("note", ""))}</div>' if p.get("note") else ''
     item_cls = "backup-item scheduled" if already else "backup-item"
 
-    left, right = st.columns([11, 4], gap="small")
+    holder_id = f"holder_backup_{_next_key(pid)}"
 
-    with left:
-        st.markdown(
-            (
-                f'<div class="{item_cls}">'
-                f'<div class="name">{name}{star}{already_tag}</div>'
-                f'{meta_html}'
-                f'{note_html}'
-                f'</div>'
-            ),
-            unsafe_allow_html=True,
-        )
+    st.markdown(
+        (
+            f'<div class="{item_cls}">'
+            f'<div class="title-row">'
+            f'<div class="title-wrap"><div class="name">{name}{star}{already_tag}</div></div>'
+            f'<div class="actions-wrap"><div id="{holder_id}"></div></div>'
+            f'</div>'
+            f'{meta_html}'
+            f'{note_html}'
+            f'</div>'
+        ),
+        unsafe_allow_html=True,
+    )
 
-    with right:
-        _render_action_buttons(
-            place=p,
-            mode="walking",
-            copy_text=str(p.get("name_kr") or p["name"]),
-            key_prefix=f"backup_{pid}"
-        )
+    components.html(
+        f"""
+        <script>
+        (function() {{
+          const parentDoc = window.parent.document;
+          const holder = parentDoc.getElementById('{holder_id}');
+          if (!holder) return;
+        }})();
+        </script>
+        """,
+        height=0,
+    )
+
+    _render_action_buttons(
+        place=p,
+        mode="walking",
+        copy_text=str(p.get("name_kr") or p["name"]),
+        key_prefix=f"backup_{pid}"
+    )
 
 
 def _render_backup_list(items, scheduled_ids):
@@ -614,8 +733,6 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
 
     place_ids = []
     for idx, s in enumerate(sections):
-        left, right = st.columns([11, 4], gap="small")
-
         if "place_id" in s:
             pid = s["place_id"]
             if pid not in PLACES:
@@ -631,23 +748,41 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
             meta_html = f'<p class="meta">{meta}</p>' if meta else ''
             note_html = f'<p class="note">{html_lib.escape(note_txt)}</p>' if note_txt else ''
 
-            with left:
-                chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if idx == 0 and tag else '<div class="chip ghost">·</div>'
-                st.markdown(
-                    (
-                        f'<div class="stop-card {accent}">'
-                        f'{chip_html}'
-                        f'<div class="body">'
-                        f'<h4>{title_html}</h4>'
-                        f'{meta_html}'
-                        f'{note_html}'
-                        f'</div>'
-                        f'</div>'
-                    ),
-                    unsafe_allow_html=True,
-                )
+            holder_id = f"holder_multi_{_next_key(pid)}"
 
-            with right:
+            chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if idx == 0 and tag else '<div class="chip ghost">·</div>'
+
+            st.markdown(
+                (
+                    f'<div class="stop-card {accent}">'
+                    f'{chip_html}'
+                    f'<div class="body">'
+                    f'<div class="title-row">'
+                    f'<div class="title-wrap"><h4>{title_html}</h4></div>'
+                    f'<div class="actions-wrap"><div id="{holder_id}"></div></div>'
+                    f'</div>'
+                    f'{meta_html}'
+                    f'{note_html}'
+                    f'</div>'
+                    f'</div>'
+                ),
+                unsafe_allow_html=True,
+            )
+
+            components.html(
+                f"""
+                <script>
+                (function() {{
+                  const parentDoc = window.parent.document;
+                  const holder = parentDoc.getElementById('{holder_id}');
+                  if (!holder) return;
+                }})();
+                </script>
+                """,
+                height=0,
+            )
+
+            if show_taxi:
                 _render_action_buttons(
                     place=p,
                     mode=mode,
@@ -662,37 +797,23 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
             meta_html = f'<p class="meta">{meta}</p>' if meta else ''
             note_html = f'<p class="note">{html_lib.escape(note_txt)}</p>' if note_txt else ''
 
-            btns_html = ""
-            if s.get("links"):
-                bp = []
-                for item in s["links"]:
-                    label = html_lib.escape(item.get("label", ""))
-                    cls = html_lib.escape(item.get("cls", "g"))
-                    raw_url = item.get("url", "#")
-                    url = _safe_href(raw_url)
-                    target = ' target="_blank" rel="noopener noreferrer"' if str(raw_url).startswith("http") else ""
-                    bp.append(f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>')
-                btns_html = '<div class="nav-btns">' + ''.join(bp) + '</div>'
+            chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if idx == 0 and tag else '<div class="chip ghost">·</div>'
 
-            with left:
-                chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if idx == 0 and tag else '<div class="chip ghost">·</div>'
-                st.markdown(
-                    (
-                        f'<div class="stop-card {accent}">'
-                        f'{chip_html}'
-                        f'<div class="body">'
-                        f'<h4>{title_html}</h4>'
-                        f'{meta_html}'
-                        f'{note_html}'
-                        f'</div>'
-                        f'</div>'
-                    ),
-                    unsafe_allow_html=True,
-                )
-
-            with right:
-                if btns_html:
-                    st.markdown(btns_html, unsafe_allow_html=True)
+            st.markdown(
+                (
+                    f'<div class="stop-card {accent}">'
+                    f'{chip_html}'
+                    f'<div class="body">'
+                    f'<div class="title-row">'
+                    f'<div class="title-wrap"><h4>{title_html}</h4></div>'
+                    f'</div>'
+                    f'{meta_html}'
+                    f'{note_html}'
+                    f'</div>'
+                    f'</div>'
+                ),
+                unsafe_allow_html=True,
+            )
 
     if others and place_ids:
         area = PLACES[place_ids[0]].get("area")
