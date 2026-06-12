@@ -252,18 +252,39 @@ def _safe_href(url: str) -> str:
 def _copy_btn_html(copy_text: str) -> str:
     """
     T 按鈕目前先只做「複製」。
-    不做轉跳，避免 Safari / Streamlit iframe 對 scheme 跳轉與 clipboard 干擾。
+    iPhone / iOS 優先：使用 textarea + execCommand('copy')，
+    並且全部在同一次 onclick 同步事件中執行。
     """
-    copy_escaped = html_lib.escape(copy_text or "", quote=True)
-    js_text = copy_escaped.replace("\\", "\\\\").replace("'", "\\'")
-    onclick = (
-        f"navigator.clipboard.writeText('{js_text}');"
-        f"return false;"
+    text = str(copy_text or "")
+    text_js = (
+        text.replace("\\", "\\\\")
+        .replace("'", "\\'")
+        .replace("\n", "\\n")
+        .replace("\r", "")
     )
-    onclick_escaped = html_lib.escape(onclick, quote=True)
+
+    onclick = (
+        "var ta=document.createElement('textarea');"
+        f"ta.value='{text_js}';"
+        "ta.setAttribute('readonly','');"
+        "ta.style.position='fixed';"
+        "ta.style.top='0';"
+        "ta.style.left='0';"
+        "ta.style.opacity='0.01';"
+        "ta.style.fontSize='16px';"
+        "ta.style.zIndex='-1';"
+        "document.body.appendChild(ta);"
+        "ta.focus();"
+        "ta.select();"
+        "ta.setSelectionRange(0, ta.value.length);"
+        "try{document.execCommand('copy');}catch(e){}"
+        "document.body.removeChild(ta);"
+        "return false;"
+    )
+
     return (
         f'<a class="nav-btn t" href="#" '
-        f'onclick="{onclick_escaped}" '
+        f'onclick="{html_lib.escape(onclick, quote=True)}" '
         f'title="複製韓文店名">T</a>'
     )
 
@@ -277,7 +298,7 @@ def _nav_btns_html(place, show_taxi=True, mode="walking"):
     lat = place.get("lat")
     lng = place.get("lng")
 
-    g = _safe_href(gmap_url(f"{name_kr} {place.get("address", "")}", mode))
+    g = _safe_href(gmap_url(f"{name_kr} {place.get('address', '')}", mode))
     n = _safe_href(naver_url(query=name_kr, lat=lat, lng=lng, name=name, mode=mode))
 
     parts = [
