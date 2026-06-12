@@ -28,8 +28,6 @@ def set_scheduled(today_food=None, today_shop=None):
 # ================================================================
 # 全域 CSS
 # ================================================================
-# 注意：這段字串「故意完全靠左、不縮排」。
-# st.markdown 遇到縮排 4 格以上的行會當成 code block，CSS 就會直接印在畫面上。
 _CSS = """
 <style>
 /* ===== 主卡片 ===== */
@@ -70,15 +68,15 @@ _CSS = """
 }
 
 /* 類別顏色 */
-.acc-morning{ --card-accent:#f59e0b; }   /* 早 */
-.acc-lunch  { --card-accent:#f97316; }   /* 午 */
-.acc-dinner { --card-accent:#ef4444; }   /* 晚 */
-.acc-night  { --card-accent:#6366f1; }   /* 宵 */
-.acc-snack  { --card-accent:#ec4899; }   /* 點 */
-.acc-shop   { --card-accent:#a855f7; }   /* 逛/買 */
-.acc-sight  { --card-accent:#10b981; }   /* 景 */
-.acc-stay   { --card-accent:#3b82f6; }   /* 住 */
-.acc-move   { --card-accent:#94a3b8; }   /* 交通/其他 */
+.acc-morning{ --card-accent:#f59e0b; }
+.acc-lunch  { --card-accent:#f97316; }
+.acc-dinner { --card-accent:#ef4444; }
+.acc-night  { --card-accent:#6366f1; }
+.acc-snack  { --card-accent:#ec4899; }
+.acc-shop   { --card-accent:#a855f7; }
+.acc-sight  { --card-accent:#10b981; }
+.acc-stay   { --card-accent:#3b82f6; }
+.acc-move   { --card-accent:#94a3b8; }
 
 .stop-card .body{ flex-grow:1; min-width:0; }
 .stop-card .top-row{
@@ -179,7 +177,6 @@ div[data-testid="stExpander"] [data-testid="stExpanderDetails"]{
   padding-top:4px !important;
   padding-right:6px;
 }
-/* 舊版 Streamlit 結構 fallback */
 div[data-testid="stExpander"] details > div{
   max-height:320px;
   overflow-y:auto;
@@ -202,75 +199,9 @@ footer{visibility:hidden;}
 </style>
 """
 
-# 注意：
-# 1. 只綁一次事件，避免 Streamlit rerun 造成重複觸發
-# 2. T 按鈕行為：先複製韓文店名，再嘗試開啟 Kakao T
-# 3. 若 clipboard API 因 Safari / WebView 權限限制失敗，仍會繼續開啟 Kakao T
-_JS = """
-<script>
-(function () {
-  if (window.__kakaoTaxiCopyBound) return;
-  window.__kakaoTaxiCopyBound = true;
-
-  async function copyText(text) {
-    if (!text) return false;
-
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        return true;
-      }
-    } catch (err) {}
-
-    try {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "fixed";
-      ta.style.top = "-9999px";
-      ta.style.left = "-9999px";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      ta.setSelectionRange(0, ta.value.length);
-      const ok = document.execCommand("copy");
-      document.body.removeChild(ta);
-      return ok;
-    } catch (err) {
-      return false;
-    }
-  }
-
-  function openKakao(url) {
-    try {
-      window.location.href = url;
-    } catch (err) {
-      try {
-        window.open(url, "_self");
-      } catch (err2) {}
-    }
-  }
-
-  document.addEventListener("click", async function (e) {
-    const btn = e.target.closest(".nav-btn.t[data-copy][data-kakao]");
-    if (!btn) return;
-
-    e.preventDefault();
-
-    const copyTextValue = btn.getAttribute("data-copy") || "";
-    const kakaoUrl = btn.getAttribute("data-kakao") || "kakaotaxi://";
-
-    await copyText(copyTextValue);
-    openKakao(kakaoUrl);
-  }, true);
-})();
-</script>
-"""
-
 
 def inject_css():
-    st.markdown(_CSS + _JS, unsafe_allow_html=True)
+    st.markdown(_CSS, unsafe_allow_html=True)
 
 
 # ================================================================
@@ -314,12 +245,27 @@ def naver_url(query=None, lat=None, lng=None, name=None, mode="walking"):
     return f"nmap://map?appname={appname}"
 
 
-def kakaot_url():
-    return "kakaotaxi://"
-
-
 def _safe_href(url: str) -> str:
     return html_lib.escape(url, quote=True)
+
+
+def _copy_btn_html(copy_text: str) -> str:
+    """
+    T 按鈕目前先只做「複製」。
+    不做轉跳，避免 Safari / Streamlit iframe 對 scheme 跳轉與 clipboard 干擾。
+    """
+    copy_escaped = html_lib.escape(copy_text or "", quote=True)
+    js_text = copy_escaped.replace("\\", "\\\\").replace("'", "\\'")
+    onclick = (
+        f"navigator.clipboard.writeText('{js_text}');"
+        f"return false;"
+    )
+    onclick_escaped = html_lib.escape(onclick, quote=True)
+    return (
+        f'<a class="nav-btn t" href="#" '
+        f'onclick="{onclick_escaped}" '
+        f'title="複製韓文店名">T</a>'
+    )
 
 
 # ================================================================
@@ -331,7 +277,7 @@ def _nav_btns_html(place, show_taxi=True, mode="walking"):
     lat = place.get("lat")
     lng = place.get("lng")
 
-    g = _safe_href(gmap_url(f"{name_kr} {place.get('address', '')}", mode))
+    g = _safe_href(gmap_url(f"{name_kr} {place.get("address", "")}", mode))
     n = _safe_href(naver_url(query=name_kr, lat=lat, lng=lng, name=name, mode=mode))
 
     parts = [
@@ -340,11 +286,7 @@ def _nav_btns_html(place, show_taxi=True, mode="walking"):
     ]
 
     if show_taxi:
-        t = _safe_href(kakaot_url())
-        copy_name = html_lib.escape(str(name_kr or name), quote=True)
-        parts.append(
-            f'<a class="nav-btn t" href="{t}" data-kakao="{t}" data-copy="{copy_name}" title="複製韓文店名並開啟 Kakao T">T</a>'
-        )
+        parts.append(_copy_btn_html(str(name_kr or name)))
 
     return '<div class="nav-btns">' + ''.join(parts) + '</div>'
 
@@ -370,7 +312,6 @@ def _build_meta_line(place):
 
 def _card_html(accent_cls, chip_html, title_html, btns_html, meta_html, note_html,
                card_class="stop-card", title_tag="h4"):
-    """組出一張卡片的完整 HTML（單行，零換行零縮排）。"""
     return (
         f'<div class="{card_class} {accent_cls}">'
         f'{chip_html}'
@@ -386,12 +327,8 @@ def _card_html(accent_cls, chip_html, title_html, btns_html, meta_html, note_htm
     )
 
 
-# ================================================================
-# 主行程卡片渲染
-# ================================================================
 def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walking",
                  accent_override=None):
-    """渲染單張主行程卡片。tag 是 '晚'/'逛'/'宵' 等；空字串就隱形(對齊用)。"""
     if place_id not in PLACES:
         st.error(f"❌ 找不到地點: {place_id}")
         return
@@ -419,10 +356,6 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
 
 
 def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
-    """
-    自訂卡片：給 Day1 第1~3格這種特殊內容用。
-    links: list[dict]，例如 [{"label": "G", "url": "...", "cls": "g"}]
-    """
     card_class = "note-card" if dashed else "stop-card"
     title_tag = "h5" if dashed else "h4"
     accent = _accent_cls(tag)
@@ -445,8 +378,9 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
         for item in links:
             label = html_lib.escape(item.get("label", ""))
             cls = html_lib.escape(item.get("cls", "g"))
-            url = _safe_href(item.get("url", "#"))
-            target = ' target="_blank"' if item.get("url", "#").startswith("http") else ""
+            raw_url = item.get("url", "#")
+            url = _safe_href(raw_url)
+            target = ' target="_blank"' if str(raw_url).startswith("http") else ""
             parts.append(
                 f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>'
             )
@@ -459,9 +393,6 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
     )
 
 
-# ================================================================
-# 備案 / 飯店附近清單項目
-# ================================================================
 def _render_backup_item(p, already=False):
     name = html_lib.escape(p["name"])
     star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
@@ -505,29 +436,12 @@ def _render_backup_item(p, already=False):
 
 
 def _render_backup_list(items, scheduled_ids):
-    """已排的沉到最下面 + 標「已排」。items: list[(pid, place)]"""
     items_sorted = sorted(items, key=lambda x: (x[0] in scheduled_ids, x[0]))
     for pid, p in items_sorted:
         _render_backup_item(p, already=(pid in scheduled_ids))
 
 
-# ================================================================
-# 公開 API
-# ================================================================
 def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"):
-    """
-    顯示一個或多個主行程地點，共用一個類別標籤。
-
-    Args:
-        tag: '早'/'午'/'晚'/'宵'/'點'/'逛'/'買'/'景'/'住' 等。
-        place_ids: str (單筆) 或 list[str] (group)
-        others: None / "food" / "shop" — 加一個「其他」expander。
-                清單中若有「當天主行程已排」(set_scheduled 登記過) 的項目，
-                會沉到最下面並標「已排」。
-        notes: None / str / list — 覆寫卡片上的 note。
-        show_taxi: 是否顯示 Kakao T (T) 按鈕。
-        mode: walking / driving / transit
-    """
     if isinstance(place_ids, str):
         place_ids = [place_ids]
 
@@ -560,16 +474,10 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
 
 
 def note(tag, title, meta=None, note=None):
-    """顯示一個沒有座標、沒有 G/N/T 按鈕的純說明卡。"""
     custom_card(tag=tag, title=title, meta=meta, note=note, links=None, dashed=True)
 
 
 def hotel_bottom(today_food=None, today_shop=None):
-    """
-    每天最下面：住 (卡片) + 🍽️吃 (expander) + 🛍️逛 (expander)。
-    today_food / today_shop 不傳的話，自動用 set_scheduled() 登記的清單。
-    已排項目沉到最下面 + 標「已排」。
-    """
     food_sched = set(today_food) if today_food is not None else _SCHEDULED["food"]
     shop_sched = set(today_shop) if today_shop is not None else _SCHEDULED["shop"]
 
@@ -586,23 +494,7 @@ def hotel_bottom(today_food=None, today_shop=None):
         _render_backup_list(shop_all, shop_sched)
 
 
-# ================================================================
-# 多段合併卡片：多個主要點放在同一張卡片裡，每點標題粗體
-# ================================================================
 def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
-    """
-    把多個「主要點」合併在同一張卡片內，每點標題用粗體 (h4)，
-    各自可以有 meta / note / G·N·T 按鈕，點與點之間用虛線分隔。
-
-    sections: list[dict]，每個 dict 二選一：
-      A. {"place_id": "yukmong", "note": "覆寫備註(選填)"}
-         → 從 PLACES 撈名稱/⭐/meta/座標，自動產生 G/N/T 按鈕
-      B. {"title": "AREX (...)", "meta": "...", "note": "...",
-          "links": [{"label":"G","url":"...","cls":"g"}, ...]}
-         → 自訂內容
-    others: None / "food" / "shop" — 同 stop()，加「其他」expander，
-            已排的沉底標「已排」。
-    """
     accent = _accent_cls(tag)
     chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if tag else '<div class="chip ghost">·</div>'
 
