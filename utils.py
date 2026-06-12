@@ -199,12 +199,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,system-ui,"Noto Sans TC","Noto
   background:var(--bg);
   border:1px solid var(--border);
   border-radius:14px;
-  padding:12px 14px 12px 12px;
+  padding:12px 14px 14px 12px;
   display:flex;
   align-items:flex-start;
   gap:11px;
   box-shadow:0 1px 4px rgba(0,0,0,.05);
-  overflow:hidden;
+  overflow:visible;
 }
 .card.dashed{
   background:transparent;
@@ -229,7 +229,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,system-ui,"Noto Sans TC","Noto
 }
 .chip.dashed{background:rgba(128,128,128,.14);color:var(--text);}
 .chip.ghost{background:transparent;color:transparent;}
-.body{flex-grow:1;min-width:0;}
+.body{
+  flex-grow:1;
+  min-width:0;
+  padding-bottom:2px;
+}
 .section{
   padding:6px 0 2px 0;
   margin-top:6px;
