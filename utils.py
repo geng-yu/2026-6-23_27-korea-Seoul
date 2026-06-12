@@ -139,6 +139,10 @@ _CSS = """
   transition:transform .1s;
   font-family:system-ui,-apple-system,sans-serif;
   box-shadow:0 1px 2px rgba(0,0,0,.15);
+  border:none;
+  cursor:pointer;
+  -webkit-appearance:none;
+  appearance:none;
 }
 .nav-btn:active{ transform:scale(.92); }
 .nav-btn.g{ background:#4285F4; color:#fff !important; }
@@ -183,7 +187,6 @@ div[data-testid="stExpander"] details > div{
   padding-top:4px !important;
 }
 
-
 /* ===== 同一張卡片內的多個分段 ===== */
 .stop-card .section{
   padding:9px 0 2px 0;
@@ -199,9 +202,75 @@ footer{visibility:hidden;}
 </style>
 """
 
+# 注意：
+# 1. 只綁一次事件，避免 Streamlit rerun 造成重複觸發
+# 2. T 按鈕行為：先複製韓文店名，再嘗試開啟 Kakao T
+# 3. 若 clipboard API 因 Safari / WebView 權限限制失敗，仍會繼續開啟 Kakao T
+_JS = """
+<script>
+(function () {
+  if (window.__kakaoTaxiCopyBound) return;
+  window.__kakaoTaxiCopyBound = true;
+
+  async function copyText(text) {
+    if (!text) return false;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (err) {}
+
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "-9999px";
+      ta.style.left = "-9999px";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function openKakao(url) {
+    try {
+      window.location.href = url;
+    } catch (err) {
+      try {
+        window.open(url, "_self");
+      } catch (err2) {}
+    }
+  }
+
+  document.addEventListener("click", async function (e) {
+    const btn = e.target.closest(".nav-btn.t[data-copy][data-kakao]");
+    if (!btn) return;
+
+    e.preventDefault();
+
+    const copyTextValue = btn.getAttribute("data-copy") || "";
+    const kakaoUrl = btn.getAttribute("data-kakao") || "kakaotaxi://";
+
+    await copyText(copyTextValue);
+    openKakao(kakaoUrl);
+  }, true);
+})();
+</script>
+"""
+
 
 def inject_css():
-    st.markdown(_CSS, unsafe_allow_html=True)
+    st.markdown(_CSS + _JS, unsafe_allow_html=True)
 
 
 # ================================================================
@@ -269,9 +338,14 @@ def _nav_btns_html(place, show_taxi=True, mode="walking"):
         f'<a class="nav-btn g" href="{g}" target="_blank" title="Google Maps">G</a>',
         f'<a class="nav-btn n" href="{n}" title="NAVER">N</a>',
     ]
+
     if show_taxi:
         t = _safe_href(kakaot_url())
-        parts.append(f'<a class="nav-btn t" href="{t}" title="Kakao T">T</a>')
+        copy_name = html_lib.escape(str(name_kr or name), quote=True)
+        parts.append(
+            f'<a class="nav-btn t" href="{t}" data-kakao="{t}" data-copy="{copy_name}" title="複製韓文店名並開啟 Kakao T">T</a>'
+        )
+
     return '<div class="nav-btns">' + ''.join(parts) + '</div>'
 
 
@@ -372,7 +446,7 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
             label = html_lib.escape(item.get("label", ""))
             cls = html_lib.escape(item.get("cls", "g"))
             url = _safe_href(item.get("url", "#"))
-            target = ' target="_blank"' if url.startswith("http") else ""
+            target = ' target="_blank"' if item.get("url", "#").startswith("http") else ""
             parts.append(
                 f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>'
             )
@@ -478,7 +552,6 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
         area = first_p.get("area")
         cat_label = {"food": "其他吃的", "shop": "其他逛的"}.get(others, "其他")
         with st.expander(f"🔄 {cat_label}（{area}附近）"):
-            # 只排除「這一格自己」的店；當天其他時段已排的會顯示在最下面標「已排」
             items = get_by_area(area, exclude=place_ids, cat=others)
             if not items:
                 st.caption(f"({area} 沒有其他 {cat_label} 資料)")
@@ -557,8 +630,9 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
                 for item in s["links"]:
                     label = html_lib.escape(item.get("label", ""))
                     cls = html_lib.escape(item.get("cls", "g"))
-                    url = _safe_href(item.get("url", "#"))
-                    target = ' target="_blank"' if url.startswith("http") else ""
+                    raw_url = item.get("url", "#")
+                    url = _safe_href(raw_url)
+                    target = ' target="_blank"' if str(raw_url).startswith("http") else ""
                     bp.append(f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>')
                 btns = '<div class="nav-btns">' + ''.join(bp) + '</div>'
 
