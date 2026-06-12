@@ -1,21 +1,14 @@
 """
-渲染共用函式（v8 整卡 iframe 版）：
-
-排版問題的根因與解法
---------------------------------------------------------------
-- 問題：原本用 st.columns([12,4]) 把卡片放左欄、按鈕 iframe 放右欄。
-  但 Streamlit 的 columns 在手機（窄螢幕）會自動「上下堆疊」，
-  所以 G / N / T 會掉到卡片下面，CSS 調不動（那是框架行為）。
-- 解法：把「整張卡片（含店名 + G/N/T）」一起畫進同一個 components.html
-  的 iframe。按鈕和店名在同一個 DOM、同一列，手機桌機都對齊；
-  T 的「複製韓文店名 + 開 Kakao T」JS 也照常在 iframe 內執行。
-- iframe 內讀不到 Streamlit 主題色變數，因此卡片顏色改用
-  prefers-color-scheme 自行做深/淺色適配；iframe 高度用 postMessage
-  自動回報，避免被裁切或留白。
-
-功能完全保留：
-- G：Google Maps；N：NAVER（dname 用韓文店名）；T：複製韓文店名 + 開 Kakao T
-- stop / note / custom_card / multi_card / hotel_bottom / set_scheduled API 不變
+渲染共用函式（v9 空白修正版）：
+- 保留 v8 整卡 iframe 版的所有功能
+- 修正：卡片間 / 卡片與 expander 間 / expander 內卡片間的大空白
+  根本原因：
+    1. Streamlit stVerticalBlock 有 gap，每個 components.html iframe 都是一個 block
+    2. iframe 高度估算偏大，底部留白
+  解法：
+    1. 用更完整的 CSS selector 壓掉 Streamlit 所有 gap 和 iframe margin（涵蓋新舊版本）
+    2. 改用 ResizeObserver 精確回報 iframe 高度
+    3. 初始高度估算調小，讓 ResizeObserver 校正收縮
 """
 import streamlit as st
 import streamlit.components.v1 as components
@@ -27,13 +20,12 @@ from places import PLACES, get_by_area, AREA_HONGDAE
 
 
 # ================================================================
-# 當天已排清單（每次 rerun 由 day 檔重新登記）
+# 當天已排清單
 # ================================================================
 _SCHEDULED = {"food": set(), "shop": set()}
 
 
 def set_scheduled(today_food=None, today_shop=None):
-    """在每天 show_day() 最開頭呼叫，登記當天主行程已排的 place_ids。"""
     _SCHEDULED["food"] = set(today_food or [])
     _SCHEDULED["shop"] = set(today_shop or [])
 
@@ -59,43 +51,55 @@ def _accent_hex(tag):
 
 
 # ================================================================
-# 全域 CSS（只負責 expander 固定高度 + 隱藏選單；卡片樣式在 iframe 內）
+# 全域 CSS — 只處理 Streamlit 框架層的間距
 # ================================================================
 _CSS = """
 <style>
-div[data-testid="stExpander"] [data-testid="stExpanderDetails"]{
-  max-height:320px;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  padding-top:4px !important;
-  padding-right:6px;
+/* ── 壓掉 Streamlit flex column 的 gap（涵蓋所有已知版本的 selector）── */
+[data-testid="stVerticalBlock"],
+[data-testid="stVerticalBlockBorderWrapper"],
+[data-testid="stMainBlockContainer"],
+div.element-container,
+div[data-testid="element-container"]{
+  gap:0 !important;
 }
+
+/* ── 壓掉每個 iframe block 自己的 margin / padding ── */
+[data-testid="stIFrame"],
+[data-testid="stCustomComponentV1"],
+iframe{
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:none !important;
+}
+
+/* ── element-container 層 ── */
+div.element-container,
+div[data-testid="element-container"]{
+  margin:0 !important;
+  padding:0 !important;
+}
+
+/* ── expander 內容區域 ── */
+div[data-testid="stExpander"] [data-testid="stExpanderDetails"],
 div[data-testid="stExpander"] details > div{
   max-height:320px;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
-  padding-top:4px !important;
+  padding:4px 6px 4px 0 !important;
 }
 
-/* ===== 解決卡片間大空白：把 Streamlit 垂直排版的 gap 壓掉 ===== */
-/* 主因就是 stVerticalBlock 預設 gap:16px，必須用 !important 才壓得過 emotion class */
-[data-testid="stVerticalBlock"]{
-  gap:0.25rem !important;
-}
-/* 下拉框裡每個卡片之間再縮更小 */
-[data-testid="stExpanderDetails"] [data-testid="stVerticalBlock"]{
-  gap:0.1rem !important;
-}
-/* iframe 元件本身不要有額外外距 */
-[data-testid="stIFrame"], [data-testid="stElementContainer"]{
-  margin-top:0 !important;
-  margin-bottom:0 !important;
+/* expander 內的 verticalBlock 也要壓 */
+div[data-testid="stExpander"] [data-testid="stVerticalBlock"]{
+  gap:0 !important;
 }
 
 #MainMenu{visibility:hidden;}
 footer{visibility:hidden;}
 </style>
 """
+
 
 def inject_css():
     st.markdown(_CSS, unsafe_allow_html=True)
@@ -148,21 +152,21 @@ def _build_meta_line(place):
 
 
 # ================================================================
-# iframe 卡片：核心。把整張卡片（含按鈕）畫在一個 iframe 裡。
+# iframe 卡片內部 CSS（深淺色自適應）
 # ================================================================
-# iframe 內共用的 <style>，用 prefers-color-scheme 做主題適配。
 _IFRAME_STYLE = """
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,system-ui,"Noto Sans TC","Noto Sans KR",sans-serif;background:transparent;}
+html,body{background:transparent;overflow:hidden;}
+body{font-family:-apple-system,BlinkMacSystemFont,system-ui,"Noto Sans TC","Noto Sans KR",sans-serif;}
 :root{
-  --bg:#f0f2f6; --text:#1a1a1a;
+  --bg:#f0f2f6;--text:#1a1a1a;
   --border:rgba(128,128,128,.16);
   --border-dash:rgba(128,128,128,.35);
   --section-line:rgba(128,128,128,.22);
 }
-@media (prefers-color-scheme:dark){
+@media(prefers-color-scheme:dark){
   :root{
-    --bg:#1e1f26; --text:#fafafa;
+    --bg:#262730;--text:#fafafa;
     --border:rgba(250,250,250,.16);
     --border-dash:rgba(250,250,250,.30);
     --section-line:rgba(250,250,250,.20);
@@ -175,26 +179,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,system-ui,"Noto Sans TC","Noto
   display:flex;align-items:flex-start;gap:11px;
   box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:hidden;
 }
-.card.dashed{ background:transparent;border:1.5px dashed var(--border-dash);box-shadow:none; }
-.card::before{ content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,#94a3b8); }
-.card.dashed::before{ display:none; }
+.card.dashed{background:transparent;border:1.5px dashed var(--border-dash);box-shadow:none;}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,#94a3b8);}
+.card.dashed::before{display:none;}
 .chip{
   flex-shrink:0;width:34px;height:34px;border-radius:10px;
   display:flex;align-items:center;justify-content:center;
   font-size:15px;font-weight:800;color:#fff;background:var(--accent,#94a3b8);margin-top:1px;
 }
-.chip.dashed{ background:rgba(128,128,128,.14);color:var(--text); }
-.chip.ghost{ background:transparent;color:transparent; }
-.body{ flex-grow:1;min-width:0; }
-.section{ padding:9px 0 2px 0;border-top:1px dashed var(--section-line);margin-top:7px; }
-.section:first-child{ border-top:none;margin-top:0;padding-top:0; }
-.title-row{ display:flex;align-items:flex-start;justify-content:space-between;gap:8px; }
-h4{ font-size:15.5px;font-weight:700;color:var(--text);line-height:1.35;word-break:break-word;flex:1;min-width:0; }
-h5{ font-size:14.5px;font-weight:700;color:var(--text);line-height:1.35;word-break:break-word;flex:1;min-width:0; }
-.meta{ font-size:12px;color:var(--text);opacity:.62;margin-top:4px;line-height:1.45; }
-.note{ font-size:12.5px;color:var(--text);opacity:.88;margin-top:5px;line-height:1.5; }
-.star{ color:#ff4b4b;font-size:13px; }
-.btns{ display:flex;gap:6px;flex-shrink:0;align-items:center; }
+.chip.dashed{background:rgba(128,128,128,.14);color:var(--text);}
+.chip.ghost{background:transparent;color:transparent;}
+.body{flex-grow:1;min-width:0;}
+.section{padding:9px 0 2px 0;border-top:1px dashed var(--section-line);margin-top:7px;}
+.section:first-child{border-top:none;margin-top:0;padding-top:0;}
+.title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+h4{font-size:15.5px;font-weight:700;color:var(--text);line-height:1.35;word-break:break-word;flex:1;min-width:0;margin:0;}
+h5{font-size:14.5px;font-weight:700;color:var(--text);line-height:1.35;word-break:break-word;flex:1;min-width:0;margin:0;}
+.meta{font-size:12px;color:var(--text);opacity:.62;margin-top:4px;line-height:1.45;}
+.note{font-size:12.5px;color:var(--text);opacity:.88;margin-top:5px;line-height:1.5;}
+.star{color:#ff4b4b;font-size:13px;}
+.btns{display:flex;gap:6px;flex-shrink:0;align-items:center;padding-top:1px;}
 .b{
   width:30px;height:30px;border-radius:50%;
   display:inline-flex;align-items:center;justify-content:center;
@@ -203,19 +207,33 @@ h5{ font-size:14.5px;font-weight:700;color:var(--text);line-height:1.35;word-bre
   -webkit-tap-highlight-color:transparent;user-select:none;
   font-family:-apple-system,system-ui,sans-serif;
 }
-.b:active{ transform:scale(.92); }
-.b.g{ background:#4285F4;color:#fff; }
-.b.n{ background:#03C75A;color:#fff; }
-.b.t{ background:#FAE100;color:#371D1E; }
+.b:active{transform:scale(.92);}
+.b.g{background:#4285F4;color:#fff;}
+.b.n{background:#03C75A;color:#fff;}
+.b.t{background:#FAE100;color:#371D1E;}
+"""
+
+# ResizeObserver 高度自動回報腳本（比 getBoundingClientRect 精準）
+_HEIGHT_REPORTER = """
+(function(){
+  function report(){
+    var h=document.body.scrollHeight;
+    window.parent.postMessage({isStreamlitMessage:true,type:"streamlit:setFrameHeight",height:h},"*");
+  }
+  if(window.ResizeObserver){
+    new ResizeObserver(report).observe(document.body);
+  }
+  report();
+  setTimeout(report,50);
+  setTimeout(report,250);
+})();
 """
 
 
 def _btns_html_for_place(p, mode, show_taxi, uid):
-    """產生某個地點的 G / N / T 三顆鈕 HTML（在 iframe 內）。"""
     name = p["name"]
     name_kr = p.get("name_kr", name)
     g = _safe_href(gmap_url(f"{name_kr} {p.get('address', '')}", mode))
-    # NAVER dname 用韓文店名
     n = _safe_href(naver_url(query=name_kr, lat=p.get("lat"), lng=p.get("lng"),
                              name=name_kr or name, mode=mode))
     parts = [
@@ -223,12 +241,13 @@ def _btns_html_for_place(p, mode, show_taxi, uid):
         f'<a class="b n" href="{n}" title="NAVER">N</a>',
     ]
     if show_taxi:
-        parts.append(f'<button class="b t" id="t_{uid}" type="button" title="複製韓文店名並開啟 Kakao T">T</button>')
+        parts.append(
+            f'<button class="b t" id="t_{uid}" type="button" title="複製韓文店名並開啟 Kakao T">T</button>'
+        )
     return '<div class="btns">' + ''.join(parts) + '</div>'
 
 
 def _btns_html_for_links(links):
-    """custom_card / multi_card 自訂 links 的按鈕（在 iframe 內，無 T 複製）。"""
     if not links:
         return ""
     parts = []
@@ -243,50 +262,44 @@ def _btns_html_for_links(links):
 
 
 def _t_script(uid, copy_text):
-    """單顆 T 鈕的點擊行為：複製韓文店名 → ✓ → 開 Kakao T。"""
     ct = json.dumps(str(copy_text))
     k = json.dumps(kakaot_url())
     return (
-        f'var tb_{uid}=document.getElementById("t_{uid}");'
-        f'if(tb_{uid}){{tb_{uid}.addEventListener("click",async function(){{'
-        f'try{{if(navigator.clipboard&&window.isSecureContext){{await navigator.clipboard.writeText({ct});}}'
-        f'else{{var ta=document.createElement("textarea");ta.value={ct};ta.style.position="fixed";'
-        f'ta.style.left="-9999px";ta.style.top="0";document.body.appendChild(ta);ta.focus();ta.select();'
-        f'try{{document.execCommand("copy");}}catch(e){{}}document.body.removeChild(ta);}}}}catch(e){{}}'
-        f'tb_{uid}.innerText="\\u2713";'
-        f'setTimeout(function(){{tb_{uid}.innerText="T";}},1000);'
+        f'(function(){{'
+        f'var el=document.getElementById("t_{uid}");'
+        f'if(!el)return;'
+        f'el.addEventListener("click",async function(){{'
+        f'try{{'
+        f'if(navigator.clipboard&&window.isSecureContext){{await navigator.clipboard.writeText({ct});}}'
+        f'else{{var ta=document.createElement("textarea");ta.value={ct};'
+        f'ta.style.cssText="position:fixed;left:-9999px;top:0";'
+        f'document.body.appendChild(ta);ta.focus();ta.select();'
+        f'try{{document.execCommand("copy");}}catch(e){{}}document.body.removeChild(ta);}}'
+        f'}}catch(e){{}}'
+        f'el.innerText="\\u2713";'
+        f'setTimeout(function(){{el.innerText="T";}},1000);'
         f'window.location.href={k};'
-        f'}});}}'
+        f'}});'
+        f'}})();'
     )
-
-
-def _html_component(doc, height):
-    """相容 wrapper：新版 Streamlit 用 st.iframe，舊版退回 components.html。"""
-    if hasattr(st, "iframe"):
-        st.iframe(doc, height=height)
-    else:
-        components.html(doc, height=height)
 
 
 def _emit_card(accent_hex, inner_html, t_scripts, est_height):
-    """把卡片 HTML + JS 包成完整 iframe 並輸出。est_height 只是初值，之後 JS 自動校正。"""
-    scripts = "".join(t_scripts)
+    """
+    把卡片 HTML + JS 包成 iframe 輸出。
+    est_height 調小 → ResizeObserver 向上校正，不留下白。
+    """
+    all_scripts = ''.join(t_scripts) + _HEIGHT_REPORTER
     doc = (
         '<!DOCTYPE html><html><head><meta charset="utf-8">'
-        '<meta name="viewport" content="width=device-width, initial-scale=1">'
-        f'<style>{_IFRAME_STYLE}.card{{--accent:{accent_hex};}}</style></head><body>'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        f'<style>{_IFRAME_STYLE}:root{{--accent:{accent_hex};}}</style>'
+        '</head><body>'
         f'{inner_html}'
-        '<script>'
-        f'{scripts}'
-        # 自動回報高度給父層，避免裁切/留白
-        'function _rh(){var el=document.body.firstElementChild;if(!el)return;'
-        'var h=el.getBoundingClientRect().height;'
-        'window.parent.postMessage({isStreamlitMessage:true,type:"streamlit:setFrameHeight",height:Math.ceil(h)+2},"*");}'
-        '_rh();window.addEventListener("resize",_rh);'
-        'window.addEventListener("load",_rh);setTimeout(_rh,50);setTimeout(_rh,300);'
-        '</script></body></html>'
+        f'<script>{all_scripts}</script>'
+        '</body></html>'
     )
-    _html_component(doc, est_height)
+    components.html(doc, height=est_height, scrolling=False)
 
 
 # ================================================================
@@ -318,8 +331,8 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
         f'</div></div>'
     )
     t_scripts = [_t_script(uid, p.get("name_kr") or p["name"])] if show_taxi else []
-    # 高度估算：基底 + meta + note 行（粗估，JS 會校正）
-    est = 96 + (22 if meta else 0) + (46 if note else 0)
+    # 估算高度：故意偏小，讓 ResizeObserver 向上收縮而不往下撐留白
+    est = 62 + (18 if meta else 0) + (38 if note else 0)
     _emit_card(accent, inner, t_scripts, est)
 
 
@@ -350,7 +363,7 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
         f'{meta_html}{note_html}'
         f'</div></div>'
     )
-    est = 90 + (22 if meta else 0) + (46 if note else 0)
+    est = 58 + (18 if meta else 0) + (38 if note else 0)
     _emit_card(accent, inner, [], est)
 
 
@@ -358,10 +371,14 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
 # 備案 / 飯店附近清單項目
 # ================================================================
 def _render_backup_item(pid, p, already=False):
-    accent = _accent_hex(None)  # 備案統一灰色條
+    accent = "#94a3b8"
     name = html_lib.escape(p["name"])
     star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
-    already_tag = ' <span style="font-size:10px;font-weight:700;background:rgba(255,75,75,.13);color:#ff4b4b;padding:2px 7px;border-radius:99px;white-space:nowrap;">已排</span>' if already else ''
+    already_tag = (
+        ' <span style="font-size:10px;font-weight:700;'
+        'background:rgba(255,75,75,.13);color:#ff4b4b;'
+        'padding:2px 7px;border-radius:99px;white-space:nowrap;">已排</span>'
+    ) if already else ''
     name_kr = p.get("name_kr", "")
 
     parts = []
@@ -378,21 +395,22 @@ def _render_backup_item(pid, p, already=False):
         meta_line = meta
     else:
         meta_line = ""
+
     meta_html = f'<p class="meta">{html_lib.escape(meta_line)}</p>' if meta_line else ''
     note_html = f'<p class="note">{html_lib.escape(p.get("note", ""))}</p>' if p.get("note") else ''
 
     uid = ("bk_" + pid).replace("-", "_")
     btns = _btns_html_for_place(p, "walking", True, uid)
 
-    opacity = 'style="opacity:.62"' if already else ''
+    opacity = ' style="opacity:.62"' if already else ''
     inner = (
-        f'<div class="card" {opacity}><div class="chip ghost">·</div><div class="body">'
+        f'<div class="card"{opacity}><div class="chip ghost">·</div><div class="body">'
         f'<div class="title-row"><h4 style="font-size:13.5px;">{name}{star}{already_tag}</h4>{btns}</div>'
         f'{meta_html}{note_html}'
         f'</div></div>'
     )
     t_scripts = [_t_script(uid, p.get("name_kr") or p["name"])]
-    est = 84 + (20 if meta_line else 0) + (42 if p.get("note") else 0)
+    est = 56 + (16 if meta_line else 0) + (36 if p.get("note") else 0)
     _emit_card(accent, inner, t_scripts, est)
 
 
@@ -459,15 +477,13 @@ def hotel_bottom(today_food=None, today_shop=None):
 
 
 def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
-    """多個主要點合併在同一張卡片內，每點標題粗體 + 按鈕在右、虛線分段。"""
     accent = _accent_hex(tag)
     place_ids = []
     sec_parts = []
     t_scripts = []
-    est = 24  # 卡片上下 padding
+    est = 24
 
     for idx, s in enumerate(sections):
-        chip_first = (idx == 0)
         if "place_id" in s:
             pid = s["place_id"]
             if pid not in PLACES:
@@ -475,11 +491,13 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
                 continue
             place_ids.append(pid)
             p = PLACES[pid]
-            title_html = html_lib.escape(p["name"]) + ('<span class="star"> ⭐</span>' if p.get("priority") else '')
+            title_html = html_lib.escape(p["name"]) + (
+                '<span class="star"> ⭐</span>' if p.get("priority") else ''
+            )
             meta = _build_meta_line(p)
             note_txt = s.get("note") if s.get("note") is not None else p.get("note", "")
             uid = ("m_" + pid + "_" + str(idx)).replace("-", "_")
-            btns = _btns_html_for_place(p, mode, show_taxi, uid) if show_taxi else _btns_html_for_place(p, mode, False, uid)
+            btns = _btns_html_for_place(p, mode, show_taxi, uid)
             if show_taxi:
                 t_scripts.append(_t_script(uid, p.get("name_kr") or p["name"]))
         else:
@@ -496,7 +514,7 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
             f'{meta_html}{note_html}'
             f'</div>'
         )
-        est += 58 + (22 if meta else 0) + (46 if note_txt else 0)
+        est += 46 + (18 if meta else 0) + (38 if note_txt else 0)
 
     chip = f'<div class="chip">{html_lib.escape(tag)}</div>' if tag else '<div class="chip ghost">·</div>'
     inner = f'<div class="card">{chip}<div class="body">' + ''.join(sec_parts) + '</div></div>'
