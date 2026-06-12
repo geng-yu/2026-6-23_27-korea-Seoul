@@ -1,14 +1,15 @@
 """
-渲染共用函式（v3 component copy 版）：
-- G / N 仍用 HTML 小圓鈕
-- T 改用 st-copy-to-clipboard component，避免 Streamlit markdown/onclick 在手機上失效
+渲染共用函式（v4 Kakao T 整合版）：
+- G / N / T 三顆固定同排
+- T 在 N 右邊
+- 按 T：先複製韓文店名，再嘗試開啟 Kakao T
 - 其餘 stop / note / multi_card / hotel_bottom API 盡量維持不變
 """
 import streamlit as st
+import streamlit.components.v1 as components
 import urllib.parse
 import html as html_lib
 
-from st_copy_to_clipboard import st_copy_to_clipboard
 from places import PLACES, get_by_area, AREA_HONGDAE
 
 
@@ -27,8 +28,7 @@ def set_scheduled(today_food=None, today_shop=None):
 
 def _next_key(prefix: str) -> str:
     """
-    產生同一次 rerun 內唯一的 component key。
-    避免同一家店在不同區塊 / expander / day 內重複出現時撞 key。
+    產生同一次 rerun 內唯一 key，避免重複元件衝突。
     """
     global _RENDER_SEQ
     _RENDER_SEQ += 1
@@ -146,6 +146,7 @@ _CSS = """
   transition:transform .1s;
   font-family:system-ui,-apple-system,sans-serif;
   box-shadow:0 1px 2px rgba(0,0,0,.15);
+  border:none;
 }
 .nav-btn:active{ transform:scale(.92); }
 .nav-btn.g{ background:#4285F4; color:#fff !important; }
@@ -247,6 +248,14 @@ def naver_url(query=None, lat=None, lng=None, name=None, mode="walking"):
     return f"nmap://map?appname={appname}"
 
 
+def kakao_t_scheme_url():
+    return "kakaot://home"
+
+
+def kakao_t_fallback_url():
+    return "https://taxi.kakao.com/"
+
+
 def _safe_href(url: str) -> str:
     return html_lib.escape(url, quote=True)
 
@@ -262,7 +271,7 @@ def _nav_btns_html(place, mode="walking"):
 
     return (
         '<div class="nav-btns">'
-        f'<a class="nav-btn g" href="{g}" target="_blank" title="Google Maps">G</a>'
+        f'<a class="nav-btn g" href="{g}" target="_blank" rel="noopener noreferrer" title="Google Maps">G</a>'
         f'<a class="nav-btn n" href="{n}" title="NAVER">N</a>'
         '</div>'
     )
@@ -286,13 +295,120 @@ def _build_meta_line(place):
     return ""
 
 
-def _copy_component(text: str, key: str):
-    st_copy_to_clipboard(
-        text=text,
-        before_copy_label="T",
-        after_copy_label="✓",
-        key=key,
-    )
+def _render_kakao_t_button(copy_text: str, key: str):
+    """
+    T 按鈕：
+    1. 先複製韓文店名
+    2. 再嘗試開啟 Kakao T app
+    3. 若 app scheme 無法處理，退回 Kakao T 網頁
+    """
+    button_id = f"btn_{key}"
+    status_id = f"status_{key}"
+    text_js = html_lib.escape(copy_text).replace("\\", "\\\\").replace("'", "\\'")
+    app_url = kakao_t_scheme_url()
+    fallback_url = kakao_t_fallback_url()
+
+    html_code = f"""
+    <div style="display:flex; justify-content:flex-end; align-items:center;">
+      <button id="{button_id}"
+              type="button"
+              title="Copy Korean name and open Kakao T"
+              style="
+                width:30px; height:30px; border:none; border-radius:50%;
+                background:#FEE500; color:#191919; font-weight:800; font-size:13.5px;
+                cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.15);
+                font-family:system-ui,-apple-system,sans-serif;
+              ">
+        T
+      </button>
+      <span id="{status_id}" style="display:none;"></span>
+    </div>
+
+    <script>
+    (function() {{
+      const btn = document.getElementById('{button_id}');
+      if (!btn) return;
+
+      btn.addEventListener('click', async function() {{
+        const textToCopy = '{text_js}';
+        const original = btn.innerText;
+        let copied = false;
+
+        try {{
+          if (navigator.clipboard && window.isSecureContext) {{
+            await navigator.clipboard.writeText(textToCopy);
+            copied = true;
+          }} else {{
+            const ta = document.createElement('textarea');
+            ta.value = textToCopy;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            ta.style.top = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            copied = document.execCommand('copy');
+            document.body.removeChild(ta);
+          }}
+        }} catch (e) {{
+          copied = false;
+        }}
+
+        btn.innerText = copied ? '✓' : 'T';
+        setTimeout(() => {{
+          btn.innerText = original;
+        }}, 1200);
+
+        const start = Date.now();
+        window.location.href = '{app_url}';
+
+        setTimeout(() => {{
+          if (Date.now() - start < 1800) {{
+            window.open('{fallback_url}', '_blank');
+          }}
+        }}, 900);
+      }});
+    }})();
+    </script>
+    """
+    components.html(html_code, height=36, width=40)
+
+
+def _render_action_buttons(place, mode="walking", copy_text=None, key_prefix="btn"):
+    """
+    右側三顆按鈕固定同排：
+    G | N | T
+    """
+    p = place
+    unique = _next_key(key_prefix)
+
+    c1, c2, c3 = st.columns([1, 1, 1], gap="small")
+
+    with c1:
+        g = gmap_url(f"{p.get('name_kr', p['name'])} {p.get('address', '')}", mode)
+        st.markdown(
+            f'<div class="nav-btns"><a class="nav-btn g" href="{_safe_href(g)}" target="_blank" rel="noopener noreferrer" title="Google Maps">G</a></div>',
+            unsafe_allow_html=True
+        )
+
+    with c2:
+        n = naver_url(
+            query=p.get("name_kr", p["name"]),
+            lat=p.get("lat"),
+            lng=p.get("lng"),
+            name=p.get("name", p.get("name_kr", "目的地")),
+            mode=mode
+        )
+        st.markdown(
+            f'<div class="nav-btns"><a class="nav-btn n" href="{_safe_href(n)}" title="NAVER">N</a></div>',
+            unsafe_allow_html=True
+        )
+
+    with c3:
+        _render_kakao_t_button(
+            copy_text=str(copy_text or p.get("name_kr") or p["name"]),
+            key=f"{key_prefix}_{unique}"
+        )
 
 
 def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walking",
@@ -309,7 +425,7 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
     note = note_override if note_override is not None else p.get("note", "")
     note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
 
-    left, right = st.columns([12, 3], gap="small")
+    left, right = st.columns([12, 4], gap="small")
 
     with left:
         accent = accent_override or _accent_cls(tag)
@@ -333,12 +449,12 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
         )
 
     with right:
-        st.markdown(_nav_btns_html(p, mode=mode), unsafe_allow_html=True)
-        if show_taxi:
-            _copy_component(
-                str(p.get("name_kr") or p["name"]),
-                key=_next_key(f"copy_main_{place_id}_{tag}_{mode}")
-            )
+        _render_action_buttons(
+            place=p,
+            mode=mode,
+            copy_text=str(p.get("name_kr") or p["name"]),
+            key_prefix=f"main_{place_id}_{tag}_{mode}"
+        )
 
 
 def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
@@ -366,13 +482,13 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
             cls = html_lib.escape(item.get("cls", "g"))
             raw_url = item.get("url", "#")
             url = _safe_href(raw_url)
-            target = ' target="_blank"' if str(raw_url).startswith("http") else ""
+            target = ' target="_blank" rel="noopener noreferrer"' if str(raw_url).startswith("http") else ""
             parts.append(
                 f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>'
             )
         btns_html = '<div class="nav-btns">' + ''.join(parts) + '</div>'
 
-    left, right = st.columns([12, 3], gap="small")
+    left, right = st.columns([12, 4], gap="small")
 
     with left:
         st.markdown(
@@ -420,7 +536,7 @@ def _render_backup_item(pid, p, already=False):
     note_html = f'<div class="small-note">{html_lib.escape(p.get("note", ""))}</div>' if p.get("note") else ''
     item_cls = "backup-item scheduled" if already else "backup-item"
 
-    left, right = st.columns([12, 3], gap="small")
+    left, right = st.columns([12, 4], gap="small")
 
     with left:
         st.markdown(
@@ -435,10 +551,11 @@ def _render_backup_item(pid, p, already=False):
         )
 
     with right:
-        st.markdown(_nav_btns_html(p, mode="walking"), unsafe_allow_html=True)
-        _copy_component(
-            str(p.get("name_kr") or p["name"]),
-            key=_next_key(f"copy_backup_{pid}")
+        _render_action_buttons(
+            place=p,
+            mode="walking",
+            copy_text=str(p.get("name_kr") or p["name"]),
+            key_prefix=f"backup_{pid}"
         )
 
 
@@ -506,7 +623,7 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
 
     place_ids = []
     for idx, s in enumerate(sections):
-        left, right = st.columns([12, 3], gap="small")
+        left, right = st.columns([12, 4], gap="small")
 
         if "place_id" in s:
             pid = s["place_id"]
@@ -540,12 +657,12 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
                 )
 
             with right:
-                st.markdown(_nav_btns_html(p, mode=mode), unsafe_allow_html=True)
-                if show_taxi:
-                    _copy_component(
-                        str(p.get("name_kr") or p["name"]),
-                        key=_next_key(f"copy_multi_{pid}_{idx}")
-                    )
+                _render_action_buttons(
+                    place=p,
+                    mode=mode,
+                    copy_text=str(p.get("name_kr") or p["name"]),
+                    key_prefix=f"multi_{pid}_{idx}"
+                )
 
         else:
             title_html = html_lib.escape(s.get("title", ""))
@@ -562,7 +679,7 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
                     cls = html_lib.escape(item.get("cls", "g"))
                     raw_url = item.get("url", "#")
                     url = _safe_href(raw_url)
-                    target = ' target="_blank"' if str(raw_url).startswith("http") else ""
+                    target = ' target="_blank" rel="noopener noreferrer"' if str(raw_url).startswith("http") else ""
                     bp.append(f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>')
                 btns_html = '<div class="nav-btns">' + ''.join(bp) + '</div>'
 
