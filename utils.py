@@ -683,7 +683,7 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
     inner = f'<div class="card">{chip}<div class="body">' + ''.join(sec_parts) + '</div></div>'
 
     # 多段卡片不要估太高，交給 ResizeObserver 後續精準修正
-    est = 120
+    est = 108
 
     _emit_card(accent, inner, t_scripts, est)
 
