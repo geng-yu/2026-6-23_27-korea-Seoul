@@ -493,23 +493,23 @@ def note(tag, title, meta=None, note=None):
 
 def hotel_bottom(today_food=None, today_shop=None):
     """
-    每天最下面：🏠 (卡片) + 🍽️吃 (expander) + 🛍️逛 (expander)。
+    每天最下面：住 (卡片) + 🍽️吃 (expander) + 🛍️逛 (expander)。
     today_food / today_shop 不傳的話，自動用 set_scheduled() 登記的清單。
     已排項目沉到最下面 + 標「已排」。
     """
     food_sched = set(today_food) if today_food is not None else _SCHEDULED["food"]
     shop_sched = set(today_shop) if today_shop is not None else _SCHEDULED["shop"]
 
-    _render_card(tag="🏠", place_id="hotel", show_taxi=True)
+    _render_card(tag="住", place_id="hotel", show_taxi=True)
 
     food_all = get_by_area(AREA_HONGDAE, exclude=["hotel"], cat="food")
     with st.expander("🍽️ 吃 — 飯店附近"):
-        st.caption("")
+        st.caption("弘대區所有吃的清單。主行程已排的會放最下面標「已排」。")
         _render_backup_list(food_all, food_sched)
 
     shop_all = get_by_area(AREA_HONGDAE, exclude=["hotel"], cat="shop")
     with st.expander("🛍️ 逛 — 飯店附近"):
-        st.caption("")
+        st.caption("弘대區所有逛的清單。主行程已排的會放最下面標「已排」。")
         _render_backup_list(shop_all, shop_sched)
 
 
