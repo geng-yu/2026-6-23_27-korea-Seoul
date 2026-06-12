@@ -76,11 +76,28 @@ div[data-testid="stExpander"] details > div{
   -webkit-overflow-scrolling:touch;
   padding-top:4px !important;
 }
-/* 讓每張卡片 iframe 之間的間距小一點、貼合卡片本身的 margin */
-div[data-testid="stIFrame"]{
+
+/* ===== 壓掉每個 iframe 卡片元件的上下空白（解決卡片間大空格） ===== */
+/* 1) iframe 元件本身的容器外距歸零 */
+div[data-testid="stIFrame"],
+div[data-testid="stIframe"]{
   margin:0 !important;
-  line-height:0;
+  line-height:0 !important;
 }
+div[data-testid="stIFrame"] iframe,
+div[data-testid="stIframe"] iframe{
+  display:block !important;
+  margin:0 !important;
+}
+/* 2) Streamlit 預設給每個垂直區塊元素的間距縮小 */
+div[data-testid="stVerticalBlock"]{
+  gap:0.2rem !important;
+}
+/* 3) expander 內每一項之間也縮小 */
+div[data-testid="stExpanderDetails"] div[data-testid="stVerticalBlock"]{
+  gap:0.15rem !important;
+}
+
 #MainMenu{visibility:hidden;}
 footer{visibility:hidden;}
 </style>
