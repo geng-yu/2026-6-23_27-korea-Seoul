@@ -460,7 +460,7 @@ PLACES = {
         "address": "서울 마포구 잔다리로 24 1F, B1F",
         "lat": 37.5520, "lng": 126.9215,
         "hours": "11:00-22:00",
-        "note": "",
+        "note": "衣服",
     },
     "hongdae_street": {
         "name": "弘대商店街", "name_kr": "홍대 쇼핑거리",
