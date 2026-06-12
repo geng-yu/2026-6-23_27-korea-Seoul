@@ -1,13 +1,12 @@
 """
-渲染共用函式（v10 間距與多段卡片穩定版）：
+渲染共用函式（v11 主行程原生排版 + 備案 iframe 版）
 
-這版重點：
-- 保留整卡 iframe 方案，確保 G / N / T 永遠在卡片內同排
-- T：先複製韓文店名，再開 Kakao T
-- 修正卡片與卡片、卡片與 expander、expander 內卡片的間距不一致
-- 修正 multi_card（多段卡片）上下留白偏大
-- 不做 fallback 網頁，避免 iPhone 多開頁
+設計：
+- 主行程：改用原生 Streamlit 排版，避免 iframe 高度 / 間距問題
+- 備案 / 飯店附近 expander：維持 iframe 卡片版
+- G / N / T：主行程直接放店名旁或下一行，不強求卡片右上角
 """
+
 import streamlit as st
 import streamlit.components.v1 as components
 import urllib.parse
@@ -41,6 +40,11 @@ _TAG_ACCENT_HEX = {
     "買": "#a855f7",
     "景": "#10b981",
     "住": "#3b82f6",
+    "🚗": "#64748b",
+    "✈️": "#64748b",
+    "🚆": "#64748b",
+    "🛒": "#a855f7",
+    "🍗": "#6366f1",
 }
 
 
@@ -53,14 +57,13 @@ def _accent_hex(tag):
 # ================================================================
 _CSS = """
 <style>
-/* ── 1) 外層 Streamlit block 不用 gap，避免和 iframe / wrapper 間距疊加 ── */
+/* 主畫面基本間距 */
 [data-testid="stVerticalBlock"],
 [data-testid="stVerticalBlockBorderWrapper"],
 [data-testid="stMainBlockContainer"]{
   gap:0 !important;
 }
 
-/* ── 2) iframe 本身不要額外 margin / padding / border ── */
 [data-testid="stIFrame"],
 [data-testid="stCustomComponentV1"],
 iframe{
@@ -70,20 +73,17 @@ iframe{
   border:none !important;
 }
 
-/* ── 3) 一般元件容器：主畫面卡片距離由這裡控制 ── */
 div.element-container,
 div[data-testid="element-container"],
 [data-testid="stElementContainer"]{
-  margin:0 0 0.3rem 0 !important;
+  margin:0 0 0.28rem 0 !important;
   padding:0 !important;
 }
 
-/* ── 4) expander 本體前後保留一點空間，避免貼住上下卡片 ── */
 div[data-testid="stExpander"]{
   margin:0.18rem 0 0.34rem 0 !important;
 }
 
-/* ── 5) expander 內容區域 ── */
 div[data-testid="stExpander"] [data-testid="stExpanderDetails"],
 div[data-testid="stExpander"] details > div{
   max-height:320px;
@@ -92,13 +92,11 @@ div[data-testid="stExpander"] details > div{
   padding:4px 6px 4px 0 !important;
 }
 
-/* ── 6) expander 裡面的 block 一樣不要 gap ── */
 div[data-testid="stExpander"] [data-testid="stVerticalBlock"],
 div[data-testid="stExpander"] [data-testid="stVerticalBlockBorderWrapper"]{
   gap:0 !important;
 }
 
-/* ── 7) expander 裡每個卡片距離再小一點 ── */
 div[data-testid="stExpander"] div.element-container,
 div[data-testid="stExpander"] div[data-testid="element-container"],
 div[data-testid="stExpander"] [data-testid="stElementContainer"]{
@@ -106,15 +104,133 @@ div[data-testid="stExpander"] [data-testid="stElementContainer"]{
   padding:0 !important;
 }
 
-/* ── 8) 只有 expander 裡最後一張卡片不留白 ── */
 div[data-testid="stExpander"] div.element-container:last-child,
 div[data-testid="stExpander"] div[data-testid="element-container"]:last-child,
 div[data-testid="stExpander"] [data-testid="stElementContainer"]:last-child{
   margin-bottom:0 !important;
 }
 
-/* 不要再用全域 last-child 把所有元素 margin-bottom 清掉，
-   否則主卡片後面如果剛好接 expander，就會貼在一起 */
+/* 主行程原生卡片 */
+.trip-card{
+  position:relative;
+  background:#f0f2f6;
+  border:1px solid rgba(128,128,128,.16);
+  border-radius:14px;
+  padding:12px 14px 12px 12px;
+  box-shadow:0 1px 4px rgba(0,0,0,.05);
+  overflow:hidden;
+}
+.trip-card::before{
+  content:"";
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:4px;
+  background:var(--accent, #94a3b8);
+}
+.trip-card.dashed{
+  background:transparent;
+  border:1.5px dashed rgba(128,128,128,.35);
+  box-shadow:none;
+}
+.trip-card.dashed::before{
+  display:none;
+}
+.trip-row{
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+}
+.trip-chip{
+  flex-shrink:0;
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+  font-weight:800;
+  color:#fff;
+  background:var(--accent, #94a3b8);
+  margin-top:1px;
+}
+.trip-chip.ghost{
+  background:transparent;
+  color:transparent;
+}
+.trip-chip.dashed{
+  background:rgba(128,128,128,.14);
+  color:#1a1a1a;
+}
+.trip-body{
+  min-width:0;
+  flex:1;
+}
+.trip-title{
+  font-size:15.5px;
+  font-weight:700;
+  line-height:1.35;
+  color:#1a1a1a;
+  margin:0;
+}
+.trip-title.small{
+  font-size:14.5px;
+}
+.trip-meta{
+  font-size:12px;
+  color:rgba(26,26,26,.68);
+  line-height:1.45;
+  margin-top:4px;
+}
+.trip-note{
+  font-size:12.5px;
+  color:rgba(26,26,26,.9);
+  line-height:1.5;
+  margin-top:5px;
+}
+.trip-links{
+  font-size:12.5px;
+  line-height:1.45;
+  margin-top:5px;
+}
+.trip-links a{
+  text-decoration:none;
+}
+.trip-links a:hover{
+  text-decoration:underline;
+}
+.trip-section{
+  margin-top:10px;
+  padding-top:8px;
+  border-top:1px dashed rgba(128,128,128,.20);
+}
+.trip-section:first-child{
+  margin-top:0;
+  padding-top:0;
+  border-top:none;
+}
+.trip-star{
+  color:#ff4b4b;
+  font-size:13px;
+}
+
+@media (prefers-color-scheme: dark){
+  .trip-card{
+    background:#262730;
+    border-color:rgba(250,250,250,.16);
+  }
+  .trip-card.dashed{
+    border-color:rgba(250,250,250,.30);
+  }
+  .trip-chip.dashed{
+    background:rgba(250,250,250,.12);
+    color:#fafafa;
+  }
+  .trip-title{ color:#fafafa; }
+  .trip-meta{ color:rgba(250,250,250,.68); }
+  .trip-note{ color:rgba(250,250,250,.9); }
+  .trip-section{ border-top:1px dashed rgba(250,250,250,.20); }
+}
 
 #MainMenu{visibility:hidden;}
 footer{visibility:hidden;}
@@ -174,7 +290,7 @@ def _build_meta_line(place):
 
 
 # ================================================================
-# iframe 卡片內部 CSS
+# iframe 卡片（只給備案 / expander 用）
 # ================================================================
 _IFRAME_STYLE = """
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -184,14 +300,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,system-ui,"Noto Sans TC","Noto
   --bg:#f0f2f6;--text:#1a1a1a;
   --border:rgba(128,128,128,.16);
   --border-dash:rgba(128,128,128,.35);
-  --section-line:rgba(128,128,128,.22);
 }
 @media(prefers-color-scheme:dark){
   :root{
     --bg:#262730;--text:#fafafa;
     --border:rgba(250,250,250,.16);
     --border-dash:rgba(250,250,250,.30);
-    --section-line:rgba(250,250,250,.20);
   }
 }
 .card{
@@ -199,17 +313,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,system-ui,"Noto Sans TC","Noto
   background:var(--bg);
   border:1px solid var(--border);
   border-radius:14px;
-  padding:12px 14px 14px 12px;
+  padding:12px 14px 12px 12px;
   display:flex;
   align-items:flex-start;
   gap:11px;
   box-shadow:0 1px 4px rgba(0,0,0,.05);
-  overflow:visible;
-}
-.card.dashed{
-  background:transparent;
-  border:1.5px dashed var(--border-dash);
-  box-shadow:none;
+  overflow:hidden;
 }
 .card::before{
   content:"";
@@ -218,86 +327,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,system-ui,"Noto Sans TC","Noto
   width:4px;
   background:var(--accent,#94a3b8);
 }
-.card.dashed::before{display:none;}
 .chip{
-  flex-shrink:0;
-  width:34px;height:34px;border-radius:10px;
+  flex-shrink:0;width:34px;height:34px;border-radius:10px;
   display:flex;align-items:center;justify-content:center;
-  font-size:15px;font-weight:800;color:#fff;
-  background:var(--accent,#94a3b8);
-  margin-top:1px;
+  font-size:15px;font-weight:800;color:#fff;background:var(--accent,#94a3b8);margin-top:1px;
 }
-.chip.dashed{background:rgba(128,128,128,.14);color:var(--text);}
 .chip.ghost{background:transparent;color:transparent;}
-.body{
-  flex-grow:1;
-  min-width:0;
-  padding-bottom:2px;
-}
-.section{
-  padding:6px 0 2px 0;
-  margin-top:6px;
-}
-.section:first-child{
-  margin-top:0;
-  padding-top:0;
-}
-.title-row{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:8px;
-}
-h4{
-  font-size:15.5px;
-  font-weight:700;
-  color:var(--text);
-  line-height:1.35;
-  word-break:break-word;
-  flex:1;
-  min-width:0;
-  margin:0;
-}
-h5{
-  font-size:14.5px;
-  font-weight:700;
-  color:var(--text);
-  line-height:1.35;
-  word-break:break-word;
-  flex:1;
-  min-width:0;
-  margin:0;
-}
-.meta{
-  font-size:12px;
-  color:var(--text);
-  opacity:.62;
-  margin-top:4px;
-  line-height:1.45;
-}
-.note{
-  font-size:12.5px;
-  color:var(--text);
-  opacity:.88;
-  margin-top:5px;
-  line-height:1.5;
-}
+.body{flex-grow:1;min-width:0;}
+.title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+h4{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.35;word-break:break-word;flex:1;min-width:0;margin:0;}
+.meta{font-size:12px;color:var(--text);opacity:.62;margin-top:4px;line-height:1.45;}
+.note{font-size:12.5px;color:var(--text);opacity:.88;margin-top:5px;line-height:1.5;}
 .star{color:#ff4b4b;font-size:13px;}
-.btns{
-  display:flex;
-  gap:6px;
-  flex-shrink:0;
-  align-items:center;
-  padding-top:1px;
-}
+.btns{display:flex;gap:6px;flex-shrink:0;align-items:center;padding-top:1px;}
 .b{
   width:30px;height:30px;border-radius:50%;
   display:inline-flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:13.5px;
-  text-decoration:none;border:none;cursor:pointer;
+  font-weight:800;font-size:13.5px;text-decoration:none;border:none;cursor:pointer;
   box-shadow:0 1px 2px rgba(0,0,0,.15);
-  -webkit-tap-highlight-color:transparent;
-  user-select:none;
+  -webkit-tap-highlight-color:transparent;user-select:none;
   font-family:-apple-system,system-ui,sans-serif;
 }
 .b:active{transform:scale(.92);}
@@ -306,7 +354,6 @@ h5{
 .b.t{background:#FAE100;color:#371D1E;}
 """
 
-# 更穩定的高度回報：同時看 body / html，多次校正
 _HEIGHT_REPORTER = """
 (function(){
   function getHeight(){
@@ -323,7 +370,6 @@ _HEIGHT_REPORTER = """
     );
     return Math.ceil(h) + 6;
   }
-
   function report(){
     const h = getHeight();
     window.parent.postMessage(
@@ -331,84 +377,23 @@ _HEIGHT_REPORTER = """
       "*"
     );
   }
-
   if (window.ResizeObserver) {
     const ro = new ResizeObserver(function(){ report(); });
     ro.observe(document.body);
     ro.observe(document.documentElement);
   }
-
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(report).catch(function(){});
-  }
-
   window.addEventListener("load", report);
   window.addEventListener("resize", report);
-
-  requestAnimationFrame(function(){
-    report();
-    requestAnimationFrame(function(){
-      report();
-      requestAnimationFrame(report);
-    });
-  });
-
   setTimeout(report, 50);
-  setTimeout(report, 120);
-  setTimeout(report, 250);
-  setTimeout(report, 400);
+  setTimeout(report, 150);
+  setTimeout(report, 300);
 })();
 """
-
-
-def _btns_html_for_place(p, mode, show_taxi, uid):
-    name = p["name"]
-    name_kr = p.get("name_kr", name)
-
-    g = _safe_href(gmap_url(f"{name_kr} {p.get('address', '')}", mode))
-    n = _safe_href(
-        naver_url(
-            query=name_kr,
-            lat=p.get("lat"),
-            lng=p.get("lng"),
-            name=name_kr or name,
-            mode=mode
-        )
-    )
-
-    parts = [
-        f'<a class="b g" href="{g}" target="_blank" rel="noopener" title="Google Maps">G</a>',
-        f'<a class="b n" href="{n}" title="NAVER">N</a>',
-    ]
-
-    if show_taxi:
-        parts.append(
-            f'<button class="b t" id="t_{uid}" type="button" title="複製韓文店名並開啟 Kakao T">T</button>'
-        )
-
-    return '<div class="btns">' + ''.join(parts) + '</div>'
-
-
-def _btns_html_for_links(links):
-    if not links:
-        return ""
-
-    parts = []
-    for item in links:
-        label = html_lib.escape(item.get("label", ""))
-        cls = html_lib.escape(item.get("cls", "g"))
-        raw_url = item.get("url", "#")
-        url = _safe_href(raw_url)
-        target = ' target="_blank" rel="noopener"' if str(raw_url).startswith("http") else ""
-        parts.append(f'<a class="b {cls}" href="{url}"{target} title="{label}">{label}</a>')
-
-    return '<div class="btns">' + ''.join(parts) + '</div>'
 
 
 def _t_script(uid, copy_text):
     ct = json.dumps(str(copy_text))
     k = json.dumps(kakaot_url())
-
     return (
         f'(function(){{'
         f'var el=document.getElementById("t_{uid}");'
@@ -421,8 +406,7 @@ def _t_script(uid, copy_text):
         f'ta.value={ct};'
         f'ta.style.cssText="position:fixed;left:-9999px;top:0";'
         f'document.body.appendChild(ta);'
-        f'ta.focus();'
-        f'ta.select();'
+        f'ta.focus();ta.select();'
         f'try{{document.execCommand("copy");}}catch(e){{}}'
         f'document.body.removeChild(ta);'
         f'}}'
@@ -435,11 +419,38 @@ def _t_script(uid, copy_text):
     )
 
 
+def _btns_html_for_place(p, mode, show_taxi, uid):
+    name = p["name"]
+    name_kr = p.get("name_kr", name)
+    g = _safe_href(gmap_url(f"{name_kr} {p.get('address', '')}", mode))
+    n = _safe_href(naver_url(query=name_kr, lat=p.get("lat"), lng=p.get("lng"),
+                             name=name_kr or name, mode=mode))
+    parts = [
+        f'<a class="b g" href="{g}" target="_blank" rel="noopener" title="Google Maps">G</a>',
+        f'<a class="b n" href="{n}" title="NAVER">N</a>',
+    ]
+    if show_taxi:
+        parts.append(
+            f'<button class="b t" id="t_{uid}" type="button" title="複製韓文店名並開啟 Kakao T">T</button>'
+        )
+    return '<div class="btns">' + ''.join(parts) + '</div>'
+
+
+def _btns_html_for_links(links):
+    if not links:
+        return ""
+    parts = []
+    for item in links:
+        label = html_lib.escape(item.get("label", ""))
+        cls = html_lib.escape(item.get("cls", "g"))
+        raw_url = item.get("url", "#")
+        url = _safe_href(raw_url)
+        target = ' target="_blank" rel="noopener"' if str(raw_url).startswith("http") else ""
+        parts.append(f'<a class="b {cls}" href="{url}"{target} title="{label}">{label}</a>')
+    return '<div class="btns">' + ''.join(parts) + '</div>'
+
+
 def _emit_card(accent_hex, inner_html, t_scripts, est_height):
-    """
-    把卡片 HTML + JS 包成 iframe 輸出。
-    est_height 只作初始值；真正高度由 iframe 內的 JS 回報修正。
-    """
     all_scripts = ''.join(t_scripts) + _HEIGHT_REPORTER
     doc = (
         '<!DOCTYPE html><html><head><meta charset="utf-8">'
@@ -454,77 +465,142 @@ def _emit_card(accent_hex, inner_html, t_scripts, est_height):
 
 
 # ================================================================
-# 卡片渲染
+# 原生主行程渲染
 # ================================================================
-def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walking",
-                 accent_override_hex=None):
+def _render_inline_links(links):
+    if not links:
+        return ""
+    parts = []
+    for item in links:
+        label = html_lib.escape(item.get("label", ""))
+        raw_url = item.get("url", "#")
+        url = _safe_href(raw_url)
+        target = ' target="_blank" rel="noopener"' if str(raw_url).startswith("http") else ""
+        parts.append(f'<a href="{url}"{target}>[{label}]</a>')
+    return " ".join(parts)
+
+
+def _render_place_links(place, mode="walking", show_taxi=True):
+    name = place["name"]
+    name_kr = place.get("name_kr", name)
+
+    links = [
+        {"label": "G", "url": gmap_url(f"{name_kr} {place.get('address', '')}", mode)},
+        {"label": "N", "url": naver_url(query=name_kr, lat=place.get("lat"), lng=place.get("lng"),
+                                        name=name_kr or name, mode=mode)},
+    ]
+    if show_taxi:
+        # 原生排版不做複製 JS，直接開 Kakao T
+        links.append({"label": "T", "url": kakaot_url()})
+    return _render_inline_links(links)
+
+
+def _render_native_card(tag, title, meta=None, note=None, links_html=None, dashed=False):
+    accent = _accent_hex(tag)
+    chip_text = html_lib.escape(tag) if tag else "·"
+    chip_cls = "trip-chip dashed" if dashed else ("trip-chip" if tag else "trip-chip ghost")
+    card_cls = "trip-card dashed" if dashed else "trip-card"
+
+    title_tag_cls = "trip-title small" if dashed else "trip-title"
+
+    html = f'''
+    <div class="{card_cls}" style="--accent:{accent};">
+      <div class="trip-row">
+        <div class="{chip_cls}">{chip_text}</div>
+        <div class="trip-body">
+          <div class="{title_tag_cls}">{html_lib.escape(title)}</div>
+          {f'<div class="trip-meta">{html_lib.escape(meta)}</div>' if meta else ''}
+          {f'<div class="trip-note">{html_lib.escape(note)}</div>' if note else ''}
+          {f'<div class="trip-links">{links_html}</div>' if links_html else ''}
+        </div>
+      </div>
+    </div>
+    '''
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def _render_native_place_card(tag, place_id, note_override=None, show_taxi=True, mode="walking",
+                              accent_override_hex=None):
     if place_id not in PLACES:
         st.error(f"❌ 找不到地點: {place_id}")
         return
 
     p = PLACES[place_id]
-    accent = accent_override_hex or _accent_hex(tag)
-
-    chip = f'<div class="chip">{html_lib.escape(tag)}</div>' if tag else '<div class="chip ghost">·</div>'
-    name = html_lib.escape(p["name"])
-    star = '<span class="star"> ⭐</span>' if p.get("priority") else ''
+    title = p["name"] + (" ⭐" if p.get("priority") else "")
     meta = _build_meta_line(p)
-    meta_html = f'<p class="meta">{html_lib.escape(meta)}</p>' if meta else ''
-
     note = note_override if note_override is not None else p.get("note", "")
-    note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
+    links_html = _render_place_links(p, mode=mode, show_taxi=show_taxi)
 
-    uid = place_id.replace("-", "_")
-    btns = _btns_html_for_place(p, mode, show_taxi, uid)
+    accent = accent_override_hex or _accent_hex(tag)
+    chip_text = html_lib.escape(tag) if tag else "·"
+    chip_cls = "trip-chip" if tag else "trip-chip ghost"
 
-    inner = (
-        f'<div class="card">{chip}<div class="body">'
-        f'<div class="title-row"><h4>{name}{star}</h4>{btns}</div>'
-        f'{meta_html}{note_html}'
-        f'</div></div>'
-    )
+    html = f'''
+    <div class="trip-card" style="--accent:{accent};">
+      <div class="trip-row">
+        <div class="{chip_cls}">{chip_text}</div>
+        <div class="trip-body">
+          <div class="trip-title">{html_lib.escape(title)}</div>
+          {f'<div class="trip-meta">{html_lib.escape(meta)}</div>' if meta else ''}
+          {f'<div class="trip-note">{html_lib.escape(note)}</div>' if note else ''}
+          <div class="trip-links">{links_html}</div>
+        </div>
+      </div>
+    </div>
+    '''
+    st.markdown(html, unsafe_allow_html=True)
 
-    t_scripts = [_t_script(uid, p.get("name_kr") or p["name"])] if show_taxi else []
 
-    est = 62 + (18 if meta else 0) + (38 if note else 0)
-    _emit_card(accent, inner, t_scripts, est)
-
-
-def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
+def _render_native_multi_card(tag, sections, show_taxi=True, mode="walking"):
     accent = _accent_hex(tag)
-    tag_e = html_lib.escape(tag) if tag else "·"
+    chip_text = html_lib.escape(tag) if tag else "·"
+    chip_cls = "trip-chip" if tag else "trip-chip ghost"
 
-    if dashed:
-        chip = f'<div class="chip dashed">{tag_e}</div>'
-        card_cls = "card dashed"
-        title_tag = "h5"
-    elif tag:
-        chip = f'<div class="chip">{tag_e}</div>'
-        card_cls = "card"
-        title_tag = "h4"
-    else:
-        chip = '<div class="chip ghost">·</div>'
-        card_cls = "card"
-        title_tag = "h4"
+    sec_html = []
+    for s in sections:
+        if "place_id" in s:
+            pid = s["place_id"]
+            if pid not in PLACES:
+                st.error(f"❌ 找不到地點: {pid}")
+                continue
 
-    title_e = html_lib.escape(title)
-    meta_html = f'<p class="meta">{html_lib.escape(meta)}</p>' if meta else ''
-    note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
-    btns = _btns_html_for_links(links)
+            p = PLACES[pid]
+            title = p["name"] + (" ⭐" if p.get("priority") else "")
+            meta = _build_meta_line(p)
+            note_txt = s.get("note") if s.get("note") is not None else p.get("note", "")
+            links_html = _render_place_links(p, mode=mode, show_taxi=show_taxi)
+        else:
+            title = s.get("title", "")
+            meta = s.get("meta", "")
+            note_txt = s.get("note", "")
+            links_html = _render_inline_links(s.get("links"))
 
-    inner = (
-        f'<div class="{card_cls}">{chip}<div class="body">'
-        f'<div class="title-row"><{title_tag}>{title_e}</{title_tag}>{btns}</div>'
-        f'{meta_html}{note_html}'
-        f'</div></div>'
-    )
+        sec_html.append(
+            f'''
+            <div class="trip-section">
+              <div class="trip-title">{html_lib.escape(title)}</div>
+              {f'<div class="trip-meta">{html_lib.escape(meta)}</div>' if meta else ''}
+              {f'<div class="trip-note">{html_lib.escape(note_txt)}</div>' if note_txt else ''}
+              {f'<div class="trip-links">{links_html}</div>' if links_html else ''}
+            </div>
+            '''
+        )
 
-    est = 58 + (18 if meta else 0) + (38 if note else 0)
-    _emit_card(accent, inner, [], est)
+    html = f'''
+    <div class="trip-card" style="--accent:{accent};">
+      <div class="trip-row">
+        <div class="{chip_cls}">{chip_text}</div>
+        <div class="trip-body">
+          {''.join(sec_html)}
+        </div>
+      </div>
+    </div>
+    '''
+    st.markdown(html, unsafe_allow_html=True)
 
 
 # ================================================================
-# 備案 / 飯店附近清單項目
+# 備案 / 飯店附近清單項目（iframe 保留）
 # ================================================================
 def _render_backup_item(pid, p, already=False):
     accent = "#94a3b8"
@@ -562,13 +638,13 @@ def _render_backup_item(pid, p, already=False):
     opacity = ' style="opacity:.62"' if already else ''
     inner = (
         f'<div class="card"{opacity}><div class="chip ghost">·</div><div class="body">'
-        f'<div class="title-row"><h4 style="font-size:13.5px;">{name}{star}{already_tag}</h4>{btns}</div>'
+        f'<div class="title-row"><h4>{name}{star}{already_tag}</h4>{btns}</div>'
         f'{meta_html}{note_html}'
         f'</div></div>'
     )
 
     t_scripts = [_t_script(uid, p.get("name_kr") or p["name"])]
-    est = 56 + (16 if meta_line else 0) + (36 if p.get("note") else 0)
+    est = 72 + (18 if meta_line else 0) + (42 if p.get("note") else 0)
     _emit_card(accent, inner, t_scripts, est)
 
 
@@ -593,7 +669,7 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
     accent = _accent_hex(tag)
 
     for i, pid in enumerate(place_ids):
-        _render_card(
+        _render_native_place_card(
             tag=tag if i == 0 else "",
             place_id=pid,
             note_override=notes[i] if i < len(notes) else None,
@@ -616,14 +692,19 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
 
 
 def note(tag, title, meta=None, note=None):
-    custom_card(tag=tag, title=title, meta=meta, note=note, links=None, dashed=True)
+    _render_native_card(tag=tag, title=title, meta=meta, note=note, links_html=None, dashed=True)
+
+
+def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
+    links_html = _render_inline_links(links)
+    _render_native_card(tag=tag, title=title, meta=meta, note=note, links_html=links_html, dashed=dashed)
 
 
 def hotel_bottom(today_food=None, today_shop=None):
     food_sched = set(today_food) if today_food is not None else _SCHEDULED["food"]
     shop_sched = set(today_shop) if today_shop is not None else _SCHEDULED["shop"]
 
-    _render_card(tag="住", place_id="hotel", show_taxi=True)
+    _render_native_place_card(tag="住", place_id="hotel", show_taxi=True)
 
     food_all = get_by_area(AREA_HONGDAE, exclude=["hotel"], cat="food")
     with st.expander("🍽️ 吃 — 飯店附近"):
@@ -637,56 +718,9 @@ def hotel_bottom(today_food=None, today_shop=None):
 
 
 def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
-    """多個主要點合併在同一張卡片內，每點標題粗體 + 按鈕在右、虛線分段。"""
-    accent = _accent_hex(tag)
-    place_ids = []
-    sec_parts = []
-    t_scripts = []
+    _render_native_multi_card(tag=tag, sections=sections, show_taxi=show_taxi, mode=mode)
 
-    for idx, s in enumerate(sections):
-        if "place_id" in s:
-            pid = s["place_id"]
-            if pid not in PLACES:
-                st.error(f"❌ 找不到地點: {pid}")
-                continue
-
-            place_ids.append(pid)
-            p = PLACES[pid]
-            title_html = html_lib.escape(p["name"]) + (
-                '<span class="star"> ⭐</span>' if p.get("priority") else ''
-            )
-            meta = _build_meta_line(p)
-            note_txt = s.get("note") if s.get("note") is not None else p.get("note", "")
-            uid = ("m_" + pid + "_" + str(idx)).replace("-", "_")
-            btns = _btns_html_for_place(p, mode, show_taxi, uid)
-
-            if show_taxi:
-                t_scripts.append(_t_script(uid, p.get("name_kr") or p["name"]))
-
-        else:
-            title_html = html_lib.escape(s.get("title", ""))
-            meta = s.get("meta", "")
-            note_txt = s.get("note", "")
-            btns = _btns_html_for_links(s.get("links"))
-
-        meta_html = f'<p class="meta">{html_lib.escape(meta)}</p>' if meta else ''
-        note_html = f'<p class="note">{html_lib.escape(note_txt)}</p>' if note_txt else ''
-
-        sec_parts.append(
-            f'<div class="section">'
-            f'<div class="title-row"><h4>{title_html}</h4>{btns}</div>'
-            f'{meta_html}{note_html}'
-            f'</div>'
-        )
-
-    chip = f'<div class="chip">{html_lib.escape(tag)}</div>' if tag else '<div class="chip ghost">·</div>'
-    inner = f'<div class="card">{chip}<div class="body">' + ''.join(sec_parts) + '</div></div>'
-
-    # 多段卡片不要估太高，交給 ResizeObserver 後續精準修正
-    est = 108
-
-    _emit_card(accent, inner, t_scripts, est)
-
+    place_ids = [s["place_id"] for s in sections if "place_id" in s and s["place_id"] in PLACES]
     if others and place_ids:
         area = PLACES[place_ids[0]].get("area")
         cat_label = {"food": "其他吃的", "shop": "其他逛的"}.get(others, "其他")
