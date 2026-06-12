@@ -231,12 +231,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,system-ui,"Noto Sans TC","Noto
 .chip.ghost{background:transparent;color:transparent;}
 .body{flex-grow:1;min-width:0;}
 .section{
-  padding:9px 0 2px 0;
-  border-top:1px dashed var(--section-line);
-  margin-top:7px;
+  padding:6px 0 2px 0;
+  margin-top:6px;
 }
 .section:first-child{
-  border-top:none;
   margin-top:0;
   padding-top:0;
 }
