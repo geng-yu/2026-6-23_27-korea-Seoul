@@ -310,13 +310,16 @@ _HEIGHT_REPORTER = """
   function getHeight(){
     const body = document.body;
     const html = document.documentElement;
-    return Math.ceil(Math.max(
+    const h = Math.max(
       body.scrollHeight,
       body.offsetHeight,
-      html.clientHeight,
+      body.getBoundingClientRect().height,
       html.scrollHeight,
-      html.offsetHeight
-    ));
+      html.offsetHeight,
+      html.clientHeight,
+      html.getBoundingClientRect().height
+    );
+    return Math.ceil(h) + 6;
   }
 
   function report(){
@@ -342,12 +345,16 @@ _HEIGHT_REPORTER = """
 
   requestAnimationFrame(function(){
     report();
-    requestAnimationFrame(report);
+    requestAnimationFrame(function(){
+      report();
+      requestAnimationFrame(report);
+    });
   });
 
   setTimeout(report, 50);
-  setTimeout(report, 150);
-  setTimeout(report, 300);
+  setTimeout(report, 120);
+  setTimeout(report, 250);
+  setTimeout(report, 400);
 })();
 """
 
