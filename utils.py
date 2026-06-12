@@ -1,11 +1,12 @@
 """
-渲染共用函式（v2 卡片版）：
-- 所有 HTML 一律用「單行串接」組出來，零縮排 → 永遠不會被 Markdown 當成程式碼區塊
-- 卡片式設計：左側彩色類別晶片 + 卡片陰影 + 左側色條
-- expander 內容固定高度 320px，超過用上下滑動
-- set_scheduled()：登記當天主行程已排的店，所有「其他」expander 會把已排的沉到最下面並標「已排」
+渲染共用函式（v2 卡片版 + Kakao T 功能修正版）：
+- 保留 v2 排版：G / N / T 在店名右邊
+- T 按鈕：先複製韓文店名，再嘗試開啟 Kakao T App
+- 不做 fallback 網頁，避免多開頁
+- 所有 HTML 盡量維持單行串接，避免被 Markdown 當成 code block
 """
 import streamlit as st
+import streamlit.components.v1 as components
 import urllib.parse
 import html as html_lib
 
@@ -16,6 +17,7 @@ from places import PLACES, get_by_area, AREA_HONGDAE
 # 當天已排清單（每次 rerun 由 day 檔重新登記）
 # ================================================================
 _SCHEDULED = {"food": set(), "shop": set()}
+_RENDER_SEQ = 0
 
 
 def set_scheduled(today_food=None, today_shop=None):
@@ -25,11 +27,15 @@ def set_scheduled(today_food=None, today_shop=None):
     _SCHEDULED["shop"] = set(today_shop or [])
 
 
+def _next_key(prefix: str) -> str:
+    global _RENDER_SEQ
+    _RENDER_SEQ += 1
+    return f"{prefix}_{_RENDER_SEQ}"
+
+
 # ================================================================
 # 全域 CSS
 # ================================================================
-# 注意：這段字串「故意完全靠左、不縮排」。
-# st.markdown 遇到縮排 4 格以上的行會當成 code block，CSS 就會直接印在畫面上。
 _CSS = """
 <style>
 /* ===== 主卡片 ===== */
@@ -70,15 +76,15 @@ _CSS = """
 }
 
 /* 類別顏色 */
-.acc-morning{ --card-accent:#f59e0b; }   /* 早 */
-.acc-lunch  { --card-accent:#f97316; }   /* 午 */
-.acc-dinner { --card-accent:#ef4444; }   /* 晚 */
-.acc-night  { --card-accent:#6366f1; }   /* 宵 */
-.acc-snack  { --card-accent:#ec4899; }   /* 點 */
-.acc-shop   { --card-accent:#a855f7; }   /* 逛/買 */
-.acc-sight  { --card-accent:#10b981; }   /* 景 */
-.acc-stay   { --card-accent:#3b82f6; }   /* 住 */
-.acc-move   { --card-accent:#94a3b8; }   /* 交通/其他 */
+.acc-morning{ --card-accent:#f59e0b; }
+.acc-lunch  { --card-accent:#f97316; }
+.acc-dinner { --card-accent:#ef4444; }
+.acc-night  { --card-accent:#6366f1; }
+.acc-snack  { --card-accent:#ec4899; }
+.acc-shop   { --card-accent:#a855f7; }
+.acc-sight  { --card-accent:#10b981; }
+.acc-stay   { --card-accent:#3b82f6; }
+.acc-move   { --card-accent:#94a3b8; }
 
 .stop-card .body{ flex-grow:1; min-width:0; }
 .stop-card .top-row{
@@ -139,11 +145,12 @@ _CSS = """
   transition:transform .1s;
   font-family:system-ui,-apple-system,sans-serif;
   box-shadow:0 1px 2px rgba(0,0,0,.15);
+  border:none;
 }
 .nav-btn:active{ transform:scale(.92); }
 .nav-btn.g{ background:#4285F4; color:#fff !important; }
 .nav-btn.n{ background:#03C75A; color:#fff !important; }
-.nav-btn.t{ background:#FAE100; color:#371D1E !important; }
+.nav-btn.t{ background:#FAE100; color:#371D1E !important; cursor:pointer; }
 
 /* ===== 備案 / 飯店附近清單項目 ===== */
 .backup-item{
@@ -175,14 +182,12 @@ div[data-testid="stExpander"] [data-testid="stExpanderDetails"]{
   padding-top:4px !important;
   padding-right:6px;
 }
-/* 舊版 Streamlit 結構 fallback */
 div[data-testid="stExpander"] details > div{
   max-height:320px;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   padding-top:4px !important;
 }
-
 
 /* ===== 同一張卡片內的多個分段 ===== */
 .stop-card .section{
@@ -246,17 +251,28 @@ def naver_url(query=None, lat=None, lng=None, name=None, mode="walking"):
 
 
 def kakaot_url():
-    return "kakaotaxi://"
+    return "kakaot://home"
 
 
 def _safe_href(url: str) -> str:
     return html_lib.escape(url, quote=True)
 
 
+def _js_escape_text(text: str) -> str:
+    return (
+        str(text)
+        .replace("\\", "\\\\")
+        .replace("'", "\\'")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "")
+    )
+
+
 # ================================================================
-# HTML 片段建構器（全部單行串接，零縮排）
+# HTML / JS 片段建構器
 # ================================================================
-def _nav_btns_html(place, show_taxi=True, mode="walking"):
+def _nav_btns_html(place, show_taxi=True, mode="walking", key_prefix="btn"):
     name = place["name"]
     name_kr = place.get("name_kr", name)
     lat = place.get("lat")
@@ -266,12 +282,49 @@ def _nav_btns_html(place, show_taxi=True, mode="walking"):
     n = _safe_href(naver_url(query=name_kr, lat=lat, lng=lng, name=name, mode=mode))
 
     parts = [
-        f'<a class="nav-btn g" href="{g}" target="_blank" title="Google Maps">G</a>',
+        f'<a class="nav-btn g" href="{g}" target="_blank" rel="noopener noreferrer" title="Google Maps">G</a>',
         f'<a class="nav-btn n" href="{n}" title="NAVER">N</a>',
     ]
+
     if show_taxi:
-        t = _safe_href(kakaot_url())
-        parts.append(f'<a class="nav-btn t" href="{t}" title="Kakao T">T</a>')
+        btn_id = f'kakao_btn_{_next_key(key_prefix)}'
+        copy_text = _js_escape_text(name_kr)
+        kakao_href = _js_escape_text(kakaot_url())
+        parts.append(
+            f'<button id="{btn_id}" class="nav-btn t" type="button" title="Copy Korean name and open Kakao T">T</button>'
+            f'<script>'
+            f'(function(){{'
+            f'var btn=document.getElementById("{btn_id}");'
+            f'if(!btn) return;'
+            f'btn.addEventListener("click", async function(){{'
+            f'var textToCopy="{copy_text}";'
+            f'var original=btn.innerText;'
+            f'var copied=false;'
+            f'try{{'
+            f'if(navigator.clipboard && window.isSecureContext){{'
+            f'await navigator.clipboard.writeText(textToCopy);'
+            f'copied=true;'
+            f'}}else{{'
+            f'var ta=document.createElement("textarea");'
+            f'ta.value=textToCopy;'
+            f'ta.style.position="fixed";'
+            f'ta.style.left="-9999px";'
+            f'ta.style.top="0";'
+            f'document.body.appendChild(ta);'
+            f'ta.focus();'
+            f'ta.select();'
+            f'copied=document.execCommand("copy");'
+            f'document.body.removeChild(ta);'
+            f'}}'
+            f'}}catch(e){{copied=false;}}'
+            f'btn.innerText=copied ? "✓" : "T";'
+            f'setTimeout(function(){{btn.innerText=original;}},1000);'
+            f'window.location.href="{kakao_href}";'
+            f'}});'
+            f'}})();'
+            f'</script>'
+        )
+
     return '<div class="nav-btns">' + ''.join(parts) + '</div>'
 
 
@@ -296,7 +349,6 @@ def _build_meta_line(place):
 
 def _card_html(accent_cls, chip_html, title_html, btns_html, meta_html, note_html,
                card_class="stop-card", title_tag="h4"):
-    """組出一張卡片的完整 HTML（單行，零換行零縮排）。"""
     return (
         f'<div class="{card_class} {accent_cls}">'
         f'{chip_html}'
@@ -317,7 +369,6 @@ def _card_html(accent_cls, chip_html, title_html, btns_html, meta_html, note_htm
 # ================================================================
 def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walking",
                  accent_override=None):
-    """渲染單張主行程卡片。tag 是 '晚'/'逛'/'宵' 等；空字串就隱形(對齊用)。"""
     if place_id not in PLACES:
         st.error(f"❌ 找不到地點: {place_id}")
         return
@@ -336,7 +387,7 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
     else:
         chip_html = '<div class="chip ghost">·</div>'
 
-    btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode)
+    btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode, key_prefix=f"main_{place_id}")
 
     st.markdown(
         _card_html(accent, chip_html, f'{name}{star}', btns, meta_html, note_html),
@@ -372,7 +423,7 @@ def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
             label = html_lib.escape(item.get("label", ""))
             cls = html_lib.escape(item.get("cls", "g"))
             url = _safe_href(item.get("url", "#"))
-            target = ' target="_blank"' if url.startswith("http") else ""
+            target = ' target="_blank" rel="noopener noreferrer"' if str(item.get("url", "#")).startswith("http") else ""
             parts.append(
                 f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>'
             )
@@ -412,7 +463,7 @@ def _render_backup_item(p, already=False):
 
     meta_html = f'<div class="small-meta">{meta_line}</div>' if meta_line else ''
     note_html = f'<div class="small-note">{html_lib.escape(p.get("note", ""))}</div>' if p.get("note") else ''
-    btns = _nav_btns_html(p, show_taxi=True, mode="walking")
+    btns = _nav_btns_html(p, show_taxi=True, mode="walking", key_prefix=f"backup_{p.get('name','x')}")
     item_cls = "backup-item scheduled" if already else "backup-item"
 
     st.markdown(
@@ -443,16 +494,6 @@ def _render_backup_list(items, scheduled_ids):
 def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"):
     """
     顯示一個或多個主行程地點，共用一個類別標籤。
-
-    Args:
-        tag: '早'/'午'/'晚'/'宵'/'點'/'逛'/'買'/'景'/'住' 等。
-        place_ids: str (單筆) 或 list[str] (group)
-        others: None / "food" / "shop" — 加一個「其他」expander。
-                清單中若有「當天主行程已排」(set_scheduled 登記過) 的項目，
-                會沉到最下面並標「已排」。
-        notes: None / str / list — 覆寫卡片上的 note。
-        show_taxi: 是否顯示 Kakao T (T) 按鈕。
-        mode: walking / driving / transit
     """
     if isinstance(place_ids, str):
         place_ids = [place_ids]
@@ -478,7 +519,6 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
         area = first_p.get("area")
         cat_label = {"food": "其他吃的", "shop": "其他逛的"}.get(others, "其他")
         with st.expander(f"🔄 {cat_label}（{area}附近）"):
-            # 只排除「這一格自己」的店；當天其他時段已排的會顯示在最下面標「已排」
             items = get_by_area(area, exclude=place_ids, cat=others)
             if not items:
                 st.caption(f"({area} 沒有其他 {cat_label} 資料)")
@@ -494,8 +534,6 @@ def note(tag, title, meta=None, note=None):
 def hotel_bottom(today_food=None, today_shop=None):
     """
     每天最下面：住 (卡片) + 🍽️吃 (expander) + 🛍️逛 (expander)。
-    today_food / today_shop 不傳的話，自動用 set_scheduled() 登記的清單。
-    已排項目沉到最下面 + 標「已排」。
     """
     food_sched = set(today_food) if today_food is not None else _SCHEDULED["food"]
     shop_sched = set(today_shop) if today_shop is not None else _SCHEDULED["shop"]
@@ -518,17 +556,8 @@ def hotel_bottom(today_food=None, today_shop=None):
 # ================================================================
 def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
     """
-    把多個「主要點」合併在同一張卡片內，每點標題用粗體 (h4)，
+    把多個主要點合併在同一張卡片內，每點標題用粗體 (h4)，
     各自可以有 meta / note / G·N·T 按鈕，點與點之間用虛線分隔。
-
-    sections: list[dict]，每個 dict 二選一：
-      A. {"place_id": "yukmong", "note": "覆寫備註(選填)"}
-         → 從 PLACES 撈名稱/⭐/meta/座標，自動產生 G/N/T 按鈕
-      B. {"title": "AREX (...)", "meta": "...", "note": "...",
-          "links": [{"label":"G","url":"...","cls":"g"}, ...]}
-         → 自訂內容
-    others: None / "food" / "shop" — 同 stop()，加「其他」expander，
-            已排的沉底標「已排」。
     """
     accent = _accent_cls(tag)
     chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>' if tag else '<div class="chip ghost">·</div>'
@@ -546,7 +575,7 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
             title_html = html_lib.escape(p["name"]) + ('<span class="star"> ⭐</span>' if p.get("priority") else '')
             meta = _build_meta_line(p)
             note_txt = s.get("note") if s.get("note") is not None else p.get("note", "")
-            btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode)
+            btns = _nav_btns_html(p, show_taxi=show_taxi, mode=mode, key_prefix=f"multi_{pid}")
         else:
             title_html = html_lib.escape(s.get("title", ""))
             meta = html_lib.escape(s["meta"]) if s.get("meta") else ""
@@ -558,7 +587,7 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
                     label = html_lib.escape(item.get("label", ""))
                     cls = html_lib.escape(item.get("cls", "g"))
                     url = _safe_href(item.get("url", "#"))
-                    target = ' target="_blank"' if url.startswith("http") else ""
+                    target = ' target="_blank" rel="noopener noreferrer"' if str(item.get("url", "#")).startswith("http") else ""
                     bp.append(f'<a class="nav-btn {cls}" href="{url}"{target} title="{label}">{label}</a>')
                 btns = '<div class="nav-btns">' + ''.join(bp) + '</div>'
 
