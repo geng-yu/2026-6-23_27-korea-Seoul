@@ -232,7 +232,7 @@ h5{font-size:14.5px;font-weight:700;color:var(--text);line-height:1.35;word-brea
 _HEIGHT_REPORTER = """
 (function(){
   function report(){
-    var h=document.body.scrollHeight;
+    var h=Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight);
     window.parent.postMessage({isStreamlitMessage:true,type:"streamlit:setFrameHeight",height:h},"*");
   }
   if(window.ResizeObserver){
