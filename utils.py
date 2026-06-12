@@ -76,7 +76,7 @@ iframe{
 div.element-container,
 div[data-testid="element-container"],
 [data-testid="stElementContainer"]{
-  margin:0 0 0.4rem 0 !important;
+  margin:0 0 0.3rem 0 !important;
   padding:0 !important;
 }
 
@@ -99,7 +99,7 @@ div[data-testid="stExpander"] [data-testid="stVerticalBlockBorderWrapper"]{
 div[data-testid="stExpander"] div.element-container,
 div[data-testid="stExpander"] div[data-testid="element-container"],
 div[data-testid="stExpander"] [data-testid="stElementContainer"]{
-  margin:0 0 0.28rem 0 !important;
+  margin:0 0 0.2rem 0 !important;
   padding:0 !important;
 }
 
