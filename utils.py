@@ -31,11 +31,13 @@ from places import PLACES, get_by_area, AREA_HONGDAE
 # 當天已排清單
 # ================================================================
 _SCHEDULED = {"food": set(), "shop": set()}
+_SECTION_NO = [0]  # 主行程區塊計數，每次 set_scheduled() 重新從 1 開始
 
 
 def set_scheduled(today_food=None, today_shop=None):
     _SCHEDULED["food"] = set(today_food or [])
     _SCHEDULED["shop"] = set(today_shop or [])
+    _SECTION_NO[0] = 0   # 切換 Day 時計數歸零
 
 
 # ================================================================
@@ -67,12 +69,6 @@ def kakaot_url():
 # ================================================================
 _CSS = """
 <style>
-/* st.link_button 微調：讓它更小巧，跟名古屋一樣 */
-button[kind="secondary"], a[data-testid="stBaseLinkButton-secondary"]{
-  padding:0.25rem 0.7rem !important;
-  font-size:0.85rem !important;
-  min-height:auto !important;
-}
 /* expander 內容區域：固定高度 + 上下滑動 */
 div[data-testid="stExpander"] [data-testid="stExpanderDetails"],
 div[data-testid="stExpander"] details > div{
@@ -80,31 +76,96 @@ div[data-testid="stExpander"] details > div{
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
 }
-/* 主行程地點區塊之間的留白 */
-.stop-block{
-  margin-bottom:0.6rem;
+
+/* ===== 大區塊標題 (有底色的圓形數字 + 類別/店名) ===== */
+.section-anchor{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:1.2rem 0 0.4rem 0;
+  padding:0;
 }
+.section-anchor .num{
+  flex-shrink:0;
+  width:38px; height:38px;
+  border-radius:50%;
+  display:inline-flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:1.05rem;
+  color:#fff !important;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.section-anchor .stop-title{
+  margin:0 !important;
+  flex:1;
+  min-width:0;
+}
+
+/* ===== 主行程文字 ===== */
 .stop-title{
   font-size:1.05rem;
   font-weight:700;
-  margin:0.3rem 0 0.2rem 0;
+  margin:0.25rem 0 0.15rem 0;
 }
 .stop-meta{
   font-size:0.82rem;
-  color:rgba(128,128,128,1);
-  margin:0 0 0.2rem 0;
+  opacity:.62;
+  margin:0 0 0.15rem 0;
   line-height:1.5;
 }
 .stop-note{
   font-size:0.86rem;
-  margin:0.15rem 0 0.4rem 0;
+  opacity:.92;
+  margin:0.1rem 0 0.35rem 0;
   line-height:1.55;
 }
 .tag-emoji{
-  font-size:1.1rem;
+  font-size:1.05rem;
   margin-right:6px;
 }
 .star{color:#ff4b4b;}
+
+/* ===== G / N / T 按鈕 ===== */
+/* 用高權重選擇器 + !important 蓋過 Streamlit 深色主題對 <a> 的全域著色 */
+.gnt-row{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  margin:2px 0 8px 0;
+  flex-wrap:nowrap;
+}
+a.gnt-btn,
+a.gnt-btn:link,
+a.gnt-btn:visited,
+a.gnt-btn:hover,
+a.gnt-btn:active{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:30px !important;
+  height:30px !important;
+  border-radius:50% !important;
+  font-weight:800 !important;
+  font-size:13.5px !important;
+  text-decoration:none !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.15);
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  border:none !important;
+}
+a.gnt-btn.gnt-g,
+a.gnt-btn.gnt-g:link,
+a.gnt-btn.gnt-g:visited,
+a.gnt-btn.gnt-g:hover{ background:#4285F4 !important; color:#ffffff !important; }
+a.gnt-btn.gnt-n,
+a.gnt-btn.gnt-n:link,
+a.gnt-btn.gnt-n:visited,
+a.gnt-btn.gnt-n:hover{ background:#03C75A !important; color:#ffffff !important; }
+a.gnt-btn.gnt-t,
+a.gnt-btn.gnt-t:link,
+a.gnt-btn.gnt-t:visited,
+a.gnt-btn.gnt-t:hover{ background:#FAE100 !important; color:#371D1E !important; }
+
+/* ===== 已排徽章 ===== */
 .already-tag{
   display:inline-block;
   font-size:0.7rem;
@@ -117,28 +178,24 @@ div[data-testid="stExpander"] details > div{
   vertical-align:middle;
   white-space:nowrap;
 }
+
+/* ===== 備案清單項目 ===== */
 .backup-row{
   padding:0.3rem 0;
   border-bottom:1px dashed rgba(128,128,128,.18);
 }
 .backup-row:last-child{ border-bottom:none; }
 .backup-row.scheduled{ opacity:.6; }
-.backup-name{
-  font-weight:700;
-  font-size:0.92rem;
+.backup-name{ font-weight:700; font-size:0.92rem; }
+.backup-meta{ font-size:0.78rem; opacity:.66; margin-top:2px; line-height:1.45; }
+.backup-note{ font-size:0.8rem; opacity:.86; margin-top:3px; line-height:1.5; }
+
+/* st.divider 在新版有大圓圈編號的設計裡顯得多餘，藏起來 */
+hr[data-testid="stDivider"],
+[data-testid="stHorizontalDivider"]{
+  display:none !important;
 }
-.backup-meta{
-  font-size:0.78rem;
-  opacity:.66;
-  margin-top:2px;
-  line-height:1.45;
-}
-.backup-note{
-  font-size:0.8rem;
-  opacity:.86;
-  margin-top:3px;
-  line-height:1.5;
-}
+
 #MainMenu{visibility:hidden;}
 footer{visibility:hidden;}
 </style>
@@ -204,10 +261,37 @@ el.addEventListener("click",async function(){{
 # ================================================================
 # 共用：標題列（emoji 標籤 + 店名 + ⭐）
 # ================================================================
-def _title_line(tag, name, star=False, small=False):
+# 類別 → 大圓圈底色（深淺色都看得清楚）
+_NUM_BG = {
+    "早": "#f59e0b", "午": "#f97316", "晚": "#ef4444",
+    "宵": "#6366f1", "點": "#ec4899", "逛": "#a855f7",
+    "買": "#a855f7", "景": "#10b981", "住": "#3b82f6",
+}
+
+
+def _section_anchor(tag, name, star=False):
+    """主行程區塊的大標題：左側彩色圓圈數字，右側 tag + 店名。
+    每呼叫一次計數 +1。"""
+    _SECTION_NO[0] += 1
+    no = _SECTION_NO[0]
+    # 找一個底色：先看 tag 是否能對應；否則用灰
+    bg = _NUM_BG.get(tag, "#94a3b8")
     star_html = '<span class="star"> ⭐</span>' if star else ''
     tag_html = f'<span class="tag-emoji">{tag}</span>' if tag else ''
-    size = "1rem" if small else "1.05rem"
+    st.markdown(
+        f'<div class="section-anchor">'
+        f'<span class="num" style="background:{bg};">{no}</span>'
+        f'<div class="stop-title">{tag_html}{name}{star_html}</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def _title_line(tag, name, star=False, small=False):
+    """子標題（multi_card 第 2、3 段、自訂卡的小標）— 沒有圓圈，純文字。"""
+    star_html = '<span class="star"> ⭐</span>' if star else ''
+    tag_html = f'<span class="tag-emoji">{tag}</span>' if tag else ''
+    size = "1rem" if small else "1.02rem"
     st.markdown(
         f'<div class="stop-title" style="font-size:{size};">{tag_html}{name}{star_html}</div>',
         unsafe_allow_html=True,
@@ -240,9 +324,7 @@ def _build_meta(place):
 # 主行程：按鈕列（G | N | T 並排）
 # ================================================================
 def _render_buttons_for_place(p, mode="walking", show_taxi=True):
-    """在地點下面排一列 G / N / T 按鈕（全部 markdown 連結，橫向 inline）。
-    T 變成普通連結直接開 Kakao T；複製韓文店名功能改成「點 N 之前先長按店名複製」。
-    如果想要回「點 T 自動複製」功能，把 _render_buttons_for_place 換成舊版（內含 _render_t_button）。"""
+    """在地點下面排一列 G / N / T 按鈕（純 HTML class，深淺色都能正確顯示）。"""
     name_kr = p.get("name_kr", p["name"])
     g = gmap_url(f"{name_kr} {p.get('address','')}", mode)
     n = naver_url(query=name_kr, lat=p.get("lat"), lng=p.get("lng"),
@@ -250,50 +332,27 @@ def _render_buttons_for_place(p, mode="walking", show_taxi=True):
     k = kakaot_url()
 
     parts = [
-        '<div style="display:flex;gap:6px;align-items:center;margin:2px 0 6px 0;flex-wrap:wrap;">',
-        f'<a href="{g}" target="_blank" rel="noopener" '
-        'style="display:inline-flex;align-items:center;justify-content:center;'
-        'width:30px;height:30px;border-radius:50%;background:#4285F4;color:#fff !important;'
-        'font-weight:800;font-size:13.5px;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.15);">G</a>',
-        f'<a href="{n}" '
-        'style="display:inline-flex;align-items:center;justify-content:center;'
-        'width:30px;height:30px;border-radius:50%;background:#03C75A;color:#fff !important;'
-        'font-weight:800;font-size:13.5px;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.15);">N</a>',
+        '<div class="gnt-row">',
+        f'<a class="gnt-btn gnt-g" href="{g}" target="_blank" rel="noopener">G</a>',
+        f'<a class="gnt-btn gnt-n" href="{n}">N</a>',
     ]
     if show_taxi:
-        parts.append(
-            f'<a href="{k}" '
-            'style="display:inline-flex;align-items:center;justify-content:center;'
-            'width:30px;height:30px;border-radius:50%;background:#FAE100;color:#371D1E !important;'
-            'font-weight:800;font-size:13.5px;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.15);">T</a>'
-        )
-        # 順便顯示韓文店名（讓使用者方便手動複製）
-        parts.append(
-            f'<span style="font-size:0.78rem;opacity:.6;margin-left:8px;'
-            f'user-select:all;-webkit-user-select:all;cursor:text;">{name_kr}</span>'
-        )
+        parts.append(f'<a class="gnt-btn gnt-t" href="{k}">T</a>')
     parts.append('</div>')
     st.markdown(''.join(parts), unsafe_allow_html=True)
 
 
 def _render_buttons_for_links(links):
-    """custom_card / multi_card 自訂 section 的按鈕（橫向 inline）。"""
+    """custom_card / multi_card 自訂 section 的按鈕（純 HTML class）。"""
     if not links:
         return
-    parts = ['<div style="display:flex;gap:6px;align-items:center;margin:2px 0 6px 0;flex-wrap:wrap;">']
+    parts = ['<div class="gnt-row">']
     for item in links:
         label = item.get("label", "")
         cls = item.get("cls", "g")
         url = item.get("url", "#")
         target = ' target="_blank" rel="noopener"' if str(url).startswith("http") else ""
-        bg = {"g": "#4285F4", "n": "#03C75A", "t": "#FAE100"}.get(cls, "#94a3b8")
-        fg = "#371D1E" if cls == "t" else "#fff"
-        parts.append(
-            f'<a href="{url}"{target} '
-            f'style="display:inline-flex;align-items:center;justify-content:center;'
-            f'width:30px;height:30px;border-radius:50%;background:{bg};color:{fg} !important;'
-            f'font-weight:800;font-size:13.5px;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.15);">{label}</a>'
-        )
+        parts.append(f'<a class="gnt-btn gnt-{cls}" href="{url}"{target}>{label}</a>')
     parts.append('</div>')
     st.markdown(''.join(parts), unsafe_allow_html=True)
 
@@ -314,11 +373,10 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
             st.error(f"❌ 找不到地點: {pid}")
             continue
         p = PLACES[pid]
-        _title_line(
-            tag if i == 0 else "",
-            p["name"],
-            star=p.get("priority", False),
-        )
+        if i == 0:
+            _section_anchor(tag, p["name"], star=p.get("priority", False))
+        else:
+            _title_line("", p["name"], star=p.get("priority", False))
         meta = _build_meta(p)
         _meta_line(meta)
         note_text = notes[i] if i < len(notes) and notes[i] is not None else p.get("note", "")
@@ -342,7 +400,12 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
 # 自訂卡（沒有 PLACES 對應，純文字 + 自訂連結）
 # ================================================================
 def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
-    _title_line(tag, title, small=dashed)
+    # 自訂卡（如 RMQ、飛機）= 主行程的一格 → 用大圓圈編號
+    # dashed=True 的是 note()（純說明，例如「弘대→聖水洞 Taxi」），維持小標
+    if dashed:
+        _title_line(tag, title, small=True)
+    else:
+        _section_anchor(tag, title)
     if meta:
         _meta_line(meta)
     if note:
@@ -379,14 +442,20 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
                 continue
             place_ids.append(pid)
             p = PLACES[pid]
-            _title_line(tag if idx == 0 else "", p["name"], star=p.get("priority", False))
+            if idx == 0:
+                _section_anchor(tag, p["name"], star=p.get("priority", False))
+            else:
+                _title_line("", p["name"], star=p.get("priority", False))
             meta = _build_meta(p)
             _meta_line(meta)
             note_text = s.get("note") if s.get("note") is not None else p.get("note", "")
             _note_line(note_text)
             _render_buttons_for_place(p, mode=mode, show_taxi=show_taxi)
         else:
-            _title_line(tag if idx == 0 else "", s.get("title", ""))
+            if idx == 0:
+                _section_anchor(tag, s.get("title", ""))
+            else:
+                _title_line("", s.get("title", ""))
             if s.get("meta"):
                 _meta_line(s["meta"])
             if s.get("note"):
@@ -451,7 +520,7 @@ def hotel_bottom(today_food=None, today_shop=None):
 
     if "hotel" in PLACES:
         p = PLACES["hotel"]
-        _title_line("住", p["name"], star=p.get("priority", False))
+        _section_anchor("住", p["name"], star=p.get("priority", False))
         _meta_line(_build_meta(p))
         _note_line(p.get("note", ""))
         _render_buttons_for_place(p, mode="walking", show_taxi=True)
