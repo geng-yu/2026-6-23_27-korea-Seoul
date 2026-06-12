@@ -395,6 +395,34 @@ PLACES = {
         "phone": "070-8822-5846",
         "note": "延南洞人氣釜飯，適合午餐或早點晚餐",
     },
+    "yetnaljip": {
+        "name": "老房子木炭燒肉", "name_kr": "옛날집 홍대점",
+        "area": AREA_HONGDAE, "cat": "food", "sub": "木炭燒肉",
+        "address": "서울 마포구 동교동 169-6",
+        "lat": 37.5549, "lng": 126.9228,
+        "hours": "16:00-05:00",
+        "phone": "02-3141-9608",
+        "note": "老字號木炭烤肉，平價飽足，可網路訂位，越晚越熱鬧",
+        "priority": True,
+    },
+    "hongdae_chungmu": {
+        "name": "弘大忠武飯捲", "name_kr": "홍대충무김밥 홍대본점",
+        "area": AREA_HONGDAE, "cat": "food", "sub": "飯捲",
+        "address": "서울 마포구 어울마당로 79 1층",
+        "lat": 37.5545, "lng": 126.9235,
+        "hours": "24h",
+        "phone": None,
+        "note": "弘大24小時人氣飯捲，弘大入口站9號出口附近",
+    },
+    "sulbing_hongdae": {
+        "name": "雪冰 弘大店", "name_kr": "설빙 홍대입구역점",
+        "area": AREA_HONGDAE, "cat": "food", "sub": "韓式刨冰",
+        "address": "서울 마포구 홍익로6길 15 2F",
+        "lat": 37.5543, "lng": 126.9241,
+        "hours": "11:00-22:30",
+        "phone": "02-323-3287",
+        "note": "飯後甜點首選，招牌黃豆粉年糕雪花冰必點",
+    },
 
     # ==============================
     # 備案 — 弘대 PTT/Dcard 加碼
@@ -551,6 +579,26 @@ PLACES = {
         "hours": "11:00-22:00",
         "phone": None,
         "note": "韓國本土潮牌多品牌集合，帽子包包",
+    },
+     "hongik_pharmacy": {
+        "name": "弘益藥局", "name_kr": "홍익약국",
+        "area": AREA_HONGDAE, "cat": "shop", "sub": "藥妝",
+        "address": "서울 마포구 양화로18길 7 1층",
+        "lat": 37.5563, "lng": 126.9229,
+        "hours": "09:00-23:30",
+        "phone": "02-337-5414",
+        "note": "弘大最知名藥妝藥局，有中文服務、即時退稅，醫療級保養品齊全",
+        "priority": True,
+    },
+    "nerdy_hongdae": {
+        "name": "NERDY 弘大旗艦", "name_kr": "널디 플래그쉽 홍대점",
+        "area": AREA_HONGDAE, "cat": "shop", "sub": "韓國運動潮牌",
+        "address": "서울 마포구 홍익로6길 27",
+        "lat": 37.5543, "lng": 126.9241,
+        "hours": "12:00-21:00",
+        "phone": "02-332-9466",
+        "note": "韓國人氣潮牌，紫色室內設計打卡感強，IU、APINK成員都在穿",
+        "priority": True,
     },
 
     # ==============================
