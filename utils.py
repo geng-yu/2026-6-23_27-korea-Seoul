@@ -492,11 +492,11 @@ def hotel_bottom(today_food=None, today_shop=None):
 
 
 def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
+    """多個主要點合併在同一張卡片內，每點標題粗體 + 按鈕在右、虛線分段。"""
     accent = _accent_hex(tag)
     place_ids = []
     sec_parts = []
     t_scripts = []
-    est = 24
 
     for idx, s in enumerate(sections):
         if "place_id" in s:
@@ -504,6 +504,7 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
             if pid not in PLACES:
                 st.error(f"❌ 找不到地點: {pid}")
                 continue
+
             place_ids.append(pid)
             p = PLACES[pid]
             title_html = html_lib.escape(p["name"]) + (
@@ -513,8 +514,10 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
             note_txt = s.get("note") if s.get("note") is not None else p.get("note", "")
             uid = ("m_" + pid + "_" + str(idx)).replace("-", "_")
             btns = _btns_html_for_place(p, mode, show_taxi, uid)
+
             if show_taxi:
                 t_scripts.append(_t_script(uid, p.get("name_kr") or p["name"]))
+
         else:
             title_html = html_lib.escape(s.get("title", ""))
             meta = s.get("meta", "")
@@ -523,16 +526,22 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
 
         meta_html = f'<p class="meta">{html_lib.escape(meta)}</p>' if meta else ''
         note_html = f'<p class="note">{html_lib.escape(note_txt)}</p>' if note_txt else ''
+
         sec_parts.append(
             f'<div class="section">'
             f'<div class="title-row"><h4>{title_html}</h4>{btns}</div>'
             f'{meta_html}{note_html}'
             f'</div>'
         )
-        est += 46 + (18 if meta else 0) + (38 if note_txt else 0)
 
     chip = f'<div class="chip">{html_lib.escape(tag)}</div>' if tag else '<div class="chip ghost">·</div>'
     inner = f'<div class="card">{chip}<div class="body">' + ''.join(sec_parts) + '</div></div>'
+
+    # 關鍵修正：
+    # 不再手動累加每段的估算高度，避免多 section 卡片被估太高，
+    # 導致上下多出空白。只給一個保守初始值，交給 ResizeObserver 校正。
+    est = 72 + len(sections) * 56
+
     _emit_card(accent, inner, t_scripts, est)
 
     if others and place_ids:
