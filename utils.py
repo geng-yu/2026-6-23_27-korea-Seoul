@@ -16,12 +16,23 @@ from places import PLACES, get_by_area, AREA_HONGDAE
 # 當天已排清單（每次 rerun 由 day 檔重新登記）
 # ================================================================
 _SCHEDULED = {"food": set(), "shop": set()}
+_RENDER_SEQ = 0
 
 
 def set_scheduled(today_food=None, today_shop=None):
     """在每天 show_day() 最開頭呼叫，登記當天主行程已排的 place_ids。"""
     _SCHEDULED["food"] = set(today_food or [])
     _SCHEDULED["shop"] = set(today_shop or [])
+
+
+def _next_key(prefix: str) -> str:
+    """
+    產生同一次 rerun 內唯一的 component key。
+    避免同一家店在不同區塊 / expander / day 內重複出現時撞 key。
+    """
+    global _RENDER_SEQ
+    _RENDER_SEQ += 1
+    return f"{prefix}_{_RENDER_SEQ}"
 
 
 # ================================================================
@@ -275,25 +286,6 @@ def _build_meta_line(place):
     return ""
 
 
-def _render_title_body(tag, title_html, meta_html="", note_html="", card_class="stop-card", title_tag="h4"):
-    accent = _accent_cls(tag)
-    if tag:
-        chip_html = f'<div class="chip">{html_lib.escape(tag)}</div>'
-    else:
-        chip_html = '<div class="chip ghost">·</div>'
-
-    return (
-        f'<div class="{card_class} {accent}">'
-        f'{chip_html}'
-        f'<div class="body">'
-        f'<{title_tag}>{title_html}</{title_tag}>'
-        f'{meta_html}'
-        f'{note_html}'
-        f'</div>'
-        f'</div>'
-    )
-
-
 def _copy_component(text: str, key: str):
     st_copy_to_clipboard(
         text=text,
@@ -317,7 +309,6 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
     note = note_override if note_override is not None else p.get("note", "")
     note_html = f'<p class="note">{html_lib.escape(note)}</p>' if note else ''
 
-    # 為了保留你原本視覺布局，改成左右兩欄：左邊卡片文字、右邊按鈕群
     left, right = st.columns([12, 3], gap="small")
 
     with left:
@@ -344,7 +335,10 @@ def _render_card(tag, place_id, note_override=None, show_taxi=True, mode="walkin
     with right:
         st.markdown(_nav_btns_html(p, mode=mode), unsafe_allow_html=True)
         if show_taxi:
-            _copy_component(str(p.get("name_kr") or p["name"]), key=f"copy_main_{place_id}_{tag}_{mode}")
+            _copy_component(
+                str(p.get("name_kr") or p["name"]),
+                key=_next_key(f"copy_main_{place_id}_{tag}_{mode}")
+            )
 
 
 def custom_card(tag, title, meta=None, note=None, links=None, dashed=False):
@@ -442,7 +436,10 @@ def _render_backup_item(pid, p, already=False):
 
     with right:
         st.markdown(_nav_btns_html(p, mode="walking"), unsafe_allow_html=True)
-        _copy_component(str(p.get("name_kr") or p["name"]), key=f"copy_backup_{pid}")
+        _copy_component(
+            str(p.get("name_kr") or p["name"]),
+            key=_next_key(f"copy_backup_{pid}")
+        )
 
 
 def _render_backup_list(items, scheduled_ids):
@@ -545,7 +542,10 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
             with right:
                 st.markdown(_nav_btns_html(p, mode=mode), unsafe_allow_html=True)
                 if show_taxi:
-                    _copy_component(str(p.get("name_kr") or p["name"]), key=f"copy_multi_{pid}_{idx}")
+                    _copy_component(
+                        str(p.get("name_kr") or p["name"]),
+                        key=_next_key(f"copy_multi_{pid}_{idx}")
+                    )
 
         else:
             title_html = html_lib.escape(s.get("title", ""))
