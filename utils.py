@@ -77,32 +77,25 @@ div[data-testid="stExpander"] details > div{
   padding-top:4px !important;
 }
 
-/* ===== 壓掉每個 iframe 卡片元件的上下空白（解決卡片間大空格） ===== */
-/* 1) iframe 元件本身的容器外距歸零 */
-div[data-testid="stIFrame"],
-div[data-testid="stIframe"]{
-  margin:0 !important;
-  line-height:0 !important;
+/* ===== 解決卡片間大空白：把 Streamlit 垂直排版的 gap 壓掉 ===== */
+/* 主因就是 stVerticalBlock 預設 gap:16px，必須用 !important 才壓得過 emotion class */
+[data-testid="stVerticalBlock"]{
+  gap:0.25rem !important;
 }
-div[data-testid="stIFrame"] iframe,
-div[data-testid="stIframe"] iframe{
-  display:block !important;
-  margin:0 !important;
+/* 下拉框裡每個卡片之間再縮更小 */
+[data-testid="stExpanderDetails"] [data-testid="stVerticalBlock"]{
+  gap:0.1rem !important;
 }
-/* 2) Streamlit 預設給每個垂直區塊元素的間距縮小 */
-div[data-testid="stVerticalBlock"]{
-  gap:0.2rem !important;
-}
-/* 3) expander 內每一項之間也縮小 */
-div[data-testid="stExpanderDetails"] div[data-testid="stVerticalBlock"]{
-  gap:0.15rem !important;
+/* iframe 元件本身不要有額外外距 */
+[data-testid="stIFrame"], [data-testid="stElementContainer"]{
+  margin-top:0 !important;
+  margin-bottom:0 !important;
 }
 
 #MainMenu{visibility:hidden;}
 footer{visibility:hidden;}
 </style>
 """
-
 
 def inject_css():
     st.markdown(_CSS, unsafe_allow_html=True)
