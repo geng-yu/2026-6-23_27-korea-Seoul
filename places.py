@@ -113,7 +113,7 @@ PLACES = {
         "hours": "12:00-22:00",
         "note": "⭐全首爾最大間，鏡框均一價 ~₩49,000，"
                 "設計類似 Gentle Monster 但價格 1/3。鏡面 + LED 裝置藝術風格。",
-        "priority": false,
+        "priority": False,
     },
  
     "musinsa_standard_seongsu": {
