@@ -22,12 +22,12 @@ def show_day():
          notes="⭐優先。24h 不打烊，避開正午排隊潮，建議 10-11 點到")
 
     # 3) 聖水洞購物 (墨鏡 + 衣服 + 鞋子 + 潮牌)
-    stop("逛", ["blue_elephant_seongsu", "musinsa_standard_seongsu",
+    stop("", ["blue_elephant_seongsu", "musinsa_standard_seongsu",
                 "kasina_seongsu", "covernat_seongsu"],
          others="shop",
          notes=[
-             "⭐墨鏡均一價 ~₩49,000，全首爾最大間，平價版 Gentle Monster。",
-             "⭐韓版 UNIQLO/GU，基本款 ₩19,000~，極簡乾淨風。",
+             "墨鏡均一價 ~₩49,000，全首爾最大間，平價版 Gentle Monster。",
+             "韓版 UNIQLO/GU，極簡乾淨風。",
              "球鞋選物，Nike/Adidas/Salomon 少見配色。2F 還有 ASSC 等街頭品牌。",
              " ",
          ])
