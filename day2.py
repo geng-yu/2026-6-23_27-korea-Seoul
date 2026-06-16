@@ -33,7 +33,7 @@ def show_day():
          ])
 
     # 4) 點心：Maman Gelato
-    stop("點", "maman_gelato", others="food",
+    stop("", "maman_gelato", others="food",
          notes="必點 Pistachiotella 開心果義式冰淇淋 ₩9,000，碎開心果鋪滿。"
                "排隊約 20 min，店內小，建議外帶到聖水公園吃。")
 
@@ -43,7 +43,7 @@ def show_day():
               "同江北，地鐵 2 號線 also OK 但站到東大門要走 5 min")
 
     # 6) 晚餐：陳玉華一隻雞
-    stop("晚", "jin_okhwa", others="food",
+    stop("", "jin_okhwa", others="food",
          notes="優先。老店 8000+ 評論。等位約 20 min。"
                "Tip：先丟馬鈴薯+蒜+蔥下湯，吃完雞肉再加手打麵收尾。")
 
