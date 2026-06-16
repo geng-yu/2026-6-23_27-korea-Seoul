@@ -4,7 +4,8 @@ from utils import stop, note, hotel_bottom, set_scheduled
 
 # 當天主行程已排清單（其他 expander 會把這些沉到最下面標「已排」）
 TODAY_FOOD = ["gamjatang", "maman_gelato", "jin_okhwa", "kyochon"]
-TODAY_SHOP = ["tamburins_seongsu", "point_of_view", "lcdc", "blue_elephant_seongsu"]
+TODAY_SHOP = ["blue_elephant_seongsu", "musinsa_standard_seongsu",
+              "kasina_seongsu", "covernat_seongsu"]
 
 
 def show_day():
@@ -19,16 +20,17 @@ def show_day():
     # 2) 早午餐：三代馬鈴薯排骨湯
     stop("早", "gamjatang", others="food",
          notes="⭐優先。24h 不打烊，避開正午排隊潮，建議 10-11 點到。"
-               "骨肉分離,會香一整天衣服,記得脫外套。")
+               "骨肉分離，會香一整天衣服，記得脫外套。")
 
-    # 3) 聖水洞購物 (四家 group 一起)
-    stop("逛", ["tamburins_seongsu", "point_of_view", "lcdc", "blue_elephant_seongsu"],
+    # 3) 聖水洞購物 (墨鏡 + 衣服 + 鞋子 + 潮牌)
+    stop("逛", ["blue_elephant_seongsu", "musinsa_standard_seongsu",
+                "kasina_seongsu", "covernat_seongsu"],
          others="shop",
          notes=[
-             "Jennie 同款 PUMKINI 香水、貝殼護手霜。三層樓旗艦。",
-             "高質感文具/生活雜貨選物，三層樓像小型博物館。",
-             "四層樓選物百貨，每層都有小品牌 + 咖啡 + 倫敦貝果博物館創辦人作品展。",
-             "⭐眼鏡均一價 ~₩49,000，全首爾最大間，平價版 Gentle Monster。",
+             "⭐墨鏡均一價 ~₩49,000，全首爾最大間，平價版 Gentle Monster。",
+             "⭐韓版 UNIQLO/GU，基本款 ₩19,000~，極簡乾淨風。",
+             "球鞋選物，Nike/Adidas/Salomon 少見配色。2F 還有 ASSC 等街頭品牌。",
+             "灰機 logo 潮牌，限定款常缺貨，韓國街頭代表。",
          ])
 
     # 4) 點心：Maman Gelato
