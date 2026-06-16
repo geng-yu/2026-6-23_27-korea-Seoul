@@ -29,7 +29,7 @@ def show_day():
              "⭐墨鏡均一價 ~₩49,000，全首爾最大間，平價版 Gentle Monster。",
              "⭐韓版 UNIQLO/GU，基本款 ₩19,000~，極簡乾淨風。",
              "球鞋選物，Nike/Adidas/Salomon 少見配色。2F 還有 ASSC 等街頭品牌。",
-             "灰機 logo 潮牌，限定款常缺貨，韓國街頭代表。",
+             " ",
          ])
 
     # 4) 點心：Maman Gelato
