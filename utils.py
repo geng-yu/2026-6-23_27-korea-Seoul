@@ -535,7 +535,7 @@ def hotel_bottom(today_food=None, today_shop=None):
 
     if "hotel" in PLACES:
         p = PLACES["hotel"]
-        _section_anchor("住", p["name"], star=p.get("priority", False))
+        _section_anchor("🏠", p["name"], star=p.get("priority", False))
         _meta_line(_build_meta(p))
         _note_line(p.get("note", ""))
         _render_buttons_for_place(p, mode="walking", show_taxi=True)
