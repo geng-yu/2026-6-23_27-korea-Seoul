@@ -78,60 +78,75 @@ PLACES = {
     # ==============================
     # Day 2 主行程 — 聖水 + 東大門 (使用者清單)
     # ==============================
+    # === 聖水洞主行程 (food) ===
+ 
     "gamjatang": {
-        "name": "祖傳三代馬鈴薯排骨湯", "name_kr": "소문난성수감자탕",
-        "area": AREA_SEONGSU, "cat": "food", "sub": "湯飯",
+        "name": "聲名遠播聖水馬鈴薯排骨湯", "name_kr": "소문난성수감자탕",
+        "area": AREA_SEONGSU, "cat": "food", "sub": "馬鈴薯排骨湯",
         "address": "서울 성동구 연무장길 45",
         "lat": 37.5428241, "lng": 127.0543732,
-        "hours": "24h",
+        "hours": "24h 不打烊",
         "phone": "02-465-6580",
-        "note": "排骨煮到骨肉分離，24h 不打烊",
+        "note": "4.1/6000+ 評論。骨肉分離，會香一整天衣服。吃到一半丟手打麵下湯。",
         "priority": True,
     },
+ 
     "maman_gelato": {
-        "name": "Maman Gelato 聖水", "name_kr": "마망젤라또 성수점",
-        "area": AREA_SEONGSU, "cat": "food", "sub": "甜點",
+        "name": "Maman Gelato 聖水", "name_kr": "마망 젤라또 성수",
+        "area": AREA_SEONGSU, "cat": "food", "sub": "義式冰淇淋",
         "address": "서울 성동구 연무장9길 8 1층",
         "lat": 37.5429349, "lng": 127.0559738,
         "hours": "11:30-21:00",
         "phone": "02-466-3373",
-        "note": "Pistachiotella 開心果義式冰淇淋",
+        "note": "4.8/800+ 評論。必點 Pistachiotella 開心果＋Nutella ₩9,000，碎開心果鋪滿表面。"
+                "排隊約 20 min，店內小，座位不好搶。",
         "priority": True,
     },
-    "lcdc": {
-        "name": "LCDC Seoul", "name_kr": "엘씨디씨 서울",
-        "area": AREA_SEONGSU, "cat": "shop", "sub": "選物百貨",
-        "address": "서울 성동구 연무장17길 10",
-        "lat": 37.5415795, "lng": 127.0614594,
-        "hours": "10:00-20:00",
-        "note": "四層樓文青百貨，潮品+咖啡+展覽",
-    },
-    "ddp": {
-        "name": "DDP 東大門設計廣場", "name_kr": "동대문디자인플라자",
-        "area": AREA_DONGDAEMUN, "cat": "sight",
-        "address": "서울 중구 을지로 281",
-        "lat": 37.5665256, "lng": 127.0092236,
-        "hours": "10:00-20:00",
-        "note": "Zaha Hadid 建築，外觀必拍",
-    },
-    "jin_okhwa": {
-        "name": "陳玉華一隻雞", "name_kr": "진옥화할매원조닭한마리",
-        "area": AREA_DONGDAEMUN, "cat": "food", "sub": "一隻雞",
-        "address": "서울 종로구 종로40가길 18",
-        "lat": 37.5703627, "lng": 127.0057612,
-        "hours": "10:30-01:00",
-        "phone": "02-2275-9666",
-        "note": "東大門一隻雞老店",
+ 
+# === 聖水洞主行程 (shop) — 衣服 / 鞋子 / 墨鏡 ===
+ 
+    "blue_elephant_seongsu": {
+        "name": "BLUE ELEPHANT 聖水旗艦", "name_kr": "블루엘리펀트 성수 플래그십",
+        "area": AREA_SEONGSU, "cat": "shop", "sub": "墨鏡/眼鏡",
+        "address": "서울 성동구 연무장길 13 2-3층",
+        "lat": 37.5437612, "lng": 127.0511603,
+        "hours": "12:00-22:00",
+        "note": "⭐優先。4.5/130+ 評論。全首爾最大間，鏡框均一價 ~₩49,000，"
+                "設計類似 Gentle Monster 但價格 1/3。鏡面 + LED 裝置藝術風格。",
         "priority": True,
     },
-    "kyochon": {
-        "name": "橋村炸雞 弘대점", "name_kr": "교촌치킨 홍대점",
-        "area": AREA_HONGDAE, "cat": "food", "sub": "炸雞",
-        "address": "서울 마포구 양화로16길 6",
-        "lat": 37.5535944, "lng": 126.9201354,
-        "hours": "12:00-01:30",
-        "phone": "02-338-1300",
-        "note": "醬油蒜味/紅辣味",
+ 
+    "musinsa_standard_seongsu": {
+        "name": "Musinsa Standard 聖水", "name_kr": "무신사 스탠다드 성수",
+        "area": AREA_SEONGSU, "cat": "shop", "sub": "韓系基本款衣服",
+        "address": "서울 성동구 성수이로 12",
+        "lat": 37.5415471, "lng": 127.058537,
+        "hours": "11:00-22:00",
+        "phone": "0507-1872-3708",
+        "note": "4.9/500+ 評論。兩層樓，韓版 UNIQLO/GU，極簡乾淨風。基本款 ₩19,000~,"
+                "節慶期常 30~50% off。試衣間多、店員會講英文。",
+        "priority": True,
+    },
+ 
+    "kasina_seongsu": {
+        "name": "Kasina 聖水", "name_kr": "카시나 성수",
+        "area": AREA_SEONGSU, "cat": "shop", "sub": "球鞋選物",
+        "address": "서울 성동구 성수이로7길 41",
+        "lat": 37.5425947, "lng": 127.0531067,
+        "hours": "11:00-20:00",
+        "phone": "070-7777-1771",
+        "note": "4.9/370+ 評論。兩層樓：1F 球鞋 (Nike / Adidas / Salomon 限定款少見配色)，"
+                "2F 服裝 (Anti Social Social Club 等街頭品牌)。價格實惠，店員會幫忙熨衣。",
+    },
+ 
+    "covernat_seongsu": {
+        "name": "Covernat 聖水旗艦", "name_kr": "커버낫 성수 플래그십",
+        "area": AREA_SEONGSU, "cat": "shop", "sub": "街頭潮牌",
+        "address": "서울 성동구 연무장길 37",
+        "lat": 37.5430829, "lng": 127.0536515,
+        "hours": "11:00-21:00",
+        "phone": "070-4176-5041",
+        "note": "4.9/90+ 評論。韓國街頭潮牌、灰機 logo 限定款常缺貨。整層樓 + 不錯的試穿區。",
     },
 
     # ==============================
@@ -422,10 +437,6 @@ PLACES = {
         "phone": "02-323-3287",
         "note": "飯後甜點首選，招牌黃豆粉年糕雪花冰必點",
     },
-
-    # ==============================
-    # 備案 — 弘대 PTT/Dcard 加碼
-    # ==============================
     "isaac_toast": {
         "name": "Isaac Toast 弘대", "name_kr": "이삭토스트 홍대점",
         "area": AREA_HONGDAE, "cat": "food", "sub": "早餐",
@@ -601,21 +612,138 @@ PLACES = {
     # ==============================
     # 備案 — 聖水 (PTT/Dcard 加碼)
     # ==============================
+    # === 聖水洞備案 (food) ===
+ 
+    "somunnan_byeolgwan": {
+        "name": "聲名遠播聖水馬鈴薯排骨 別館", "name_kr": "소문난 성수 감자탕 별관",
+        "area": AREA_SEONGSU, "cat": "food", "sub": "馬鈴薯排骨湯",
+        "address": "서울 성동구 연무장7길 4",
+        "lat": 37.5429616, "lng": 127.0545924,
+        "hours": "11:00-22:00",
+        "phone": "02-499-2500",
+        "note": "本店隔壁。等不到本店就來這間，老闆娘會說中文。湯底一樣，最後用紫蘇葉炒飯收尾。",
+    },
+ 
+    "knotted_seongsu": {
+        "name": "Cafe Knotted 聖水", "name_kr": "카페 노티드 성수",
+        "area": AREA_SEONGSU, "cat": "food", "sub": "甜甜圈",
+        "address": "서울 성동구 성수동2가 316-5",
+        "lat": 37.5435787, "lng": 127.0526642,
+        "hours": "11:00-21:00",
+        "phone": "070-8834-9377",
+        "note": "4.5/80+ 評論。Knotted 帶起韓國奶油甜甜圈熱潮的元祖。聖水店主打外帶不需久等。"
+                "招牌 Vanilla Cream / Milk Tea / Butter，加碼也有 gelato。",
+    },
+ 
     "cafe_onion_seongsu": {
-        "name": "Cafe Onion 聖水", "name_kr": "어니언 성수",
-        "area": AREA_SEONGSU, "cat": "food", "sub": "咖啡",
+        "name": "Cafe Onion 聖水", "name_kr": "카페 어니언 성수",
+        "area": AREA_SEONGSU, "cat": "food", "sub": "咖啡/烘焙",
         "address": "서울 성동구 아차산로9길 8",
         "lat": 37.5447328, "lng": 127.0582091,
-        "hours": "週一-五 08:00-22:00 / 週末 09:00-22:00",
-        "note": "工業風咖啡店元老，週末排 30 min",
+        "hours": "平日 08:00-22:00 / 週末 09:00-22:00",
+        "note": "Onion 元祖店，工廠改裝廢墟風，頂樓座位下午 3 點後常滿。"
+                "麵包選擇多 (Pandoro 招牌)，注意樓梯陡。",
     },
-    "point_of_view": {
-        "name": "Point of View 聖水", "name_kr": "포인트오브뷰 성수",
-        "area": AREA_SEONGSU, "cat": "shop", "sub": "文具",
-        "address": "서울 성동구 연무장길 18",
-        "lat": 37.5434188, "lng": 127.051374,
-        "hours": "12:00-20:00",
-        "note": "高質感文具/生活雜貨選物店",
+ 
+    "nudake_teahouse": {
+        "name": "Nudake Teahouse 聖水", "name_kr": "누데이크 티하우스",
+        "area": AREA_SEONGSU, "cat": "food", "sub": "下午茶/甜點",
+        "address": "서울 성동구 뚝섬로 433 5층",
+        "lat": 37.5381263, "lng": 127.0588978,
+        "hours": "11:00-21:00",
+        "phone": "1660-1010",
+        "note": "4.8/20+ 評論。Gentle Monster 旗下，藝術系下午茶。建議週四前去等位 ~20 min。"
+                "招牌甜點 Small Talk、配獨家茶。",
+    },
+ 
+    "maple_top_pancake": {
+        "name": "Maple Top Pancake Club", "name_kr": "메이플탑 팬케이크 클럽",
+        "area": AREA_SEONGSU, "cat": "food", "sub": "美式早餐",
+        "address": "서울 성동구 성수이로14길 14",
+        "lat": 37.5415153, "lng": 127.0569694,
+        "hours": "平日 09:00-18:00 / 週末 09:00-19:00",
+        "phone": "02-3789-4427",
+        "note": "美式早午餐風格，鬆餅+楓糖+培根。如果三代排不到、或不想吃排骨湯，這裡是替代方案。",
+    },
+ 
+    "song_gye_ok_seongsu": {
+        "name": "松溪屋 聖水店", "name_kr": "송계옥 성수점",
+        "area": AREA_SEONGSU, "cat": "food", "sub": "炭火烤雞",
+        "address": "서울 성동구 아차산로11길 11",
+        "lat": 37.5447394, "lng": 127.0593341,
+        "hours": "平日 16:00-22:00 / 週末 15:00-22:00",
+        "note": "炭火烤雞老店，員工幫烤幫切。雞心特推。週四晚常等 1 小時，建議先用 Catchtable 取號。",
+    },
+ 
+    "ssoc_restaurant": {
+        "name": "SSOC", "name_kr": "쏙",
+        "area": AREA_SEONGSU, "cat": "food", "sub": "韓式法餐",
+        "address": "서울 성동구 광나루로4가길 12-7",
+        "lat": 37.5491463, "lng": 127.0543631,
+        "hours": "週一公休｜其他 11:30-15:00 / 17:00-22:00",
+        "phone": "02-6212-1195",
+        "note": "5.0/14 評論。前米其林一星主廚 Lee Jong-wook 主理，韓食 + 法式技巧。"
+                "想吃高一階的可選，建議訂位。",
+    },
+ 
+# === 聖水洞備案 (shop) — 全部衣服 / 鞋子 類 ===
+ 
+    "kodak_corner_shop": {
+        "name": "Kodak Apparel Corner Shop", "name_kr": "코닥 코너샵 성수",
+        "area": AREA_SEONGSU, "cat": "shop", "sub": "復古衣著",
+        "address": "서울 성동구 성수동2가 316-62",
+        "lat": 37.5431112, "lng": 127.0543075,
+        "hours": "10:30-20:30",
+        "phone": "0507-1354-7297",
+        "note": "4.3/50+ 評論。Kodak Apparel 旗艦店，兩層樓。T-shirt / 帽子 / 帽 T 為主，"
+                "₩39,000~89,000，平價可愛。店內有免費拍立得拍照區。",
+    },
+ 
+    "thisisneverthat_seongsu": {
+        "name": "thisisneverthat 聖水旗艦", "name_kr": "디스이즈네버댓 성수",
+        "area": AREA_SEONGSU, "cat": "shop", "sub": "街頭潮牌",
+        "address": "서울 성동구 성수동2가 277-121 3층",
+        "lat": 37.5431463, "lng": 127.0616649,
+        "hours": "11:00-20:00",
+        "phone": "010-5697-0170",
+        "note": "4.7/22 評論。韓國頂級街頭潮牌。T 恤 / 帽 T / 夾克 / 工裝褲，"
+                "價位 ₩70,000~150,000，平日下午較鬆。",
+    },
+ 
+    "matin_kim_seongsu": {
+        "name": "Matin Kim 聖水旗艦", "name_kr": "마뗑킴 성수 플래그십",
+        "area": AREA_SEONGSU, "cat": "shop", "sub": "韓系女裝",
+        "address": "서울 성동구 성수동2가 301-16",
+        "lat": 37.5445496, "lng": 127.051323,
+        "hours": "11:00-20:00",
+        "phone": "070-4128-0703",
+        "note": "5.0/530+ 評論。明星愛用韓系設計師品牌，主打女裝外套 / 連身裙 / 短裙。"
+                "後方有 outlet 折扣區。",
+    },
+ 
+    "ader_error_seongsu": {
+        "name": "ADER ERROR 聖水", "name_kr": "아더에러 성수",
+        "area": AREA_SEONGSU, "cat": "shop", "sub": "前衛潮牌",
+        "address": "서울 성동구 성수이로 82",
+        "lat": 37.5422211, "lng": 127.0565311,
+        "hours": "11:00-21:00",
+        "phone": "02-2039-0334",
+        "note": "店面當代藝術裝置概念，每次只放限定人數進入，要在門口登記。"
+                "T-shirt / 衛衣 ₩90,000+ 偏貴一階，造型強烈。",
+    },
+ 
+# === 東大門 / 鍾路 (jin_okhwa 一隻雞) ===
+ 
+    "jin_okhwa": {
+        "name": "陳玉華一隻雞 元祖", "name_kr": "진옥화할매원조닭한마리",
+        "area": AREA_DONGDAEMUN, "cat": "food", "sub": "一隻雞",
+        "address": "서울 종로구 종로40가길 18",
+        "lat": 37.5703627, "lng": 127.0057612,
+        "hours": "10:30-01:00",
+        "phone": "02-2275-9666",
+        "note": "⭐優先。4.1/8000+ 評論。老店元祖，桌上現滾。"
+                "Tip：先丟馬鈴薯+蒜+蔥，最後加手打麵。等位 20 min。",
+        "priority": True,
     },
 
     # ==============================
