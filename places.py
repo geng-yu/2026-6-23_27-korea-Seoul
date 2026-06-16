@@ -113,7 +113,7 @@ PLACES = {
         "hours": "12:00-22:00",
         "note": "⭐全首爾最大間，鏡框均一價 ~₩49,000，"
                 "設計類似 Gentle Monster 但價格 1/3。鏡面 + LED 裝置藝術風格。",
-        "priority": False,
+        "priority": True,
     },
  
     "musinsa_standard_seongsu": {
@@ -124,7 +124,7 @@ PLACES = {
         "hours": "11:00-22:00",
         "phone": "0507-1872-3708",
         "note": "韓版 UNIQLO/GU，極簡乾淨風",
-        "priority": True,
+        "priority": False,
     },
  
     "kasina_seongsu": {
