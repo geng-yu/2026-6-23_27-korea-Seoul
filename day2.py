@@ -29,7 +29,7 @@ def show_day():
                 "kasina_seongsu", "covernat_seongsu"],
          others="shop",
          notes=[
-             "墨鏡均一價 ~₩49,000，全首爾最大間，平價版 Gentle Monster。",
+             "墨鏡全首爾最大間",
              "韓版 UNIQLO/GU，極簡乾淨風。",
              "球鞋選物，Nike/Adidas/Salomon 少見配色。2F 還有 ASSC 等街頭品牌。",
              " ",
@@ -50,8 +50,7 @@ def show_day():
 
     # 6) 晚餐：陳玉華一隻雞
     stop("", "jin_okhwa", others="food",
-         notes="優先。老店 8000+ 評論。等位約 20 min。"
-               "Tip：先丟馬鈴薯+蒜+蔥下湯，吃完雞肉再加手打麵收尾。")
+         notes="Tip：先丟馬鈴薯+蒜+蔥下湯，吃完雞肉再加手打麵收尾。")
 
     # 7) 回弘대
     note("🚇", "東大門 → 弘대",
@@ -64,8 +63,7 @@ def show_day():
 
     # 8) 宵夜：橋村炸雞（飯店附近）
     stop("宵", "kyochon",
-         notes="從飯店走 3 min。醬油蒜味 / 紅辣味雙拼，配啤酒。"
-               "不想吃炸雞跳「飯店附近吃」換口味。")
+         notes="醬油蒜味 / 紅辣味雙拼")
 
     # 9) 住 + 飯店附近吃/逛
     hotel_bottom(today_food=TODAY_FOOD, today_shop=TODAY_SHOP)
