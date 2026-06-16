@@ -19,7 +19,7 @@ def show_day():
 
     # 2) 早午餐：三代馬鈴薯排骨湯
     stop("", "gamjatang", others="food",
-         notes="⭐優先。24h 不打烊，避開正午排隊潮，建議 10-11 點到")
+         notes="優先。24h 不打烊，避開正午排隊潮，建議 10-11 點到")
 
     # 3) 聖水洞購物 (墨鏡 + 衣服 + 鞋子 + 潮牌)
     stop("", ["blue_elephant_seongsu", "musinsa_standard_seongsu",
@@ -34,7 +34,7 @@ def show_day():
 
     # 4) 點心：Maman Gelato
     stop("點", "maman_gelato", others="food",
-         notes="⭐優先。必點 Pistachiotella 開心果義式冰淇淋 ₩9,000，碎開心果鋪滿。"
+         notes="必點 Pistachiotella 開心果義式冰淇淋 ₩9,000，碎開心果鋪滿。"
                "排隊約 20 min，店內小，建議外帶到聖水公園吃。")
 
     # 5) 移動：聖水洞 → 東大門
@@ -44,7 +44,7 @@ def show_day():
 
     # 6) 晚餐：陳玉華一隻雞
     stop("晚", "jin_okhwa", others="food",
-         notes="⭐優先。老店 8000+ 評論。等位約 20 min。"
+         notes="優先。老店 8000+ 評論。等位約 20 min。"
                "Tip：先丟馬鈴薯+蒜+蔥下湯，吃完雞肉再加手打麵收尾。")
 
     # 7) 回弘대
