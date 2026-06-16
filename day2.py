@@ -19,8 +19,7 @@ def show_day():
 
     # 2) 早午餐：三代馬鈴薯排骨湯
     stop("早", "gamjatang", others="food",
-         notes="⭐優先。24h 不打烊，避開正午排隊潮，建議 10-11 點到。"
-               "骨肉分離，會香一整天衣服，記得脫外套。")
+         notes="⭐優先。24h 不打烊，避開正午排隊潮，建議 10-11 點到")
 
     # 3) 聖水洞購物 (墨鏡 + 衣服 + 鞋子 + 潮牌)
     stop("逛", ["blue_elephant_seongsu", "musinsa_standard_seongsu",
