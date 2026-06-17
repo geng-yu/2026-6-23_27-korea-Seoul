@@ -68,8 +68,8 @@ def show_day():
               "→ 1 站到「忠武路站 (충무로역 / Chungmuro)」站內轉乘<br>"
               "→ 4 號線「往오이도 方向」<br>"
               "→ 1 站到「明洞站 (명동역 / Myeong-dong)」<br>"
-              "→ 出 6 號出口 → 走 3 min 到明洞主街"
-              "｜💡 Taxi ~₩6,000 / 10 min (省 5 min)")
+              "→ 出 6 號出口 → 走 3 min 到明洞主街<br>"
+              "💡 Taxi ~₩6,000 / 10 min (省 5 min)")
 
     # 9) 明洞餃子
     stop("🥟", "myeongdong_kyoja", others="food",
