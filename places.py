@@ -160,6 +160,18 @@ PLACES = {
         "phone": "070-7543-2123",
         "note": "韓屋風咖啡店",
     },
+    "rafre_fruit_seochon": {
+        "name": "Rafre Fruit 西村", "name_kr": "라프레 프루트 서촌",
+        "area": AREA_ANGUK, "cat": "food", "sub": "草莓/水果甜點",
+        "address": "서울 종로구 필운대로 53-30 2층",
+        "lat": 37.5807919, "lng": 126.9679653,
+        "hours": "12:30-18:30 (週六日到 19:30)",
+        "phone": "0507-1387-7415",
+        "note": "⭐優先。4.2/80+ 評論。草莓蛋糕、濟州蘋果芒果刨冰、新鮮草莓拿鐵。"
+                "排隊建議 Catchtable 抽號碼。座位在 2 樓，少。"
+                "從景福宮西邊走 11 min (穿越通仁市場)。",
+        "priority": True,
+    },
     "gwanghwamun": {
         "name": "光化門", "name_kr": "광화문",
         "area": AREA_ANGUK, "cat": "sight",
@@ -214,6 +226,18 @@ PLACES = {
         "hours": "10:00-21:00 (店家各異)",
         "phone": "02-2148-5243",
         "note": "韓屋變咖啡街，韓劇鬼怪取景",
+    },
+    "shinsegae_main": {
+        "name": "新世界百貨 本店", "name_kr": "신세계백화점 본점",
+        "area": AREA_MYEONGDONG, "cat": "shop", "sub": "百貨/免稅",
+        "address": "서울 중구 소공로 63",
+        "lat": 37.5609223, "lng": 126.9811389,
+        "hours": "10:30-20:00 (週五六到 20:30)",
+        "phone": "1588-1234",
+        "note": "⭐優先。4.3/12,800+ 評論。3 棟相連 25 層 (Estate / Reserve / Heritage)，"
+                "B1 美食街 / 8-11F 免稅店 (要先在 app 預約)。"
+                "B1 巴黎可頌排隊名店。退稅 1F 服務中心。",
+        "priority": True,
     },
     "bongsan": {
         "name": "鳳山精肉", "name_kr": "봉산정육 홍대본점",
@@ -809,6 +833,122 @@ PLACES = {
     # ==============================
     # 備案 — 明洞
     # ==============================
+    "hyodam_dakhanmari": {
+        "name": "孝潭刀削麵一隻雞 明洞", "name_kr": "효담칼국수닭한마리 명동",
+        "area": AREA_MYEONGDONG, "cat": "food", "sub": "一隻雞",
+        "address": "서울 중구 명동3길 12 B1",
+        "lat": 37.5642308, "lng": 126.9835303,
+        "hours": "10:30-22:15",
+        "phone": "02-318-2468",
+        "note": "4.9/750+ 評論。明洞內 (不用搭車去東大門)，"
+                "刀削麵 + 一隻雞鍋，平板點餐有中英文。",
+    },
+ 
+    "menten_ramen": {
+        "name": "Menten 拉麵", "name_kr": "멘텐 라멘",
+        "area": AREA_MYEONGDONG, "cat": "food", "sub": "日式拉麵",
+        "address": "서울 중구 삼일대로 305",
+        "lat": 37.5619547, "lng": 126.9885760,
+        "hours": "週一、日休 / 平日 11:40-14:30, 17:40-19:30",
+        "note": "4.4/450+ 評論。明洞 8 席拉麵秘藏，醬油拉麵主推。"
+                "⚠️ 別在最後一輪點單前 30 min 來。",
+    },
+ 
+    "myeongdong_hotteok": {
+        "name": "明洞糖餅小推車", "name_kr": "명동 호떡 (수제)",
+        "area": AREA_MYEONGDONG, "cat": "food", "sub": "街頭糖餅",
+        "address": "서울 중구 명동 25-11",
+        "lat": 37.5611754, "lng": 126.9818543,
+        "hours": "12:00-21:00",
+        "note": "4.8/40+ 評論。明洞街頭老奶奶家傳糖餅，鐵盤烤不油炸。"
+                "₩2,000 / 1 個，₩5,000 / 2 個。"
+                "從新世界往北走幾分鐘就能順路吃到。",
+    },
+    "abc_mart_grand_myeongdong": {
+        "name": "ABC-MART Grand Stage 明洞", "name_kr": "ABC마트 GS 명동본점",
+        "area": AREA_MYEONGDONG, "cat": "shop", "sub": "球鞋",
+        "address": "서울 중구 명동8나길 21",
+        "lat": 37.5611017, "lng": 126.9838034,
+        "hours": "10:30-22:00",
+        "phone": "02-2088-0981",
+        "note": "Grand Stage 旗艦 (弘대那家是普通 GS 店)。"
+                "Vans / New Balance / Salomon 限定配色比弘대多。"
+                "退稅 ₩30,000 起。",
+    },
+ 
+    "nike_myeongdong": {
+        "name": "NIKE 明洞 (樂天百貨 6F)", "name_kr": "나이키 명동 (롯데백화점 6층)",
+        "area": AREA_MYEONGDONG, "cat": "shop", "sub": "運動服飾",
+        "address": "서울 중구 남대문로 73 6층",
+        "lat": 37.5641503, "lng": 126.9816366,
+        "hours": "10:30-20:00 (週五六到 20:30)",
+        "phone": "02-772-3689",
+        "note": "4.4/330+ 評論。Nike By You 客製化體驗 (10:00 開放號碼牌，"
+                "提早 9:00 排)。鞋 / 衣 / 帽自選顏色繡名字。",
+    },
+ 
+    "adidas_brand_myeongdong": {
+        "name": "adidas Brand Flagship Seoul", "name_kr": "아디다스 브랜드 플래그십 서울",
+        "area": AREA_MYEONGDONG, "cat": "shop", "sub": "運動服飾",
+        "address": "서울 중구 명동8길 27",
+        "lat": 37.5624994, "lng": 126.9851619,
+        "hours": "10:30-22:00",
+        "phone": "02-779-9834",
+        "note": "⭐4.9/2,900+ 評論。Made For You 客製化 T-shirt / 包 / 帽，"
+                "現場印製 20 min 內取貨。弘대 Originals 店沒這個服務。",
+    },
+ 
+    "zara_myeongdong": {
+        "name": "ZARA 明洞 Noon Square 旗艦", "name_kr": "ZARA 명동 눈스퀘어",
+        "area": AREA_MYEONGDONG, "cat": "shop", "sub": "快時尚",
+        "address": "서울 중구 명동길 14",
+        "lat": 37.5635068, "lng": 126.9825028,
+        "hours": "10:30-22:00",
+        "note": "Noon Square 旗艦三層樓。弘대無 ZARA。"
+                "韓國 ZARA 價格跟台灣相近，但常有限定款。",
+    },
+ 
+    "hm_myeongdong": {
+        "name": "H&M 明洞中央街", "name_kr": "H&M 명동중앙길",
+        "area": AREA_MYEONGDONG, "cat": "shop", "sub": "快時尚",
+        "address": "서울 중구 명동8길 3",
+        "lat": 37.5635451, "lng": 126.9848038,
+        "hours": "10:30-22:30",
+        "note": "4 層樓全品項。弘대無 H&M。基本款價位 ₩9,900~₩69,000。",
+    },
+ 
+    "uniqlo_myeongdong": {
+        "name": "UNIQLO 明洞中央店", "name_kr": "유니클로 명동중앙점",
+        "area": AREA_MYEONGDONG, "cat": "shop", "sub": "基本款",
+        "address": "서울 중구 명동8나길 38",
+        "lat": 37.5615693, "lng": 126.9826829,
+        "hours": "11:00-21:00",
+        "phone": "02-755-1215",
+        "note": "3 層樓。韓國 UNIQLO 跟日本一樣有 UT 聯名 (BTS / 跑跑卡丁車韓限)，"
+                "弘대無 UNIQLO。",
+    },
+ 
+    "spao_myeongdong": {
+        "name": "SPAO 明洞旗艦", "name_kr": "SPAO 명동 플래그십",
+        "area": AREA_MYEONGDONG, "cat": "shop", "sub": "韓本土快時尚",
+        "address": "서울 중구 명동8나길 15",
+        "lat": 37.5612589, "lng": 126.9841176,
+        "hours": "10:00-22:00",
+        "phone": "02-319-3850",
+        "note": "韓國本土 UNIQLO，3 層樓。常有 K-pop / 韓劇聯名 (NewJeans、BTS)。"
+                "弘대無 SPAO 旗艦。",
+    },
+ 
+    "eightseconds_myeongdong": {
+        "name": "8 Seconds 明洞旗艦", "name_kr": "에잇세컨즈 명동 플래그십",
+        "area": AREA_MYEONGDONG, "cat": "shop", "sub": "韓本土快時尚",
+        "address": "서울 중구 명동길 32",
+        "lat": 37.5636186, "lng": 126.9840524,
+        "hours": "10:30-22:00",
+        "phone": "070-7090-2272",
+        "note": "⭐4.9/820+ 評論。Samsung 集團韓本土快時尚，3 層樓。"
+                "Google 評論可換 5% 折扣。常 K-pop 聯名 (近期 K-pop Demon Hunters)。",
+    },
     "myeongdong_kyoja": {
         "name": "明洞餃子 (米其林)", "name_kr": "명동교자",
         "area": AREA_MYEONGDONG, "cat": "food", "sub": "刀削麵",
@@ -880,6 +1020,28 @@ PLACES = {
     # ==============================
     # 備案 — 安國/北村
     # ==============================
+    "tosokchon": {
+        "name": "土俗村蔘雞湯", "name_kr": "토속촌삼계탕",
+        "area": AREA_ANGUK, "cat": "food", "sub": "蔘雞湯",
+        "address": "서울 종로구 자하문로5길 5",
+        "lat": 37.5777786, "lng": 126.9715909,
+        "hours": "10:00-22:00",
+        "phone": "02-737-7444",
+        "note": "4.2/11,900+ 評論。景福宮西邊 5 min，無垢屋滿了的最佳備案。"
+                "韓屋大廳寬敞，店員會中文，黑骨雞蔘雞湯為招牌。",
+    },
+ 
+    "tongin_market": {
+        "name": "通仁市場 銅板便當", "name_kr": "통인시장 도시락카페",
+        "area": AREA_ANGUK, "cat": "food", "sub": "傳統市場",
+        "address": "서울 종로구 자하문로15길 18",
+        "lat": 37.5807649, "lng": 126.9706756,
+        "hours": "07:00-21:00 (便當咖啡週二休)",
+        "phone": "02-722-0911",
+        "note": "在 Rafre 隔壁巷子。₩10,000 換 20 個銅板，"
+                "拿便當盒去攤位用銅板換菜，回 2F 自助加湯吃。"
+                "Rafre 等候時可順道進去玩。",
+    },
     "insadong": {
         "name": "仁寺洞", "name_kr": "인사동",
         "area": AREA_ANGUK, "cat": "sight",
@@ -920,6 +1082,7 @@ PLACES = {
         "note": "4.6/230+ 評論。韓屋庭院咖啡，比 Onion 更安靜。"
                 "推 Cafe Vienna (奶霜不甜，記得攪)。",
     },
+    
     # ==============================
     # 備案 — 延南洞咖啡
     # ==============================
