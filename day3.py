@@ -32,14 +32,14 @@ def show_day():
     stop("", ["gwanghwamun", "gyeongbokgung"],
          notes=[
              "11:00 守門將交班儀式 (約 20 min)",
-             "從光化門走 5 min。穿韓服免門票。"
-             "東門可借免費中文導覽機。",
+             "從光化門走 5 min。穿韓服免門票"
+             "東門可借免費中文導覽機",
          ])
 
     # 4) Rafre Fruit 西村 (走路)
     stop("🍰", "rafre_fruit_seochon", others="food",
-         notes="從景福宮往西走 11 min (穿越通仁市場順路看)。"
-               "草莓蛋糕 / 濟州芒果刨冰 / 草莓拿鐵。"
+         notes="從景福宮往西走 11 min (穿越通仁市場順路看)"
+               "草莓蛋糕 / 濟州芒果刨冰 / 草莓拿鐵"
                "建議在景福宮用 Catchtable 抽號碼")
 
     # 5) Rafre → 北村 (有點繞，建議計程車)
