@@ -24,7 +24,7 @@ def show_day():
 
     # 1) 早午餐：無垢屋
     stop("", "muguok", others="food",
-         notes="⚠️ 限時 11:30-14:00 / 17:30-20:00，Catchtable 出門前先抽號碼。"
+         notes="⚠️ 11:30-14:00 / 17:30-20:00，Catchtable 出門前先抽號碼。"
                "排不到備案：Cafe Onion Anguk (1 min)、土俗村蔘雞湯 (走 5 min)、"
                "通仁市場銅板便當 (走 7 min)。")
 
