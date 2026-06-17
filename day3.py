@@ -1,15 +1,15 @@
-"""Day 3 (6/25 四) — 安國/北村 + 益善洞 + 明洞 + 新世界"""
+"""Day 3 (6/25 四) — 安國/北村/西村 + 益善洞 + 明洞 + 新世界"""
 import streamlit as st
 from utils import stop, note, hotel_bottom, set_scheduled
 
-TODAY_FOOD = ["cafe_onion_anguk", "muguok", "london_bagel",
+TODAY_FOOD = ["muguok", "rafre_fruit_seochon", "london_bagel",
               "myeongdong_kyoja", "bongsan"]
 TODAY_SHOP = ["shinsegae_main"]
 
 
 def show_day():
     set_scheduled(TODAY_FOOD, TODAY_SHOP)
-    st.caption("📍 6/25 (四)｜安國/北村 + 益善洞 + 明洞 + 新世界｜⚠️ 景福宮週四開")
+    st.caption("📍 6/25 (四)｜安國/北村/西村 + 益善洞 + 明洞 + 新世界")
 
     # 1) 出發：弘대 → 安國
     note("🚇", "弘대 → 安國",
@@ -19,45 +19,50 @@ def show_day():
               "→ 3 站到「乙支路 3 街站 (을지로3가역 / Euljiro 3-ga)」站內轉乘<br>"
               "→ 3 號線「往대화 方向」<br>"
               "→ 2 站到「安國站 (안국역 / Anguk)」<br>"
-              "→ 出 6 號出口 → 走 3 min 到 Cafe Onion"
+              "→ 出 1 號出口 → 走 5 min 到無垢屋"
               "｜💡 Taxi ~₩9,000 / 20 min (省 5 min)")
 
-    # 2) 早午餐
-    stop("早", "cafe_onion_anguk",
-         notes="韓屋風咖啡店元老，4500+ 評論。早上 9 點較不擠。"
-               "招牌 Pandoro + 美式咖啡，內用要找位先點再點才有座。")
+    # 1) 早午餐：無垢屋
+    stop("", "muguok", others="food",
+         notes="⚠️ 限時 11:30-14:00 / 17:30-20:00，Catchtable 出門前先抽號碼。"
+               "排不到備案：Cafe Onion Anguk (1 min)、土俗村蔘雞湯 (走 5 min)、"
+               "通仁市場銅板便當 (走 7 min)。")
 
-    # 3) 景點 group：光化門 + 景福宮
-    stop("景", ["gwanghwamun", "gyeongbokgung"],
+    # 2-3) 光化門 + 景福宮 (走路)
+    stop("", ["gwanghwamun", "gyeongbokgung"],
          notes=[
-             "⭐優先。11:00 守門將交班儀式 (約 20 min) 必看。"
-             "從 Cafe Onion 走 8 min 到。",
-             "穿韓服免門票 ₩3,000。週四 OK 開放。場地大，至少留 1 小時。"
+             "11:00 守門將交班儀式 (約 20 min)",
+             "從光化門走 5 min。穿韓服免門票。"
              "東門可借免費中文導覽機。",
          ])
 
-    # 4) 午餐：무굴
-    stop("午", "muguok", others="food",
-         notes="⭐優先。⚠️ 限時 11:30-14:00 / 17:30-20:00，要早點到。"
-               "Catchtable 線上排隊建議出門前先抽。"
-               "排不到跳「其他」→ 通仁市場銅板便當體驗。")
+    # 4) Rafre Fruit 西村 (走路)
+    stop("點", "rafre_fruit_seochon", others="food",
+         notes="從景福宮往西走 11 min (穿越通仁市場順路看)。"
+               "草莓蛋糕 / 濟州芒果刨冰 / 草莓拿鐵。"
+               "建議在景福宮用 Catchtable 抽號碼")
 
-    # 5) 北村
+    # 5) Rafre → 北村 (有點繞，建議計程車)
+    note("🚖", "Rafre 西村 → 北村",
+              "Taxi ~₩4,000 / 5 min｜或走 19 min",
+              "Rafre 在景福宮西邊、北村在景福宮東北邊，<br>"
+              "中間隔著景福宮整個範圍 (1.5 km)。<br>")
+
     stop("景", "bukchon",
          notes="⭐優先。居民區 (請放低音量)。10-17 對遊客開放。"
-               "從무굴走 5 min。八景拍照走逛 1 小時。")
+               "八景拍照走逛 1 小時。")
 
-    # 6) 點心：倫敦貝果
+    # 6) 倫敦貝果 (走路)
     stop("點", "london_bagel", others="food",
-         notes="⚠️ Catchtable 抽號碼牌，平日可能等 1-2 小時，建議北村前就先抽。"
-               "排不到 → 走到 Hanok Langsom 益善韓屋庭院咖啡，或直接去益善洞。")
+         notes="從北村走 4 min。⚠️ Catchtable 抽號碼牌，平日可能等 1-2 小時，"
+               "建議北村時就先抽。排不到 → Hanok Langsom 益善 (韓屋庭院)。")
 
-    # 7) 益善洞
+    # 7) 益善洞 (走路)
     stop("景", "ikseondong",
-         notes="北村走 8 min。「鬼怪」取景，韓屋變咖啡街，比北村更有生活感。"
+         notes="從倫敦貝果走 9 min。「鬼怪」取景，韓屋變咖啡街，比北村更有生活感。"
                "小夏鹽田鹽可頌、Mil Toast、Solsot 釜飯都在「其他」清單。")
 
-    # 8) 益善洞 → 明洞
+    # 8) 益善洞 → 明洞 (地鐵)
     note("🚇", "益善洞 → 明洞",
               "3 號線 → 4 號線｜~15 min｜₩1,500｜轉乘 1 次",
               "進站：益善洞走 5 min 到「鍾路 3 街站 (종로3가역 / Jongno 3-ga)」<br>"
@@ -68,30 +73,30 @@ def show_day():
               "→ 出 6 號出口 → 走 3 min 到明洞主街"
               "｜💡 Taxi ~₩6,000 / 10 min (省 5 min)")
 
-    # 9) 點心：明洞餃子
+    # 9) 明洞餃子
     stop("點", "myeongdong_kyoja", others="food",
-         notes="米其林必比登，刀削麵+餃子，14500+ 評論。"
+         notes="米其林必比登，刀削麵+餃子，14,500+ 評論。"
                "先吃一碗麵留肚子等鳳山精肉。⚠️ 主店滿就去 New Building MJ (走 1 min)。")
 
-    # 10) 逛街：新世界百貨本店
+    # 10) 逛街：明洞商圈順路逛到新世界
     stop("逛", "shinsegae_main", others="shop",
-         notes="⭐從明洞餃子走 5 min。3 棟相連 25 層。"
-               "8-11F 免稅店要先在 app 預約。B1 美食街排隊去買巴黎可頌。"
-               "退稅在 1F 服務中心統一處理。")
+         notes="⭐從明洞餃子沿著明洞主街往南走 6 min 自然到新世界。"
+               "中間順路逛 H&M / ZARA / SPAO / 8 Seconds / UNIQLO / ABC-MART Grand Stage / NIKE / adidas，"
+               "都是弘대沒有的品牌 (詳見「其他逛的」)。"
+               "新世界 8-11F 免稅店要先 app 預約，退稅 1F 統一處理。")
 
     # 11) 回弘대
     note("🚇", "明洞 → 弘대",
               "2 號線本線直達｜~22 min｜₩1,500",
-              "進站：新世界百貨走 8 min 到「乙支路入口站 (을지로입구역 / Euljiro 1-ga)」<br>"
+              "進站：新世界走 5 min 到「乙支路入口站 (을지로입구역 / Euljiro 1-ga)」<br>"
               "→ 2 號線「往홍대입구 方向」(外線循環)<br>"
               "→ 6 站到「弘大入口站 (홍대입구역)」<br>"
               "→ 出 9 號出口 → 走 5 min 回飯店"
-              "｜💡 戰利品多推 Taxi ~₩10,000 / 20 min")
+              "💡Taxi ~₩12,000 / 25 min")
 
     # 12) 晚餐：鳳山精肉
     stop("晚", "bongsan", others="food",
-         notes="⭐優先。5.0/2400+ 評論。員工幫烤肉。從飯店走 7 min。"
-               "不想吃燒烤跳「其他」豬腳/鰻魚。")
+         notes="員工幫烤肉。從飯店走 7 min。")
 
     # 13) 住 + 飯店附近
     hotel_bottom(today_food=TODAY_FOOD, today_shop=TODAY_SHOP)
