@@ -37,7 +37,7 @@ def show_day():
          ])
 
     # 4) Rafre Fruit 西村 (走路)
-    stop("點", "rafre_fruit_seochon", others="food",
+    stop("🍰", "rafre_fruit_seochon", others="food",
          notes="從景福宮往西走 11 min (穿越通仁市場順路看)。"
                "草莓蛋糕 / 濟州芒果刨冰 / 草莓拿鐵。"
                "建議在景福宮用 Catchtable 抽號碼")
@@ -48,17 +48,16 @@ def show_day():
               "Rafre 在景福宮西邊、北村在景福宮東北邊，<br>"
               "中間隔著景福宮整個範圍 (1.5 km)。<br>")
 
-    stop("景", "bukchon",
-         notes="⭐優先。居民區 (請放低音量)。10-17 對遊客開放。"
-               "八景拍照走逛 1 小時。")
+    stop("", "bukchon",
+         notes="10-17 開放，八景拍照走逛")
 
     # 6) 倫敦貝果 (走路)
-    stop("點", "london_bagel", others="food",
-         notes="從北村走 4 min。⚠️ Catchtable 抽號碼牌，平日可能等 1-2 小時，"
+    stop("🥯", "london_bagel", others="food",
+         notes="⚠️ Catchtable 抽號碼牌，平日可能等 1-2 小時，"
                "建議北村時就先抽。排不到 → Hanok Langsom 益善 (韓屋庭院)。")
 
     # 7) 益善洞 (走路)
-    stop("景", "ikseondong",
+    stop(" ", "ikseondong",
          notes="從倫敦貝果走 9 min。「鬼怪」取景，韓屋變咖啡街，比北村更有生活感。"
                "小夏鹽田鹽可頌、Mil Toast、Solsot 釜飯都在「其他」清單。")
 
@@ -74,16 +73,17 @@ def show_day():
               "｜💡 Taxi ~₩6,000 / 10 min (省 5 min)")
 
     # 9) 明洞餃子
-    stop("點", "myeongdong_kyoja", others="food",
-         notes="米其林必比登，刀削麵+餃子，14,500+ 評論。"
-               "先吃一碗麵留肚子等鳳山精肉。⚠️ 主店滿就去 New Building MJ (走 1 min)。")
+    stop("🥟", "myeongdong_kyoja", others="food",
+         notes="米其林必比登，刀削麵+餃子"
+               "先吃一碗麵留肚子等鳳山精肉<br>"
+               "⚠️ 主店滿就去 New Building MJ")
 
     # 10) 逛街：明洞商圈順路逛到新世界
-    stop("逛", "shinsegae_main", others="shop",
-         notes="⭐從明洞餃子沿著明洞主街往南走 6 min 自然到新世界。"
+    stop("", "shinsegae_main", others="shop",
+         notes="從明洞餃子沿著明洞主街往南走 6 min 到新世界。"
                "中間順路逛 H&M / ZARA / SPAO / 8 Seconds / UNIQLO / ABC-MART Grand Stage / NIKE / adidas，"
-               "都是弘대沒有的品牌 (詳見「其他逛的」)。"
-               "新世界 8-11F 免稅店要先 app 預約，退稅 1F 統一處理。")
+               "都是弘대沒有的品牌。"
+               "新世界 8-11F 免稅店要先 app 預約，退稅 1F 統一處理")
 
     # 11) 回弘대
     note("🚇", "明洞 → 弘대",
@@ -95,8 +95,8 @@ def show_day():
               "💡Taxi ~₩12,000 / 25 min")
 
     # 12) 晚餐：鳳山精肉
-    stop("晚", "bongsan", others="food",
-         notes="員工幫烤肉。從飯店走 7 min。")
+    stop("", "bongsan", others="food",
+         notes="燒烤")
 
     # 13) 住 + 飯店附近
     hotel_bottom(today_food=TODAY_FOOD, today_shop=TODAY_SHOP)
