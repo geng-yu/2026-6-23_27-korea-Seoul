@@ -24,42 +24,41 @@ def show_day():
 
     # 1) 早午餐：無垢屋
     stop("", "muguok", others="food",
-         notes="⚠️ 11:30-14:00 / 17:30-20:00，Catchtable 出門前先抽號碼。"
-               "排不到備案：Cafe Onion Anguk (1 min)、土俗村蔘雞湯 (走 5 min)、"
-               "通仁市場銅板便當 (走 7 min)。")
+         notes="⚠️ 11:30-14:00 / 17:30-20:00，Catchtable 出門前先抽號碼<br>"
+               "排不到備案：Cafe Onion Anguk、土俗村蔘雞湯<br>"
+               "通仁市場銅板便當 (走 7 min)")
 
     # 2-3) 光化門 + 景福宮 (走路)
     stop("", ["gwanghwamun", "gyeongbokgung"],
          notes=[
-             "11:00 守門將交班儀式 (約 20 min)",
-             "從光化門走 5 min。穿韓服免門票"
+             "11:00 守門將交班儀式<br>",
              "東門可借免費中文導覽機",
          ])
 
     # 4) Rafre Fruit 西村 (走路)
     stop("🍰", "rafre_fruit_seochon", others="food",
-         notes="從景福宮往西走 11 min (穿越通仁市場順路看)"
-               "草莓蛋糕 / 濟州芒果刨冰 / 草莓拿鐵"
+         notes="從景福宮往西走 11 min (穿越通仁市場順路看)<br>"
+               "草莓蛋糕 / 濟州芒果刨冰 / 草莓拿鐵<br>"
                "建議在景福宮用 Catchtable 抽號碼")
 
     # 5) Rafre → 北村 (有點繞，建議計程車)
     note("🚖", "Rafre 西村 → 北村",
               "Taxi ~₩4,000 / 5 min｜或走 19 min",
-              "Rafre 在景福宮西邊、北村在景福宮東北邊，<br>"
-              "中間隔著景福宮整個範圍 (1.5 km)。<br>")
+              "Rafre 在景福宮西邊、北村在景福宮東北邊<br>"
+              "中間隔著景福宮整個範圍 (1.5 km)<br>")
 
     stop("", "bukchon",
          notes="10-17 開放，八景拍照走逛")
 
     # 6) 倫敦貝果 (走路)
     stop("🥯", "london_bagel", others="food",
-         notes="⚠️ Catchtable 抽號碼牌，平日可能等 1-2 小時，"
-               "建議北村時就先抽。排不到 → Hanok Langsom 益善 (韓屋庭院)。")
+         notes="⚠️ Catchtable 抽號碼牌，平日可能等 1-2 小時<br>"
+               "建議北村時就先抽。排不到 → Hanok Langsom 益善(韓屋庭院)")
 
     # 7) 益善洞 (走路)
     stop(" ", "ikseondong",
-         notes="從倫敦貝果走 9 min。「鬼怪」取景，韓屋變咖啡街，比北村更有生活感。"
-               "小夏鹽田鹽可頌、Mil Toast、Solsot 釜飯都在「其他」清單。")
+         notes="從倫敦貝果走 9 min。「鬼怪」取景<br>"
+               "小夏鹽田鹽可頌、Mil Toast、Solsot 釜飯")
 
     # 8) 益善洞 → 明洞 (地鐵)
     note("🚇", "益善洞 → 明洞",
@@ -74,16 +73,13 @@ def show_day():
 
     # 9) 明洞餃子
     stop("🥟", "myeongdong_kyoja", others="food",
-         notes="米其林必比登，刀削麵+餃子"
+         notes="米其林必比登，刀削麵+餃子<br>"
                "先吃一碗麵留肚子等鳳山精肉<br>"
                "⚠️ 主店滿就去 New Building MJ")
 
     # 10) 逛街：明洞商圈順路逛到新世界
     stop("", "shinsegae_main", others="shop",
-         notes="從明洞餃子沿著明洞主街往南走 6 min 到新世界。"
-               "中間順路逛 H&M / ZARA / SPAO / 8 Seconds / UNIQLO / ABC-MART Grand Stage / NIKE / adidas，"
-               "都是弘대沒有的品牌。"
-               "新世界 8-11F 免稅店要先 app 預約，退稅 1F 統一處理")
+         notes="新世界 8-11F 免稅店要先 app 預約<br>退稅 1F 統一處理")
 
     # 11) 回弘대
     note("🚇", "明洞 → 弘대",
