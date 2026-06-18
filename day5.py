@@ -14,15 +14,14 @@ def show_day():
     # ============ 1) 退房 + 寄行李 ============
     note("🧳", "退房 + 寄行李",
               "9 Brick Hotel｜11:00 前 Check-out",
-              "行李寄 lobby (免費，自己貼名牌)"
-              "下午 12:00 回來拿，建議拍一張行李照存手機"
-              "退房後確認 LJ737 14:50 起飛狀態")
+              "行李寄 lobby (免費，自己貼名牌)<br>"
+              "下午 12:00 回來拿，建議拍一張行李照存手機<br>")
 
     # ============ 2) 早餐：百年蔘雞湯 ============
     stop("早", "baeknyeon", others="food",
-         notes="09:00 開門"
-               "想清淡 → Egg Drop (07:00 開) / Moment Coffee / Knotted 弘대 (10:00 開)。"
-               "09:00 前出門 → Egg Drop 是唯一選擇。")
+         notes="09:00 開門<br>"
+               "想清淡 → Egg Drop(7點開) / Moment Coffee / Knotted 弘대 (10點開)<br>"
+               "09:00 前出門 → Egg Drop 是唯一選擇")
 
     # ============ 3) Olive Young 最後補貨 ============
     stop("逛", "olive_young_hongdae",
