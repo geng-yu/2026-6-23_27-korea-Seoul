@@ -27,7 +27,7 @@ AREA_GWANGJANG = "廣藏"
 AREA_ANGUK = "安國"
 AREA_IKSEON = "益善"
 AREA_MYEONGDONG = "明洞"
-
+AREA_AIRPORT = "機場"
 
 PLACES = {
     # ==============================
