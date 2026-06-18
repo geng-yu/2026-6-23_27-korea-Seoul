@@ -252,6 +252,60 @@ PLACES = {
     # ==============================
     # Day 4 主行程 — 望遠/延南/弘대採買
     # ==============================
+        "tongin_donkatsu_yeonnam": {
+        "name": "Tongin 豬排 延南本店", "name_kr": "카츠몬스터 연남본점",
+        "area": AREA_YEONNAM, "cat": "food", "sub": "日式豬排",
+        "address": "서울 마포구 동교로38길 42-6 1층",
+        "lat": 37.561017, "lng": 126.92549,
+        "hours": "10:30-21:00",
+        "phone": "070-7604-1382",
+        "note": "4.9/540+ 評論。延南洞日式豬排排隊店，三層厚切 ₩18,000。"
+                "離 JO & DAWSON 走 30 秒。建議 18:00 後較鬆。",
+    },
+ 
+    "cafe_le_nuage_yeonnam": {
+        "name": "Cafe Le Nuage 延南", "name_kr": "르 누아주 카페",
+        "area": AREA_YEONNAM, "cat": "food", "sub": "法式甜點",
+        "address": "서울 마포구 동교로46길 42-9",
+        "lat": 37.5617296, "lng": 126.926669,
+        "hours": "週三休 / 平日 12:00-21:00, 週末 11:00-21:00",
+        "phone": "010-8989-7396",
+        "note": "4.9/17 評論。手工法式甜點，藝術品級的可頌/塔。"
+                "香草慕斯 ₩8.8 招牌，週末早一點到。",
+    },
+        "yeon_throughvintage": {
+        "name": "연트럴빈티지 (Yeon Through Vintage)", "name_kr": "연트럴빈티지",
+        "area": AREA_YEONNAM, "cat": "shop", "sub": "二手丹寧/Polo",
+        "address": "서울 마포구 연남동 259-5",
+        "lat": 37.561024, "lng": 126.9241166,
+        "hours": "24h 開",
+        "phone": "010-9518-2864",
+        "note": "⭐優先。5.0/34 評論。延南洞最大 vintage 店。"
+                "Ralph Lauren / Tommy / Champion 二手丹寧均一 ₩10,000 起。"
+                "店員會幫挑顏色，可以慢慢看。",
+        "priority": True,
+    },
+ 
+    "yeonnam_vintage": {
+        "name": "延南 Vintage Sky", "name_kr": "연남 빈티지",
+        "area": AREA_YEONNAM, "cat": "shop", "sub": "復古二手",
+        "address": "서울 마포구 양화로21길 37",
+        "lat": 37.5597525, "lng": 126.9242805,
+        "hours": "00:00-21:00 (週六日到 22:00)",
+        "phone": "010-3078-0650",
+        "note": "巷弄裡的二手店，比 Yeon Through 小但選品也用心。"
+                "復古夾克 / 工裝褲 ₩30,000~。",
+    },
+ 
+    "some_store_yeonnam": {
+        "name": "Some Store 延南", "name_kr": "섬스토어 (Some Store)",
+        "area": AREA_YEONNAM, "cat": "shop", "sub": "選物vintage",
+        "address": "서울 마포구 성미산로 155 2층",
+        "lat": 37.5644905, "lng": 126.9235681,
+        "hours": "週末為主，依 Instagram 公告",
+        "note": "4.5/6 評論。極簡店主精選 vintage，"
+                "二手襯衫 / 工裝褲 / 包，比平均 vintage 店價高一階但品質好。",
+    },
     "eggdrop": {
         "name": "Egg Drop 弘대입구", "name_kr": "에그드랍 홍대입구점",
         "area": AREA_HONGDAE, "cat": "food", "sub": "早餐",
@@ -339,7 +393,40 @@ PLACES = {
         "note": "2017 米其林，09:00 就開",
         "priority": True,
     },
-
+# === 早餐備案 (弘대 / 延南，無垢屋 Moment Coffee 沒開時) ===
+ 
+    "eggdrop_hongdae": {
+        "name": "Egg Drop 弘대2호점", "name_kr": "에그드랍 홍대",
+        "area": AREA_HONGDAE, "cat": "food", "sub": "韓式三明治",
+        "address": "서울 마포구 양화로 152 1층",
+        "lat": 37.5552843, "lng": 126.9234017,
+        "hours": "07:00-22:00",
+        "phone": "0507-1334-2080",
+        "note": "4.4/600+ 評論。早餐救星 07:00 開，從飯店走 5 min。"
+                "招牌 Bacon Cheese ₩4,500，外帶包好就走。"
+                "Moment Coffee 還沒開的話這裡備案。",
+    },
+ 
+    "knotted_yeonnam": {
+        "name": "Cafe Knotted 延南", "name_kr": "카페 노티드 연남",
+        "area": AREA_YEONNAM, "cat": "food", "sub": "甜甜圈/早餐",
+        "address": "서울 마포구 동교로 250-1",
+        "lat": 37.5634216, "lng": 126.9245378,
+        "hours": "11:00-22:00",
+        "note": "韓國奶油甜甜圈元祖。Vanilla Cream / Milk Tea 必點。"
+                "從延南洞 Yeontral Park 走 3 min。",
+    },
+ 
+    "nognog_yeonnam": {
+        "name": "Cafe Nognog 延南", "name_kr": "녹녹 연남",
+        "area": AREA_YEONNAM, "cat": "food", "sub": "咖啡/麵包",
+        "address": "서울 마포구 성미산로 139 1층",
+        "lat": 37.5638331, "lng": 126.9219365,
+        "hours": "08:30-01:00",
+        "phone": "010-2533-5953",
+        "note": "5.0/60+ 評論。延南洞早餐救星 08:30 開。"
+                "兩層樓 + 大量插座 + 平價咖啡，麵包選擇多。",
+    },
     # ==============================
     # 備案 — 弘대美食 (使用者清單 + 增補)
     # ==============================
@@ -481,6 +568,34 @@ PLACES = {
     # ==============================
     # 備案 — 弘대購物 (使用者清單 + 增補)
     # ==============================
+        "musinsa_terrace_hongdae": {
+        "name": "Musinsa Terrace 弘대", "name_kr": "무신사 테라스 홍대",
+        "area": AREA_HONGDAE, "cat": "shop", "sub": "韓本土集合品牌",
+        "address": "서울 마포구 양화로 188 AK& 7층",
+        "lat": 37.5566, "lng": 126.9241,
+        "hours": "11:00-22:00",
+        "note": "Musinsa 旗下複合店，AK& 7F。集結 100+ 韓本土小眾品牌，"
+                "從 Toffee / Yale / Wooyoungmi 樣式都有。",
+    },
+ 
+    "spao_hongdae": {
+        "name": "SPAO 弘대旗艦", "name_kr": "SPAO 홍대",
+        "area": AREA_HONGDAE, "cat": "shop", "sub": "韓本土快時尚",
+        "address": "서울 마포구 양화로 162",
+        "lat": 37.5570, "lng": 126.9230,
+        "hours": "11:00-22:00",
+        "note": "韓本土 UNIQLO，弘대店 4 樓全品項，常 K-pop 聯名。",
+    },
+ 
+    "stylenanda_hongdae": {
+        "name": "Stylenanda 弘대 Pink Pool 旗艦", "name_kr": "스타일난다 홍대",
+        "area": AREA_HONGDAE, "cat": "shop", "sub": "女裝/3CE",
+        "address": "서울 마포구 어울마당로 41",
+        "lat": 37.5538, "lng": 126.9230,
+        "hours": "11:00-22:00",
+        "note": "Pink Pool Cafe + Stylenanda 服飾 + 3CE 全品項。"
+                "女裝設計感重，3CE 唇釉/腮紅選最多色。",
+    },
     "abc_mart_gs": {
         "name": "ABC-MART Grand Stage", "name_kr": "ABC-MART GS 홍대 홍익로점",
         "area": AREA_HONGDAE, "cat": "shop", "sub": "球鞋",
@@ -1037,7 +1152,50 @@ PLACES = {
         "note": "韓屋庭院咖啡"
                 "推 Cafe Vienna (奶霜不甜，記得攪)",
     },
-    
+# === 望遠市場備案 (food) — 已有 uirak/matjib，補 4 家 ===
+ 
+    "mangwon_croquette": {
+        "name": "Mangwon Croquette 望遠可樂餅", "name_kr": "망원 고로케",
+        "area": AREA_MANGWON, "cat": "food", "sub": "炸物可樂餅",
+        "address": "서울 마포구 망원로 80",
+        "lat": 37.5573301, "lng": 126.9056676,
+        "hours": "09:00-21:00 (週六日休)",
+        "phone": "02-336-7412",
+        "note": "望遠市場地標。馬鈴薯沙拉可樂餅 ₩1,000 招牌，10:00 出爐最熱。"
+                "⚠️ 週末休，週四 OK。比起糯米油炸甜甜圈更推。",
+    },
+ 
+    "kyuseu_chicken": {
+        "name": "Kyuseu 炸雞 望遠", "name_kr": "큐스 치킨 망원",
+        "area": AREA_MANGWON, "cat": "food", "sub": "市場炸雞",
+        "address": "서울 마포구 망원로8길 27",
+        "lat": 37.5562557, "lng": 126.9062372,
+        "hours": "10:00-20:30",
+        "phone": "02-3143-5577",
+        "note": "3.5/120+ 評論。市場內炸雞排隊店，多口味混搭 ₩3,000 起。"
+                "醬油口味比起司好吃。雞排咬下會噴汁，小心穿白衣。",
+    },
+ 
+    "kimchi_wang_mandu": {
+        "name": "傳說的王餃子 望遠", "name_kr": "전설의 왕만두 망원시장",
+        "area": AREA_MANGWON, "cat": "food", "sub": "蒸餃",
+        "address": "57-300 망원동",
+        "lat": 37.555484, "lng": 126.9077308,
+        "hours": "週二休 / 09:30-22:30",
+        "note": "4.9/7 評論。市場入口的招牌蒸餃，泡菜豬肉口味必點 5 個 ₩5,000。"
+                "外帶回飯店繼續吃。",
+    },
+ 
+    "yeon_mandu": {
+        "name": "Yeon Mandu 望遠手工蒸餃", "name_kr": "연만두",
+        "area": AREA_MANGWON, "cat": "food", "sub": "手工蒸餃",
+        "address": "486-8 망원동 1층",
+        "lat": 37.5566483, "lng": 126.9061569,
+        "hours": "週日休 / 11:00-19:00",
+        "phone": "02-332-5555",
+        "note": "4.9/8 評論。中日韓觀光客口碑，老闆會日文/英文。"
+                "薄皮 + 紮實餡，6 個一份 ₩6,000，加米酒 ₩3,000。⚠️ 只外帶，無內用。",
+    },
     # ==============================
     # 備案 — 延南洞咖啡
     # ==============================
