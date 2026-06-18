@@ -1215,7 +1215,171 @@ PLACES = {
         "hours": "24h",
         "note": "廢棄鐵道改的線狀公園，連接弘대-延南",
     },
-
+# === T2 過安檢前 (一般區 3F 出境大廳) ===
+ 
+    "icn_t2_checkin_lj": {
+        "name": "ICN T2 真航空報到櫃台", "name_kr": "진에어 체크인 카운터",
+        "area": AREA_AIRPORT, "cat": "sight", "sub": "報到櫃台",
+        "address": "인천공항 T2 3F 출국장",
+        "lat": 37.4602, "lng": 126.4407,
+        "hours": "起飛前 2.5h 開放，前 40 min 截止",
+        "note": "⭐ LJ737 → F 或 H 區櫃台 (依當日公告)。"
+                "12:50 開放、14:10 截止。建議 13:00 前到櫃台。",
+        "priority": True,
+    },
+ 
+    "icn_t2_taxrefund_kiosk_landside": {
+        "name": "ICN T2 退稅 KIOSK (報到前)", "name_kr": "택스 리펀드 (출국장)",
+        "area": AREA_AIRPORT, "cat": "sight", "sub": "退稅自助機",
+        "address": "인천공항 T2 3F 출국장 F/H 카운터 옆",
+        "lat": 37.4602, "lng": 126.4407,
+        "hours": "24h 自助機 / 人工 7:00-21:30",
+        "note": "🚨 報到前先來這裡。3F F 或 H 櫃台旁。"
+                "步驟：掃護照 → 掃退稅單 → 若顯示「需海關檢查」帶商品去海關蓋章。"
+                "單筆滿 ₩15,000 可退，總額 > ₩75,000 必須給海關看商品。",
+    },
+ 
+# === T2 過安檢後 (免稅區 3F) ===
+ 
+    "icn_t2_taxrefund_cash_249": {
+        "name": "ICN T2 退稅領現金 Gate 249", "name_kr": "택스 환급 현금 수령 249",
+        "area": AREA_AIRPORT, "cat": "sight", "sub": "退稅領錢",
+        "address": "인천공항 T2 3F 면세구역 249번 게이트 부근",
+        "lat": 37.4603, "lng": 126.4413,
+        "hours": "24h 自助機 / 人工 7:00-21:30",
+        "note": "⭐ 過安檢後最重要的一站。Gate 249 / 250 / 253 附近都有。"
+                "自助機掃退稅單 → 選「現金」或「退信用卡」。"
+                "現金限 ₩300,000 以下，超過要信用卡。",
+        "priority": True,
+    },
+ 
+    "icn_t2_duty_pickup": {
+        "name": "ICN T2 免稅品提貨 (整合取號機)", "name_kr": "면세품 인도장",
+        "area": AREA_AIRPORT, "cat": "sight", "sub": "免稅品提貨",
+        "address": "인천공항 T2 3F 면세구역 248-253번 게이트 부근",
+        "lat": 37.4603, "lng": 126.4415,
+        "hours": "06:30-21:30",
+        "note": "⭐ 出境後找「自動取號機」掃護照 → 印出整合號碼牌 (樂天/新羅/新世界/SM 共用)。"
+                "依號碼牌指示到對應櫃台領貨。⚠️ 起飛前 3-24h 內可領，再晚就鎖單。"
+                "未領的商品會自動退款。",
+        "priority": True,
+    },
+ 
+    "shake_shack_t2": {
+        "name": "Shake Shack 仁川 T2", "name_kr": "쉐이크쉑 인천공항 T2",
+        "area": AREA_AIRPORT, "cat": "food", "sub": "美式漢堡",
+        "address": "인천공항 T2 3F 면세구역 (Gate 28 附近)",
+        "lat": 37.4604, "lng": 126.4419,
+        "hours": "06:00-21:00",
+        "phone": "032-743-0100",
+        "note": "免稅區內有。Smoke Shack 漢堡 + 起司薯條 ~₩20,000。"
+                "早班限定餐點 06:00-10:00 (早餐三明治 ~₩8,000)。"
+                "排隊 10-15 min。",
+    },
+ 
+    "gentle_monster_t2": {
+        "name": "Gentle Monster T2", "name_kr": "젠틀몬스터 인천공항 T2",
+        "area": AREA_AIRPORT, "cat": "shop", "sub": "墨鏡",
+        "address": "인천공항 T2 3F 면세구역 28번 게이트 부근",
+        "lat": 37.4603, "lng": 126.4413,
+        "hours": "07:00-21:30",
+        "note": "免稅區墨鏡買最划算 (比市區便宜 10-20%)。"
+                "順手摸點別的 → 韓國本土 VEDI VERO、Carlyn 雲朵包也在新羅免稅店。",
+    },
+ 
+    "paris_baguette_t2": {
+        "name": "Paris Baguette T2 仁川你好餅乾", "name_kr": "파리바게뜨 인천공항 T2",
+        "area": AREA_AIRPORT, "cat": "food", "sub": "餅乾伴手禮",
+        "address": "인천공항 T2 3F 면세구역 12번 게이트 부근",
+        "lat": 37.4605, "lng": 126.4400,
+        "hours": "06:00-21:00",
+        "note": "「仁川你好」奶油餅乾 機場限定，每人限購 2 盒。"
+                "另有玄彬代言 + 紅蔘焦糖夾心餅。建議過安檢後就先來買，怕 sold out。",
+    },
+ 
+    "olive_young_t2_b1": {
+        "name": "Olive Young T2 B1", "name_kr": "올리브영 인천공항 T2",
+        "area": AREA_AIRPORT, "cat": "shop", "sub": "韓妝補貨",
+        "address": "인천공항 T2 B1 교통센터",
+        "lat": 37.4607, "lng": 126.4408,
+        "hours": "06:00-22:00",
+        "note": "B1 交通中心。最後補美妝/面膜的地方。⚠️ 在管制區外。"
+                "如果在 Olive Young 弘대旗艦沒退稅，這裡退不了 (要海關蓋章在報到前)。",
+    },
+ 
+    "cu_airport": {
+        "name": "CU 便利商店 T2 9 號登機口", "name_kr": "CU 인천공항 T2",
+        "area": AREA_AIRPORT, "cat": "food", "sub": "便利商店",
+        "address": "인천공항 T2 3F 9번 게이트 부근",
+        "lat": 37.4604, "lng": 126.4426,
+        "hours": "06:00-22:00",
+        "note": "T-money 用掉的好地方。用嗶卡買水/零食/泡麵。"
+                "若餘額 ≤ ₩20,000 也可在這裡退現金 (扣 ₩500 手續費)。",
+    },
+ 
+    "bistro_la_grillia_t2": {
+        "name": "Bistro Bar La Grillia T2", "name_kr": "비스트로 바 라 그릴리아 T2",
+        "area": AREA_AIRPORT, "cat": "food", "sub": "義式餐酒",
+        "address": "인천공항 T2 3F 면세구역",
+        "lat": 37.4603, "lng": 126.4420,
+        "hours": "24h",
+        "note": "24 小時義式酒吧。披薩 / 義大利麵 ₩20,000~。"
+                "想坐下慢慢吃 + 來瓶啤酒/酒杯紅酒可選這。",
+    },
+ 
+    "dunkin_t2": {
+        "name": "DUNKIN' Donuts T2", "name_kr": "던킨도너츠 T2",
+        "area": AREA_AIRPORT, "cat": "food", "sub": "甜甜圈/咖啡",
+        "address": "인천공항 T2 3F 면세구역 (多家分店)",
+        "lat": 37.4604, "lng": 126.4416,
+        "hours": "06:00-21:30",
+        "note": "美式咖啡 + 韓限定口味甜甜圈 (草莓奶油 / 抹茶)。"
+                "免稅區內多家，找最近的等位即可。",
+    },
+ 
+    "foodgarden_t1": {
+        "name": "Food Garden T1 美食街 (24h)", "name_kr": "푸드 가든 T1",
+        "area": AREA_AIRPORT, "cat": "food", "sub": "韓食美食街",
+        "address": "인천공항 T1 1F 12번 출구 부근",
+        "lat": 37.4530, "lng": 126.4408,
+        "hours": "24h",
+        "note": "⚠️ 在 T1 不是 T2，要從 T2 搭穿梭巴士 (15 min, 免費)。"
+                "海鮮嫩豆腐鍋 / 粥品 / 牛骨湯 ~₩11,000。"
+                "若提早到機場 (>3h 緩衝)，可考慮過去。",
+    },
+ 
+    "t2_observation_deck": {
+        "name": "T2 5F 觀景台/咖啡", "name_kr": "T2 5층 전망대",
+        "area": AREA_AIRPORT, "cat": "sight", "sub": "觀景咖啡",
+        "address": "인천공항 T2 5F 중앙",
+        "lat": 37.4609, "lng": 126.4408,
+        "hours": "06:00-22:00",
+        "note": "5F 中央展望台，免費進，咖啡座可看飛機起降。"
+                "免費 VR 體驗區 (限定時段)。航班延誤時打發時間的好地方。",
+    },
+ 
+    "walker_hill_capsule_t2": {
+        "name": "Walker Hill 過境膠囊旅館 T2", "name_kr": "다락휴 캡슐호텔 T2",
+        "area": AREA_AIRPORT, "cat": "sight", "sub": "膠囊旅館",
+        "address": "인천공항 T2 3F 252번 게이트 부근",
+        "lat": 37.4604, "lng": 126.4422,
+        "hours": "24h",
+        "note": "免稅區內 (Gate 252 附近)。"
+                "過夜 ₩55,000、3h 短休 ~₩30,000。"
+                "萬一航班延誤或想小睡，這裡比露天椅好。",
+    },
+ 
+# === 弘대區早餐補強 (Day5 早餐備案) ===
+ 
+    "knotted_hongdae": {
+        "name": "Cafe Knotted 弘대", "name_kr": "카페 노티드 홍대",
+        "area": AREA_HONGDAE, "cat": "food", "sub": "甜甜圈/早餐",
+        "address": "서울 마포구 양화로 162-1",
+        "lat": 37.5566, "lng": 126.9224,
+        "hours": "10:00-22:00",
+        "note": "弘대區內版本，10:00 開。如果 baeknyeon 還沒開 (09:00)，"
+                "或不想吃蔘雞湯，這裡甜甜圈 + 拿鐵 ₩12,000 解決早餐。",
+    },
     # ==============================
     # 飛行 / 交通 (Day 1 / Day 5 用)
     # ==============================
