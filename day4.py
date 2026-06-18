@@ -16,8 +16,8 @@ def show_day():
     stop("", "moment_coffee", others="food",
          notes="10:00 開門前後人少<br>"
                "招牌Yaki-Pan Set ₩14,000，8 片吐司 + 紅豆 + 奶油 + 半熟蛋<br>"
-               "草莓拿鐵也必點<br>"
-               "10:00 之前沒開 → 跳 Egg Drop (07:00 開) 或 Knotted 延南 / Nognog 延南。")
+               "草莓拿鐵必點<br>"
+               "10:00 之前沒開 → 跳 Egg Drop (07:00 開) <br>或 Knotted 延南 / Nognog 延南")
 
     # 2) 弘대 → 望遠
     note("🚇", "弘대 → 望遠市場",
@@ -63,13 +63,13 @@ def show_day():
     # 8) 風川鰻魚 (晚餐)
     stop("", "pungcheon", others="food",
          notes="主推炭烤鰻魚 ₩30,000/兩人<br>"
-               "預訂建議 18:30 前到，假日要等")
+               "預訂建議 18:30 前到")
 
     # 9) 弘대商店街逛街 (主行程)
     stop("", "musinsa_terrace_hongdae", others="shop",
          notes="韓本土小眾品牌<br>"
                "平日 19:30 後逛街人不多<br>"
-               "順路看 ABC-MART Grand Stage / MARK GONZALES / Wacky Willy<br>"
+               "順路看 ABC-MART Grand Stage / MARK GONZALES /<br>Wacky Willy / "
                "NERDY / LMC 都在「其他」")
 
     # 10) 宵夜 BHC 炸雞
