@@ -150,7 +150,7 @@ else:
 st.markdown("""
 🎟️ **優惠券：**
 [Olive Young](https://www.oliveyoung.co.kr/store/main/getEventList.do?menuFlag=N)｜
-[新世界免稅](https://www.seoultravelpass.com/en/products/1562-2026-shinsegae-duty-free-benefit-coupon)｜
+[新世界免稅](https://www.seoultravelpass.com/en/products/1562-2026-shinsegae-duty-free-benefit-coupon)｜  \n
 [ABC-MART 明洞 9 折](https://creatrip.com/zh-HK/blog/13244)｜
 [Visit Korea 旅客專屬](https://english.visitkorea.or.kr/svc/main/index.do)
 """)
