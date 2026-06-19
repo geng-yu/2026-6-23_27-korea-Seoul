@@ -876,7 +876,7 @@ PLACES = {
                 "🌸 秘苑 (秘密花園 / 후원) 必看 — 要分開買票 ₩5,000 + 時段限定，"
                 "建議北村吃完飯先在現場或 app 預約下午 1-2 點時段。"
                 "從北村走 7 min、走完往南 5 min 到倫敦貝果。",
-        "priority": True,
+        "priority": False,
     },
     "insadong": {
         "name": "仁寺洞", "name_kr": "인사동",
