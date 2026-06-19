@@ -120,12 +120,41 @@ selected_key = st.radio(
     label_visibility="collapsed",
 )
 
-# 快捷工具列
+# ==============================
+# 真航空劃位提醒 + 優惠券快捷列
+# ==============================
+# LJ737 起飛: 6/27 (六) 14:50 KST
+# 線上劃位開放: 起飛前 24h ~ 1.5h 前 (6/26 14:50 ~ 6/27 13:20)
+checkin_open  = datetime(2026, 6, 26, 14, 50, tzinfo=KST)
+checkin_close = datetime(2026, 6, 27, 13, 20, tzinfo=KST)
+now_kst       = datetime.now(KST)
+
+checkin_url = "https://www.jinair.com/login/checkinLogin?returnUrl=/checkin/checkinList"
+
+if now_kst < checkin_open:
+    # 還沒開放：顯示倒數
+    hours_left = int((checkin_open - now_kst).total_seconds() // 3600)
+    st.warning(
+        f"✈️ **LJ737 線上劃位** 還沒開放（6/26 (五) 14:50 起，倒數 {hours_left} 小時）  \n"
+        f"開放後可選靠窗/走道座位，到機場直接行李托運。"
+    )
+elif now_kst <= checkin_close:
+    # 開放中：顯示連結
+    st.error(
+        f"🔴 **LJ737 線上劃位開放中！** 請立刻 [點此劃位]({checkin_url})（截止 6/27 13:20）  \n"
+        f"⚠️ 選位後到機場仍要去 F/H 櫃台托運行李、領紙本登機證。"
+    )
+else:
+    # 已起飛或過期：什麼都不顯示這格
+    pass
+
+# 優惠券快捷列
 st.markdown("""
-🗺️ **地圖：** [NAVER](https://apps.apple.com/tw/app/naver-map-navigation/id311867728)｜
-[KakaoMap](https://apps.apple.com/tw/app/kakaomap/id304608425)｜
-🚕 [Kakao T](https://apps.apple.com/tw/app/kakao-t/id981110422)｜
-💳 [Mobile T-money](https://apps.apple.com/tw/app/id1100428659)
+🎟️ **優惠券：**
+[Olive Young](https://www.oliveyoung.co.kr/store/main/getEventList.do?menuFlag=N)｜
+[新世界免稅](https://www.seoultravelpass.com/en/products/1562-2026-shinsegae-duty-free-benefit-coupon)｜
+[ABC-MART 明洞 9 折](https://creatrip.com/zh-HK/blog/13244)｜
+[Visit Korea 旅客專屬](https://english.visitkorea.or.kr/svc/main/index.do)
 """)
 st.divider()
 
