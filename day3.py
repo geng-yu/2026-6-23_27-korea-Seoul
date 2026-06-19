@@ -20,11 +20,11 @@ def show_day():
               "→ 3 號線「往대화 方向」<br>"
               "→ 2 站到「安國站 (안국역 / Anguk)」<br>"
               "→ 出 1 號出口"
-              "｜💡 Taxi ~₩9,000 / 20 min (省 5 min)")
+              "｜💡 Taxi ~₩9,000 / 20 min")
 
     # 1) 早午餐：無垢屋
     stop("", "muguok", others="food",
-         notes="⚠️ 11:30-14:00 / 17:30-20:00，Catchtable 出門前先抽號碼<br>"
+         notes="⚠️Catchtable 出門前先抽號碼<br>"
                "排不到備案：Cafe Onion Anguk、土俗村蔘雞湯<br>"
                "通仁市場銅板便當 (走 7 min)")
 
@@ -53,7 +53,7 @@ def show_day():
     # 6) 倫敦貝果 (走路)
     stop("🥯", "london_bagel", others="food",
          notes="⚠️ Catchtable 抽號碼牌，平日可能等 1-2 小時<br>"
-               "建議北村時就先抽。排不到 → Hanok Langsom 益善(韓屋庭院)")
+               "建議北村時先抽<br>排不到 → Hanok Langsom 益善(韓屋庭院)")
 
     # 7) 益善洞 (走路)
     stop(" ", "ikseondong",
@@ -84,7 +84,7 @@ def show_day():
     # 11) 回弘대
     note("🚇", "明洞 → 弘대",
               "2 號線本線直達｜~22 min｜₩1,500",
-              "進站：新世界走 5 min 到「乙支路入口站 (을지로입구역 / Euljiro 1-ga)」<br>"
+              "進站：新世界走到「乙支路入口站(을지로입구역/Euljiro 1-ga)<br>"
               "→ 2 號線「往홍대입구 方向」(外線循環)<br>"
               "→ 6 站到「弘大入口站 (홍대입구역)」<br>"
               "→ 出 9 號出口 💡Taxi ~₩12,000 / 25 min")
