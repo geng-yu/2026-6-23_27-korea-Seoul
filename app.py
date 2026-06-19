@@ -135,14 +135,12 @@ if now_kst < checkin_open:
     # 還沒開放：顯示倒數
     hours_left = int((checkin_open - now_kst).total_seconds() // 3600)
     st.warning(
-        f"✈️ **LJ737 線上劃位** 還沒開放（6/26 (五) 14:50 起，倒數 {hours_left} 小時）  \n"
-        f"開放後可選靠窗/走道座位，到機場直接行李托運。"
+        f"✈️ **LJ737 線上劃位** 還沒開放\n（6/26 (五) 14:50 起，倒數 {hours_left} 小時"
     )
 elif now_kst <= checkin_close:
     # 開放中：顯示連結
     st.error(
-        f"🔴 **LJ737 線上劃位開放中！** 請立刻 [點此劃位]({checkin_url})（截止 6/27 13:20）  \n"
-        f"⚠️ 選位後到機場仍要去 F/H 櫃台托運行李、領紙本登機證。"
+        f"🔴 **LJ737 線上劃位開放中！** \n請立刻 [點此劃位]({checkin_url})（截止 6/27 13:20）  \n"
     )
 else:
     # 已起飛或過期：什麼都不顯示這格
