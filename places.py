@@ -245,16 +245,7 @@ PLACES = {
         "phone": "02-6085-4371",
         "note": "韓式吐司早餐",
     },
-    "eggdrop_hongdae": {
-        "name": "Egg Drop 弘대2호점", "name_kr": "에그드랍 홍대",
-        "area": AREA_HONGDAE, "cat": "food", "sub": "韓式三明治",
-        "address": "서울 마포구 양화로 152 1층",
-        "lat": 37.5552843, "lng": 126.9234017,
-        "hours": "07:00-22:00",
-        "phone": "0507-1334-2080",
-        "note": "07:00 開，從飯店走 5 min。招牌 Bacon Cheese ₩4,500，外帶包好就走。"
-                "Moment Coffee 還沒開的話備案。",
-    },
+
     "moment_coffee": {
         "name": "Moment Coffee 二號", "name_kr": "모멘트커피 2호점",
         "area": AREA_HONGDAE, "cat": "food", "sub": "咖啡早餐",
