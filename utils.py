@@ -1,23 +1,21 @@
 """
-渲染共用函式（v12 名古屋風純排版版）：
+渲染共用函式（v13 名古屋風排版 + T 複製修正版）：
 
 設計
 --------------------------------------------------------------
-* 主行程：完全用 Streamlit 原生元件「一行一行往下排」
-  - st.subheader / st.markdown / st.link_button / st.divider / st.expander
-  - 沒有卡片框、沒有 iframe（除了 T 按鈕本身）→ 完全沒有間距問題
-* G / N：用 st.link_button 直接導向 Google Maps / NAVER scheme
-* T：用一個 30×34 的小 inline iframe 嵌在按鈕列裡
-  - 這是唯一的 iframe，固定高度，不會造成版面問題
-  - 功能完整：點 T → 複製韓文店名 → 開 Kakao T
-* 下拉框（其他吃的/逛的、飯店附近）：用同一套排版，每項用 markdown 列出
+* 主行程：用 Streamlit 原生元件「一行一行往下排」+ 大區塊方形編號標題
+* G / N / T 按鈕：用一個 36px 高的 iframe 容納三個按鈕
+  - G / N 是普通連結
+  - T 是 button + JS：先複製韓文店名 → 再開 Kakao T (kakaot://home)
+  - iframe 是必要的，因為 Streamlit markdown 不允許 JavaScript 執行
+* 下拉框（其他吃的/逛的、飯店附近）：跟主行程同套排版，每項用 markdown 列出
   - 已排項目沉到最下面 + 標「已排」徽章
 * set_scheduled / stop / note / custom_card / multi_card / hotel_bottom
   API 全部保留，day1~5.py 不用改
 
 T 功能說明
 - 點 T 會：(1) 複製韓文店名到剪貼簿 (2) 開 Kakao T (kakaot://home)
-- 如果不需要複製功能，可以把 _render_t_button() 整個換成一個 st.link_button
+- 在 https/https 環境用 navigator.clipboard，舊瀏覽器 fallback 用 textarea+execCommand
 """
 import streamlit as st
 import streamlit.components.v1 as components
@@ -209,58 +207,6 @@ def inject_css():
 
 
 # ================================================================
-# T 按鈕（複製 + 開 app）—— 唯一的小 iframe
-# ================================================================
-_T_UID = [0]
-
-
-def _render_t_button(copy_text: str):
-    """渲染一個 30x30 的 T 按鈕（內含複製＋開 Kakao T 邏輯）。
-    如果不需要這個功能，可以改成 st.link_button("T", kakaot_url()) 或直接拿掉。"""
-    _T_UID[0] += 1
-    uid = f"t{_T_UID[0]}"
-    ct = json.dumps(str(copy_text))
-    k = json.dumps(kakaot_url())
-    doc = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-*{{box-sizing:border-box;margin:0;padding:0;}}
-html,body{{background:transparent;overflow:hidden;}}
-button{{
-  width:30px;height:30px;border-radius:50%;
-  display:inline-flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:13.5px;
-  border:none;cursor:pointer;
-  background:#FAE100;color:#371D1E;
-  box-shadow:0 1px 2px rgba(0,0,0,.15);
-  -webkit-tap-highlight-color:transparent;user-select:none;
-  font-family:-apple-system,system-ui,sans-serif;
-}}
-button:active{{transform:scale(.92);}}
-</style></head><body>
-<button id="b" type="button" title="複製韓文店名並開啟 Kakao T">T</button>
-<script>
-var el=document.getElementById("b");
-el.addEventListener("click",async function(){{
-  try{{
-    if(navigator.clipboard&&window.isSecureContext){{
-      await navigator.clipboard.writeText({ct});
-    }} else {{
-      var ta=document.createElement("textarea");
-      ta.value={ct};
-      ta.style.cssText="position:fixed;left:-9999px;top:0";
-      document.body.appendChild(ta);ta.focus();ta.select();
-      try{{document.execCommand("copy");}}catch(e){{}}
-      document.body.removeChild(ta);
-    }}
-  }}catch(e){{}}
-  el.innerText="\\u2713";
-  setTimeout(function(){{el.innerText="T";}},1000);
-  window.location.href={k};
-}});
-</script></body></html>"""
-    components.html(doc, height=34, width=34)
-
-
-# ================================================================
 # 共用：標題列（emoji 標籤 + 店名 + ⭐）
 # ================================================================
 # 類別 → 大圓圈底色（深淺色都看得清楚）
@@ -324,22 +270,65 @@ def _build_meta(place):
 # 主行程：按鈕列（G | N | T 並排）
 # ================================================================
 def _render_buttons_for_place(p, mode="walking", show_taxi=True):
-    """在地點下面排一列 G / N / T 按鈕（純 HTML class，深淺色都能正確顯示）。"""
-    name_kr = p.get("name_kr", p["name"])
-    g = gmap_url(f"{name_kr} {p.get('address','')}", mode)
-    n = naver_url(query=name_kr, lat=p.get("lat"), lng=p.get("lng"),
-                  name=name_kr or p["name"], mode=mode)
-    k = kakaot_url()
+    """G / N / T 三按鈕在同一個 iframe，T 點下去先複製韓文店名再開 Kakao T。
+    用 iframe 是為了讓 JavaScript 能執行 (Streamlit markdown 不能跑 JS)。"""
+    name_kr = p.get("name_kr") or p["name"]
+    g = html_lib.escape(gmap_url(f"{name_kr} {p.get('address','')}", mode), quote=True)
+    n = html_lib.escape(naver_url(query=name_kr, lat=p.get("lat"), lng=p.get("lng"),
+                                  name=name_kr, mode=mode), quote=True)
+    ct = json.dumps(str(name_kr))
+    k = json.dumps(kakaot_url())
 
-    parts = [
-        '<div class="gnt-row">',
-        f'<a class="gnt-btn gnt-g" href="{g}" target="_blank" rel="noopener">G</a>',
-        f'<a class="gnt-btn gnt-n" href="{n}">N</a>',
-    ]
+    t_btn = ""
+    t_script = ""
     if show_taxi:
-        parts.append(f'<a class="gnt-btn gnt-t" href="{k}">T</a>')
-    parts.append('</div>')
-    st.markdown(''.join(parts), unsafe_allow_html=True)
+        t_btn = '<button id="tb" class="b t" type="button" title="複製韓文店名並開啟 Kakao T">T</button>'
+        t_script = (
+            f'(function(){{'
+            f'var el=document.getElementById("tb");if(!el)return;'
+            f'el.addEventListener("click",async function(){{'
+            f'try{{'
+            f'if(navigator.clipboard&&window.isSecureContext){{await navigator.clipboard.writeText({ct});}}'
+            f'else{{'
+            f'var ta=document.createElement("textarea");ta.value={ct};'
+            f'ta.style.cssText="position:fixed;left:-9999px;top:0";'
+            f'document.body.appendChild(ta);ta.focus();ta.select();'
+            f'try{{document.execCommand("copy");}}catch(e){{}}'
+            f'document.body.removeChild(ta);'
+            f'}}}}catch(e){{}}'
+            f'el.innerText="\\u2713";'
+            f'setTimeout(function(){{el.innerText="T";}},1000);'
+            f'window.location.href={k};'
+            f'}});'
+            f'}})();'
+        )
+
+    doc = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+*{{box-sizing:border-box;margin:0;padding:0;}}
+html,body{{background:transparent;overflow:hidden;}}
+.row{{display:flex;gap:6px;align-items:center;}}
+.b{{
+  width:30px;height:30px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13.5px;
+  text-decoration:none;border:none;cursor:pointer;
+  box-shadow:0 1px 2px rgba(0,0,0,.15);
+  -webkit-tap-highlight-color:transparent;user-select:none;
+  font-family:-apple-system,system-ui,sans-serif;
+}}
+.b:active{{transform:scale(.92);}}
+.b.g{{background:#4285F4;color:#fff;}}
+.b.n{{background:#03C75A;color:#fff;}}
+.b.t{{background:#FAE100;color:#371D1E;}}
+</style></head><body>
+<div class="row">
+  <a class="b g" href="{g}" target="_blank" rel="noopener">G</a>
+  <a class="b n" href="{n}">N</a>
+  {t_btn}
+</div>
+<script>{t_script}</script>
+</body></html>"""
+    components.html(doc, height=36, scrolling=False)
 
 
 def _render_buttons_for_links(links):
