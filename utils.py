@@ -531,10 +531,10 @@ def hotel_bottom(today_food=None, today_shop=None):
 
     food_all = get_by_area(AREA_HONGDAE, exclude=["hotel"], cat="food")
     with st.expander("🍽️ 吃 — 飯店附近"):
-        st.caption("弘대區所有吃的清單。主行程已排的會放最下面標「已排」。")
+        st.caption(" ")
         _render_backup_list(food_all, food_sched)
 
     shop_all = get_by_area(AREA_HONGDAE, exclude=["hotel"], cat="shop")
     with st.expander("🛍️ 逛 — 飯店附近"):
-        st.caption("弘대區所有逛的清單。主行程已排的會放最下面標「已排」。")
+        st.caption(" ")
         _render_backup_list(shop_all, shop_sched)
