@@ -255,14 +255,6 @@ PLACES = {
         "phone": "070-8860-5287",
         "note": "自己烤吐司套餐 ₩14,000，巷弄咖啡店",
     },
-    "knotted_hongdae": {
-        "name": "Cafe Knotted 弘대", "name_kr": "카페 노티드 홍대",
-        "area": AREA_HONGDAE, "cat": "food", "sub": "甜甜圈/早餐",
-        "address": "서울 마포구 양화로 162-1",
-        "lat": 37.5566, "lng": 126.9224,
-        "hours": "10:00-22:00",
-        "note": "弘대區內版本，10:00 開。Vanilla Cream / Milk Tea 必點",
-    },
     "bagel_land": {
         "name": "Bagel Land 弘대", "name_kr": "베이글랜드 홍대",
         "area": AREA_HONGDAE, "cat": "food", "sub": "貝果",
