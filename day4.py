@@ -14,13 +14,19 @@ def show_day():
 
     # 1) 早餐 Bagel Land (8:30 開) — 從飯店走 4 min
     stop("", "bagel_land", others="food",
-               "招牌：地瓜貝果 / 艾草貝果 / 羅勒貝果<br>")
+         notes="從飯店走 4 min<br>"
+               "8:30 開，早餐選擇之一<br>"
+               "招牌：地瓜貝果 / 艾草貝果 / 羅勒貝果<br>"
+               "💡 建議外帶 1-2 個貝果，到 Moment Coffee 配咖啡一起吃")
 
     # 2) 早餐 Moment Coffee 二號 — 從 Bagel Land 走 4 min
     stop("", "moment_coffee", others="food",
          notes="從 Bagel Land 走 4 min<br>"
-               "10:00 開門前後人少,招牌 Yaki-Pan Set<br>"
-               "8 片吐司+紅豆+奶油+半熟蛋,草莓拿鐵<br>")
+               "10:00 開門前後人少<br>"
+               "招牌 Yaki-Pan Set ₩14,000<br>"
+               "8 片吐司 + 紅豆 + 奶油 + 半熟蛋<br>"
+               "草莓拿鐵必點<br>"
+               "💡 怕吃太飽 → 只點咖啡，貝果在 Bagel Land 已經吃過")
 
     # 3) 弘대 → 望遠
     note("🚇", "弘대 → 望遠市場",
