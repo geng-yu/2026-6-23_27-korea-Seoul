@@ -66,17 +66,6 @@ PLACES = {
         "note": "三層樓燒烤",
         "priority": True,
     },
-    "bagel_land": {
-        "name": "Bagel Land 弘대", "name_kr": "베이글랜드 홍대",
-        "area": AREA_HONGDAE, "cat": "food", "sub": "貝果",
-        "address": "서울 마포구 와우산로29나길 19",
-        "lat": 37.5554873, "lng": 126.9259767,
-        "hours": "08:30-21:00 每天開",
-        "note": "4.6/1,736 評論。從飯店走 4 min。8:30 開最早選擇之一。"
-                "招牌地瓜貝果、艾草貝果、羅勒貝果。咖啡也好喝。"
-                "🍯 推 Yaki-Pan Set 套餐配草莓拿鐵。",
-        "priority": True,
-    },
     "bhc": {
         "name": "BHC 弘대점", "name_kr": "BHC치킨 홍대점",
         "area": AREA_HONGDAE, "cat": "food", "sub": "炸雞",
@@ -273,6 +262,17 @@ PLACES = {
         "lat": 37.5566, "lng": 126.9224,
         "hours": "10:00-22:00",
         "note": "弘대區內版本，10:00 開。Vanilla Cream / Milk Tea 必點",
+    },
+    "bagel_land": {
+        "name": "Bagel Land 弘대", "name_kr": "베이글랜드 홍대",
+        "area": AREA_HONGDAE, "cat": "food", "sub": "貝果",
+        "address": "서울 마포구 와우산로29나길 19",
+        "lat": 37.5554873, "lng": 126.9259767,
+        "hours": "08:30-21:00 每天開",
+        "note": "4.6/1,736 評論。從飯店走 4 min。8:30 開最早選擇之一。"
+                "招牌地瓜貝果、艾草貝果、羅勒貝果。咖啡也好喝。"
+                "🍯 推 Yaki-Pan Set 套餐配草莓拿鐵。",
+        "priority": True,
     },
 
     # ================================================================
