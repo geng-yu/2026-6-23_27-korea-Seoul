@@ -629,15 +629,6 @@ PLACES = {
         "phone": "02-499-2500",
         "note": "本店隔壁。等不到本店就來這間。湯底一樣，最後用紫蘇葉炒飯收尾",
     },
-    "knotted_seongsu": {
-        "name": "Cafe Knotted 聖水", "name_kr": "카페 노티드 성수",
-        "area": AREA_SEONGSU, "cat": "food", "sub": "甜甜圈",
-        "address": "서울 성동구 성수동2가 316-5",
-        "lat": 37.5435787, "lng": 127.0526642,
-        "hours": "11:00-21:00",
-        "phone": "070-8834-9377",
-        "note": "Knotted 帶起韓國奶油甜甜圈熱潮的元祖。聖水店主打外帶",
-    },
     "cafe_onion_seongsu": {
         "name": "Cafe Onion 聖水", "name_kr": "카페 어니언 성수",
         "area": AREA_SEONGSU, "cat": "food", "sub": "咖啡/烘焙",
@@ -671,15 +662,6 @@ PLACES = {
         "lat": 37.5447394, "lng": 127.0593341,
         "hours": "平日 16:00-22:00 / 週末 15:00-22:00",
         "note": "炭火烤雞老店，雞心特推。建議先用 Catchtable 取號",
-    },
-    "ssoc_restaurant": {
-        "name": "SSOC", "name_kr": "쏙",
-        "area": AREA_SEONGSU, "cat": "food", "sub": "韓式法餐",
-        "address": "서울 성동구 광나루로4가길 12-7",
-        "lat": 37.5491463, "lng": 127.0543631,
-        "hours": "週一公休｜其他 11:30-15:00 / 17:00-22:00",
-        "phone": "02-6212-1195",
-        "note": "前米其林一星主廚，韓食 + 法式技巧。建議訂位",
     },
 
     # ================================================================
