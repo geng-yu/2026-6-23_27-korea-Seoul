@@ -401,14 +401,6 @@ PLACES = {
         "phone": "02-337-8334",
         "note": "品牌集合，服裝鞋子配件",
     },
-    "mark_gonzales": {
-        "name": "MARK GONZALES 弘大", "name_kr": "마크 곤잘레스 홍대",
-        "area": AREA_HONGDAE, "cat": "shop", "sub": "滑板潮牌",
-        "address": "서울 마포구 어울마당로 133",
-        "lat": 37.5531, "lng": 126.9238,
-        "hours": "11:00-22:00",
-        "note": "塗鴉插畫風滑板系潮牌",
-    },
     "nerdy": {
         "name": "NERDY 弘大旗艦店", "name_kr": "너디 홍대 플래그십",
         "area": AREA_HONGDAE, "cat": "shop", "sub": "韓國本土潮牌",
@@ -1024,6 +1016,14 @@ PLACES = {
         "note": "3 棟相連 25 層 (Estate / Reserve / Heritage)。"
                 "8-11F 免稅店 (要先在 app 預約)。B1 美食街 / 巴黎可頌排隊名店。退稅 1F 服務中心",
         "priority": True,
+    },
+    "mark_gonzales": {
+        "name": "MARK GONZALES 明洞", "name_kr": "마크곤잘레스 명동점",
+        "area": AREA_MYEONGDONG, "cat": "shop", "sub": "滑板潮牌",
+        "address": "서울 중구 명동8길 35-1 1층",
+        "lat": 37.5621494, "lng": 126.9851141,
+        "hours": "11:00-22:00",
+        "note": "塗鴉插畫風滑板系潮牌",
     },
     "abc_mart_grand_myeongdong": {
         "name": "ABC-MART Grand Stage 明洞", "name_kr": "ABC마트 GS 명동본점",
