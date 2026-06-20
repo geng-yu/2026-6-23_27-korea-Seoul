@@ -78,7 +78,7 @@ def show_day():
     stop("", "musinsa_terrace_hongdae", others="shop",
          notes="AK& 17F (整層) 韓本土小眾品牌<br>"
                "平日 19:30 後逛街人不多<br>"
-               "順路看 ABC-MART Grand Stage / MARK GONZALES /<br>Wacky Willy / "
+               "順路看 ABC-MART Grand Stage/<br>Wacky Willy / "
                "NERDY / LMC 都在「其他」")
 
     # 11) 宵夜 BHC 炸雞
