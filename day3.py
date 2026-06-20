@@ -83,9 +83,8 @@ def show_day():
                "⚠️ 主店滿就去 New Building MJ")
 
     # 11) 逛街：明洞商圈順路逛到新世界
-    stop("", "shinsegae_main", others="shop",
-         notes="新世界 8-11F 免稅店要先 app 預約<br>退稅 1F 統一處理")
-
+    stop("", ["shinsegae_main", "mark_gonzales"],
+         notes="新世界8-11F免稅店要先app預約,退稅1F")
     # 12) 回弘대
     note("🚇", "明洞 → 弘대",
               "2 號線本線直達｜~22 min｜₩1,500",
