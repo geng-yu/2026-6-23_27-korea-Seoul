@@ -504,7 +504,7 @@ PLACES = {
         "hours": "24h 開",
         "phone": "010-9518-2864",
         "note": "延南洞最大 vintage 店。Ralph Lauren / Tommy / Champion 二手丹寧均一 ₩10,000 起",
-        "priority": True,
+        "priority": False,
     },
     "yeonnam_vintage": {
         "name": "延南 Vintage Sky", "name_kr": "연남 빈티지",
