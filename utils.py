@@ -376,8 +376,8 @@ def stop(tag, place_ids, others=None, notes=None, show_taxi=True, mode="walking"
     if others:
         first_p = PLACES[place_ids[0]]
         area = first_p.get("area")
-        cat_label = {"food": "其他吃的", "shop": "其他逛的"}.get(others, "其他")
-        with st.expander(f"🔄 {cat_label}（{area}附近）"):
+        cat_label = {"food": "🍽️其他吃的", "shop": "🛍️其他逛的"}.get(others, "其他")
+        with st.expander(f" {cat_label}（{area}附近）"):
             items = get_by_area(area, exclude=place_ids, cat=others)
             if not items:
                 st.caption(f"({area} 沒有其他 {cat_label} 資料)")
@@ -456,8 +456,8 @@ def multi_card(tag, sections, others=None, show_taxi=True, mode="walking"):
 
     if others and place_ids:
         area = PLACES[place_ids[0]].get("area")
-        cat_label = {"food": "其他吃的", "shop": "其他逛的"}.get(others, "其他")
-        with st.expander(f"🔄 {cat_label}（{area}附近）"):
+        cat_label = {"food": "🍽️其他吃的", "shop": "🛍️其他逛的"}.get(others, "其他")
+        with st.expander(f" {cat_label}（{area}附近）"):
             items = get_by_area(area, exclude=place_ids, cat=others)
             if not items:
                 st.caption(f"({area} 沒有其他 {cat_label} 資料)")
