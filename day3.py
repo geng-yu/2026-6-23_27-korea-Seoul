@@ -1,15 +1,15 @@
-"""Day 3 (6/25 四) — 安國/北村/西村 + 益善洞 + 明洞 + 新世界"""
+"""Day 3 (6/25 四) — 安國/北村/西村 + 益善洞 + 明洞 + 新世界 + 樂天免稅"""
 import streamlit as st
 from utils import stop, note, hotel_bottom, set_scheduled
 
 TODAY_FOOD = ["muguok", "rafre_fruit_seochon", "london_bagel",
               "myeongdong_kyoja", "bongsan"]
-TODAY_SHOP = ["shinsegae_main"]
+TODAY_SHOP = ["shinsegae_main", "lotte_dutyfree_main"]
 
 
 def show_day():
     set_scheduled(TODAY_FOOD, TODAY_SHOP)
-    st.caption("📍 6/25 (四)｜安國/北村/西村 + 益善洞 + 明洞 + 新世界")
+    st.caption("📍 6/25 (四)｜安國/北村/西村+益善洞+明洞+新世界+樂天")
 
     # 1) 出發：弘대 → 安國
     note("🚇", "弘대 → 安國",
@@ -48,12 +48,14 @@ def show_day():
               "中間隔著景福宮整個範圍 (1.5 km)<br>")
 
     stop("", "bukchon",
-         notes="10-17 開放，八景拍照走逛")
+         notes="10-17 開放，八景拍照走逛<br>"
+               "💡 用韓服店租韓服 → 下一格昌德宮也免門票")
 
     # 6) 昌德宮 (從北村走 7 min)
     stop("", "changdeokgung",
          notes="🌸 UNESCO 世界遺產，比景福宮安靜<br>"
-               "秘苑要分開買票 ₩5,000 + 時段限定")
+               "秘苑要分開買票 ₩5,000 + 時段限定<br>"
+               "💡 北村吃完飯就在現場/app 預約下午時段")
 
     # 7) 倫敦貝果 (從昌德宮走 5 min)
     stop("🥯", "london_bagel", others="food",
@@ -82,22 +84,32 @@ def show_day():
                "先吃一碗麵留肚子等鳳山精肉<br>"
                "⚠️ 主店滿就去 New Building MJ")
 
-    # 11) 逛街：明洞商圈順路逛到新世界
-    stop("", ["shinsegae_main", "mark_gonzales"],
-         notes="新世界8-11F免稅店要先app預約,退稅1F")
-    # 12) 回弘대
+    # 11) 新世界百貨 (從明洞餃子走 5 min)
+    stop("", "shinsegae_main", others="shop",
+         notes="從明洞餃子往南走 5 min<br>"
+               "新世界 8-11F 免稅店要先 app 預約<br>退稅 1F 統一處理")
+
+    # 12) 樂天免稅明洞 (從新世界往北走 5 min)
+    stop("🛒", "lotte_dutyfree_main", others="shop",
+         notes="從新世界往北走 5 min (或地下通道<br>"
+               "刷護照 sign in 入場、人多排 2-3 小時<br>"
+               "⚠️ T1 / T2 機場領貨用同一張護照<br>"
+               "💡 時間不夠可直接跳過去搭車")
+
+    # 13) 回弘대 (從樂天 B1 直接連乙支路入口站)
     note("🚇", "明洞 → 弘대",
               "2 號線本線直達｜~22 min｜₩1,500",
-              "進站：新世界走到「乙支路入口站(을지로입구역/Euljiro 1-ga)<br>"
+              "🌟 樂天百貨 B1 直接連接乙支路入口站 (을지로입구역) 8 號出口<br>"
+              "→ 不用走地面，內部地下通道直通<br>"
               "→ 2 號線「往홍대입구 方向」(外線循環)<br>"
               "→ 6 站到「弘大入口站 (홍대입구역)」<br>"
-              "→ 出 9 號出口 💡Taxi ~₩12,000 / 25 min")
+              "→ 出 9 號出口 💡 Taxi ~₩12,000 / 25 min")
 
-    # 13) 晚餐：鳳山精肉
+    # 14) 晚餐：鳳山精肉
     stop("", "bongsan", others="food",
          notes="燒烤")
 
-    # 14) 住 + 飯店附近
+    # 15) 住 + 飯店附近
     hotel_bottom(today_food=TODAY_FOOD, today_shop=TODAY_SHOP)
 
 
