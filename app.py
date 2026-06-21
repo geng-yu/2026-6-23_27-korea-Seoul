@@ -150,7 +150,7 @@ else:
 st.markdown("""
 🎟️ **優惠券：**
 [新世界免稅12F](https://www.seoultravelpass.com/en/products/1562-2026-shinsegae-duty-free-benefit-coupon)｜
-[ABC-MART 明洞 9 折](https://creatrip.com/zh-HK/blog/13244)  \n｜[Visit Korea 旅客專屬](https://english.visitkorea.or.kr/svc/main/index.do)
+[ABC-MART 明洞 9 折](https://creatrip.com/zh-HK/blog/13244)  \n｜[Visit Korea 旅客專屬(新世界)](https://www.seoultravelpass.com/zh-TW/products/1562-2026-%E6%96%B0%E4%B8%96%E7%95%8C%E5%85%8D%E7%A8%85%E5%BA%97%E8%87%AA%E7%94%B1%E6%97%85%E8%A1%8C%E9%81%8A%E5%AE%A2%E5%B0%88%E7%94%A8%E5%84%AA%E6%83%A0)
 """)
 st.divider()
 
